@@ -29,7 +29,7 @@ Browser tests launch an isolated dev server on port 3100 and intercept catalog r
 
 ## Release and deployment
 
-The private source repository is `lukivan8/mddex`; `main` is the production branch. GitHub Actions runs type checking, linting, unit tests, Chromium browser tests, and the production build on pushes and pull requests. To enable automatic deployments, connect this repository to the `mddex` Worker using Cloudflare Workers Builds with build command `npm run ci:build` and deploy command `npx wrangler deploy`. GitHub app authorization is currently awaiting account passkey confirmation. Once connected, Cloudflare manages the build credential within its Git integration; no application runtime secrets or GitHub deployment secrets are needed.
+The private source repository is `lukivan8/mddex`; `main` is the production branch. GitHub Actions runs type checking, linting, unit tests, Chromium browser tests, and the production build on pushes and pull requests. Cloudflare Workers Builds automatically deploys pushes to `main` to the `mddex` Worker. The build command `npm run ci:build` runs type checking, linting, unit tests, and the production build before `npx wrangler deploy` can run. GitHub Actions independently runs the full suite including browser tests. Cloudflare manages the approved build token within its Git integration; no application runtime secrets or GitHub deployment secrets are needed. Preview deployments are disabled.
 
 `wrangler.jsonc` declares the custom domain and runtime configuration. Catalog configuration is a public build-time setting; collection data never reaches the Worker. Local development and production have separate browser storage because they use different origins.
 
