@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mddex",
+  "account_id": "969c1ae807b3ae3d635b9c72c0818e54",
+  "workers_dev": false,
+  "routes": [{ "pattern": "mddex.net", "custom_domain": true }],
+  "main": "@tanstack/react-start/server-entry",
+  "compatibility_date": "2026-09-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+}
