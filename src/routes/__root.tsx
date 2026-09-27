@@ -30,7 +30,7 @@ export const Route = createRootRoute({
       </head>
       <body>
         <a className="skip-link" href="#main">
-          Skip to collection
+          Skip to content
         </a>
         <Outlet />
         <Scripts />

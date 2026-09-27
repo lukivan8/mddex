@@ -1,8 +1,9 @@
+import { AppFooter } from "../../components/AppFooter";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "@tanstack/react-db";
 import { Button, Chip, Toast } from "@heroui/react";
 import { Check, SearchX, TriangleAlert } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { AppHeader } from "../../components/AppHeader";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
 import { loadCatalog } from "../catalog/catalog.loader";
 import { getCategories, getTypes } from "../catalog/catalog.helpers";
@@ -98,24 +99,13 @@ export function CollectionPage({
   }, [attempt]);
   return (
     <>
-      <header className="app-header">
-        <div className="shell header-inner">
-          <Link to="/collection" className="brand" aria-label="MDDEX collection">
-            <img src="/mddex-logo.png" alt="" />
-            <span>MDDEX</span>
-          </Link>
-          <nav aria-label="Main navigation">
-            <Link to="/collection" className="nav-link" aria-current="page">
-              Collection
-            </Link>
-          </nav>
-          <SpoilerControl
-            showAllItems={showAllItems}
-            onChange={changeShowAllItems}
-            disabled={!preferences}
-          />
-        </div>
-      </header>
+      <AppHeader active="collection">
+        <SpoilerControl
+          showAllItems={showAllItems}
+          onChange={changeShowAllItems}
+          disabled={!preferences}
+        />
+      </AppHeader>
       <main id="main" className="shell">
         <>
           {error ? (
@@ -150,12 +140,7 @@ export function CollectionPage({
         </>
       </main>
       <Toast.Provider placement="bottom end" />
-      <footer className="shell footer">
-        <span>
-          <img src="/mddex-logo.png" alt="" /> YOUR NEXT DISCOVERY AWAITS.
-        </span>
-        <span>Unofficial companion · Minecraft Dungeons 2</span>
-      </footer>
+      <AppFooter />
     </>
   );
 }

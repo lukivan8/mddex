@@ -703,3 +703,450 @@ h1 {
     min-height: 44px;
   }
 }
+/* Local loadout workspace uses the existing surfaces and HeroUI controls. */
+.header-inner nav {
+  display: flex;
+  gap: 24px;
+}
+.nav-link {
+  border-bottom-color: transparent;
+  color: var(--muted);
+}
+.nav-link[aria-current="page"] {
+  border-bottom-color: var(--accent);
+  color: var(--foreground);
+}
+.build-page {
+  padding-block: 28px 40px;
+}
+.build-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 60fr) minmax(0, 40fr);
+  gap: 36px;
+  align-items: start;
+}
+.loadout-pane {
+  position: sticky;
+  top: 20px;
+  min-width: 0;
+}
+.build-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.build-heading > div {
+  flex: 1;
+  min-width: 0;
+}
+.build-name {
+  width: 100%;
+  font-size: 22px;
+  font-weight: 500;
+  background: transparent;
+  border-color: transparent;
+  padding-inline: 0;
+}
+.build-name:hover,
+.build-name:focus {
+  border-color: var(--border);
+}
+.build-summary {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 10px 0 6px;
+}
+.board-section-title {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 14px 0 8px;
+}
+.weapon-slots,
+.armor-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.trinket-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.gear-slot {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: border-color 140ms;
+}
+.gear-slot.active,
+.enchantment-slot.active,
+.picker-result.active {
+  border-color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 5%, var(--surface));
+}
+.gear-select {
+  width: 100%;
+  height: auto;
+  min-height: 72px;
+  padding: 12px 24px 12px 10px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  text-align: left;
+  white-space: normal;
+}
+.gear-art {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  flex-shrink: 0;
+  height: 48px;
+  color: var(--muted);
+}
+.gear-art img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.gear-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.gear-copy .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+.gear-name {
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.gear-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--muted);
+  min-width: 26px;
+  width: 26px;
+  height: 30px;
+}
+.enchantment-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+.enchantment-slot {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.enchantment-slot img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.enchantment-caption {
+  display: none;
+}
+.trinket-slots .gear-select {
+  flex-direction: column;
+  padding: 10px 16px;
+  gap: 4px;
+  min-height: 90px;
+  text-align: center;
+}
+.trinket-slots .gear-art,
+.trinket-slots .gear-art img {
+  height: 36px;
+  width: 36px;
+}
+.trinket-slots .gear-copy {
+  gap: 3px;
+}
+.picker-pane {
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 36px;
+}
+.picker-title {
+  font-size: 23px;
+  letter-spacing: -1px;
+  margin: 10px 0 22px;
+}
+.catalog-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.catalog-picker > .toggle-button-group {
+  align-self: flex-start;
+}
+.picker-types {
+  padding-bottom: 4px;
+}
+.picker-types .toggle-button-group {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.picker-types .toggle-button {
+  font-size: 12px;
+}
+.picker-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.picker-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.picker-result {
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+  gap: 12px;
+}
+.picker-art {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.picker-art img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.picker-result-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+.picker-result strong {
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.picker-result .muted {
+  font-size: 12px;
+}
+.picker-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 16px;
+}
+.picker-empty {
+  min-height: 200px;
+  padding: 24px 12px;
+}
+.picker-empty h3 {
+  font-size: 16px;
+}
+.saved-loadouts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.loadout-option {
+  display: flex;
+  width: 100%;
+  height: auto;
+  padding: 16px;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  text-align: left;
+  white-space: normal;
+}
+.loadout-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.loadout-option strong {
+  overflow-wrap: anywhere;
+}
+.loadout-option small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.build-loading {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+}
+@media (max-width: 1100px) {
+  .build-workspace {
+    gap: 24px;
+  }
+  .picker-pane {
+    padding-left: 24px;
+  }
+  .picker-results {
+    grid-template-columns: 1fr;
+  }
+  .gear-select {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+@media (max-width: 900px) {
+  .build-workspace {
+    display: block;
+  }
+  .loadout-pane {
+    position: static;
+  }
+  .gear-select {
+    flex-direction: row;
+    align-items: center;
+  }
+  .build-picker-sheet {
+    width: 100%;
+    max-width: none;
+    height: 94dvh;
+    max-height: 94dvh;
+    margin: 0;
+  }
+  .build-picker-sheet .modal__dialog {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .build-picker-sheet .modal__body {
+    overflow-y: auto;
+    flex: 1;
+  }
+  .picker-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .enchantment-slot {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+  .gear-clear {
+    width: 36px;
+    height: 36px;
+  }
+}
+@media (max-width: 520px) {
+  .header-inner nav {
+    gap: 14px;
+  }
+  .brand {
+    font-size: 17px;
+  }
+  .brand img {
+    width: 26px;
+    height: 26px;
+  }
+  .build-name {
+    font-size: 18px;
+  }
+  .gear-select {
+    padding: 10px 22px 10px 8px;
+    gap: 6px;
+  }
+  .gear-art,
+  .gear-art img {
+    width: 36px;
+    height: 40px;
+  }
+  .gear-name {
+    font-size: 14px;
+  }
+  .enchantment-strip {
+    padding-inline: 6px;
+    gap: 4px;
+  }
+  .picker-results {
+    grid-template-columns: 1fr;
+  }
+}
+
+.build-view-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+.build-workspace-full {
+  grid-template-columns: minmax(0, 1fr);
+}
+.build-workspace-full .loadout-pane {
+  position: static;
+}
+.build-page .saving-status,
+.build-heading .eyebrow,
+.picker-pane > .eyebrow {
+  font-size: 12px;
+}
+.catalog-picker > .toggle-button-group {
+  flex-wrap: wrap;
+}
+
+.loadout-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.loadout-entry .loadout-option {
+  flex: 1;
+  min-width: 0;
+}
+
+.footer {
+  flex-wrap: wrap;
+}
+.coffee-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #20282b;
+  color: var(--foreground);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition: opacity 150ms ease;
+}
+.coffee-button:hover {
+  opacity: 0.9;
+}
+.coffee-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.footer .coffee-button img {
+  width: 181px;
+  height: 50px;
+}

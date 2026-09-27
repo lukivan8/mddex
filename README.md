@@ -82,4 +82,18 @@ Artwork is warmed in the browser cache after the catalog renders, starting durin
 
 ## Scope and limitations
 
-Once the catalog is loaded, browsing and collection writes require no network. A fresh page load still needs the app and catalog to be reachable; this slice does not install a service worker or provide a fully offline launch. Artwork availability and catalog correctness depend on the published content. No builds, guides, social features, accounts, CMS, or server persistence are implemented.
+Once the catalog is loaded, browsing and collection writes require no network. A fresh page load still needs the app and catalog to be reachable; this slice does not install a service worker or provide a fully offline launch. Artwork availability and catalog correctness depend on the published content. No guides, social features, accounts, CMS, or server persistence are implemented. The local build editor is described below.
+
+## Local build editor
+
+`/build` is one loadout workspace, linked from the shared app header. Desktop uses a compact 12-slot board and contextual catalog pane; narrow screens use the same picker inside a full-height HeroUI modal sheet. A first empty loadout is created automatically when none exist. Rename inline, create another immediately, or switch/delete through Saved loadouts. Deletion asks for confirmation; deleting the active loadout switches to another, and deleting the last creates an empty replacement. Every composition change autosaves without a Save button.
+
+`features/builds` separates schema, local TanStack DB collections, mutation services, selectors, compatibility, and presentation. Each build has an ID, name, creation/update timestamps, and exactly 12 named positions: melee, ranged, head, torso, legs, feet, three artifacts, and three talismans. Equipped records reference canonical `itemSlug` values; gear stores positional nullable enchantment slugs. No catalog metadata, owned copies, rolls, or stats are persisted.
+
+Builds live in browser localStorage under `mddex.builds.v1`; active loadout and picker availability live separately under `mddex.build-preferences.v1`. This has the same origin-local, cross-tab, optimistic-write and rollback behavior as collection storage. Unreadable storage is preserved and editing is blocked. Unknown catalog references remain in their slots as clearable placeholders.
+
+`build.compatibility.ts` centralizes category/type compatibility. Owned and Discovered reuse the existing collection selectors and reactive completion records. Discovered is the default. Explicit All reveals the complete compatible catalog only within the picker; the shared Show all items control must be enabled before All is offered. Turning it off immediately restricts a saved All scope to Discovered without hiding equipped items. Equipping never discovers or collects an item, and availability changes never remove or hide existing equipped items.
+
+The current composition assumption is **three enchantment positions on each weapon/armor item**, controlled by `ENCHANTMENT_COUNT`. Any catalog enchantment may occupy any such position, including duplicates; no unverified per-item restrictions are invented. Replacing gear preserves its enchantments; clearing gear clears its enchantments. Artifacts and talismans have no enchantment positions. Enchantment positions stay visible even on empty gear cards; clicking an empty-gear position prompts equipment selection first. Icons have accessible names/tooltips.
+
+No build sharing, public build URLs, backend persistence, cross-device sync, simulation is included. Browser site-data deletion removes local loadouts.
