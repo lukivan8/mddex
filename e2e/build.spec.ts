@@ -223,6 +223,14 @@ test("removed catalog references remain saved and clearable", async ({
   await enableAll(page);
   await page.getByRole("radio", { name: "All", exact: true }).click();
   await page.getByRole("button", { name: "Equip Battle Hammer" }).click();
+  await page.route("**/latest.json", (route) =>
+    route.fulfill({
+      json: {
+        catalogVersion: "removed-hammer",
+        manifest: "releases/removed-hammer/manifest.json",
+      },
+    }),
+  );
   await page.route("**/catalog.json", (route) =>
     route.fulfill({ json: catalog.filter((i) => i.slug !== "hammer") }),
   );
@@ -337,4 +345,68 @@ test("delete loadouts with cancellation, active switching and last-loadout repla
     "Loadout 1",
   );
   await expect(page.getByText("0 / 12 equipped")).toBeVisible();
+});
+
+test("navigation reuses the loaded catalog even when content goes offline", async ({
+  page,
+}) => {
+  let requests = 0;
+  page.on("request", (request) => {
+    if (/\/(latest|catalog)\.json$/.test(request.url())) requests++;
+  });
+  await page.goto("/collection");
+  await expect(
+    page.getByRole("heading", { name: "The catalog" }),
+  ).toBeVisible();
+  await page.route("**/latest.json", (route) => route.abort());
+  await page.route("**/catalog.json", (route) => route.abort());
+  await page.getByRole("link", { name: "Build", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Loadout name" })).toHaveValue(
+    "Loadout 1",
+  );
+  await page.getByRole("link", { name: "Collection", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "The catalog" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Build", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Loadout name" })).toHaveValue(
+    "Loadout 1",
+  );
+  expect(requests).toBe(2);
+});
+
+test("reload only checks latest until the published catalog version changes", async ({
+  page,
+}) => {
+  let catalogs = 0;
+  let pointers = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/latest.json")) pointers++;
+    if (request.url().endsWith("/catalog.json")) catalogs++;
+  });
+  await page.goto("/build");
+  await expect(
+    page.getByRole("textbox", { name: "Loadout name" }),
+  ).toBeVisible();
+  expect(catalogs).toBe(1);
+  await page.reload();
+  await expect(
+    page.getByRole("textbox", { name: "Loadout name" }),
+  ).toBeVisible();
+  expect(pointers).toBe(2);
+  expect(catalogs).toBe(1);
+  await page.route("**/latest.json", (route) =>
+    route.fulfill({
+      json: {
+        catalogVersion: "next",
+        manifest: "releases/next/manifest.json",
+      },
+    }),
+  );
+  await page.reload();
+  await expect(
+    page.getByRole("textbox", { name: "Loadout name" }),
+  ).toBeVisible();
+  expect(pointers).toBe(3);
+  expect(catalogs).toBe(2);
 });

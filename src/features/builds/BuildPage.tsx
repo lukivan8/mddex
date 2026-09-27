@@ -17,7 +17,7 @@ import {
 } from "@heroui/react";
 import { Check, FolderOpen, Plus } from "lucide-react";
 import { AppHeader } from "../../components/AppHeader";
-import { loadCatalog } from "../catalog/catalog.loader";
+import { loadSessionCatalog } from "../catalog/catalog.session";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
 import type { CatalogItem } from "../catalog/catalog.types";
 import {
@@ -50,13 +50,15 @@ function subscribeMobile(callback: () => void) {
   media.addEventListener("change", callback);
   return () => media.removeEventListener("change", callback);
 }
+type BuildReady = {
+  catalog: CatalogItem[];
+  db: BuildCollections;
+  collection: CompletionCollection;
+  spoilers: PreferencesCollection;
+};
+let browserReady: BuildReady | undefined;
 export function BuildPage() {
-  const [ready, setReady] = useState<{
-    catalog: CatalogItem[];
-    db: BuildCollections;
-    collection: CompletionCollection;
-    spoilers: PreferencesCollection;
-  }>();
+  const [ready, setReady] = useState<BuildReady | undefined>(() => browserReady);
   const { data: spoilerData } = useLiveQuery({
     query: (q) => (ready ? q.from({ preferences: ready.spoilers }) : undefined),
   });
@@ -78,14 +80,14 @@ export function BuildPage() {
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let active = true;
-    const controller = new AbortController();
+    if (browserReady) return;
     void (async () => {
       try {
         const db = getBuildCollections();
         const collection = getCompletionCollection();
         const spoilers = getPreferencesCollection();
         const [catalog] = await Promise.all([
-          loadCatalog(undefined, controller.signal),
+          loadSessionCatalog(),
           db.builds.preload(),
           db.preferences.preload(),
           collection.preload(),
@@ -98,7 +100,8 @@ export function BuildPage() {
           await setWorkspace(db, { activeId: build.id }).isPersisted.promise;
         }
         if (active) {
-          setReady({ catalog, db, collection, spoilers });
+          browserReady = { catalog, db, collection, spoilers };
+          setReady(browserReady);
           setError("");
         }
       } catch (cause) {
@@ -110,7 +113,6 @@ export function BuildPage() {
     })();
     return () => {
       active = false;
-      controller.abort();
     };
   }, [attempt]);
   useEffect(

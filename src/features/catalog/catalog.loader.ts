@@ -1,3 +1,4 @@
+import type { CatalogCache } from "./catalog.db";
 import { catalogSchema, latestReleaseSchema } from "./catalog.schema";
 import type { CatalogItem } from "./catalog.types";
 const defaultBase = "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/";
@@ -20,6 +21,7 @@ export function resolveImage(
 export async function loadCatalog(
   source = getContentSource(),
   signal?: AbortSignal,
+  cache?: CatalogCache,
 ): Promise<CatalogItem[]> {
   const timeout = AbortSignal.timeout(15_000);
   const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
@@ -39,6 +41,14 @@ export async function loadCatalog(
     throw new Error("The published manifest URL is invalid.");
   // The manifest path is authoritative; never infer a directory from the version string.
   const releaseUrl = new URL(".", manifestUrl);
+  // Both the publisher version and resolved release location must match.
+  const cached = await cache?.read(source.latestUrl).catch(() => undefined);
+  if (
+    cached?.version === latest.data.catalogVersion &&
+    cached.releaseUrl === releaseUrl.href
+  )
+    return cached.items;
+
   const response = await fetch(new URL("catalog.json", releaseUrl).href, {
     signal: requestSignal,
   });
@@ -47,8 +57,18 @@ export async function loadCatalog(
   const parsed = catalogSchema.safeParse(await response.json());
   if (!parsed.success)
     throw new Error("The published catalog has an unexpected format.");
-  return parsed.data.map((item) => ({
+  const items = parsed.data.map((item) => ({
     ...item,
     image: resolveImage(item.image, releaseUrl.href),
   }));
+  // Cache failures must not prevent using successfully fetched content.
+  await cache
+    ?.write({
+      source: source.latestUrl,
+      version: latest.data.catalogVersion,
+      releaseUrl: releaseUrl.href,
+      items,
+    })
+    .catch(() => undefined);
+  return items;
 }

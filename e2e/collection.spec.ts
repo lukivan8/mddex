@@ -150,6 +150,14 @@ test("catalog failure and retry preserve previously saved ownership", async ({
   const before = await page.evaluate(() =>
     localStorage.getItem("mddex.collection.v2"),
   );
+  await page.route("**/latest.json", (route) =>
+    route.fulfill({
+      json: {
+        catalogVersion: "new-release",
+        manifest: "releases/new-release/manifest.json",
+      },
+    }),
+  );
   await page.route("**/catalog.json", (route) =>
     route.fulfill({ status: 503 }),
   );

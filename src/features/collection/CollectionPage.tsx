@@ -5,7 +5,7 @@ import { Button, Chip, Toast } from "@heroui/react";
 import { Check, SearchX, TriangleAlert } from "lucide-react";
 import { AppHeader } from "../../components/AppHeader";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
-import { loadCatalog } from "../catalog/catalog.loader";
+import { loadSessionCatalog } from "../catalog/catalog.session";
 import { getCategories, getTypes } from "../catalog/catalog.helpers";
 import type { CatalogItem } from "../catalog/catalog.types";
 import {
@@ -35,6 +35,13 @@ import { CategoryProgress } from "./components/CategoryProgress";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { CollectionSkeleton } from "./components/CollectionSkeleton";
 import { ItemList } from "./components/ItemList";
+let browserReady:
+  | {
+      catalog: CatalogItem[];
+      collection: CompletionCollection;
+      preferences: PreferencesCollection;
+    }
+  | undefined;
 export function CollectionPage({
   filters,
   onChange,
@@ -42,12 +49,18 @@ export function CollectionPage({
   filters: CollectionFilters;
   onChange: (patch: CollectionFilters) => void;
 }) {
-  const [catalog, setCatalog] = useState<CatalogItem[]>();
+  const [catalog, setCatalog] = useState<CatalogItem[] | undefined>(
+    () => browserReady?.catalog,
+  );
   useEffect(() => {
     if (catalog) return preloadCatalogArtwork(catalog);
   }, [catalog]);
-  const [collection, setCollection] = useState<CompletionCollection>();
-  const [preferences, setPreferences] = useState<PreferencesCollection>();
+  const [collection, setCollection] = useState<CompletionCollection | undefined>(
+    () => browserReady?.collection,
+  );
+  const [preferences, setPreferences] = useState<PreferencesCollection | undefined>(
+    () => browserReady?.preferences,
+  );
   const { data: preferenceData } = useLiveQuery({
     query: (q) => (preferences ? q.from({ preferences }) : undefined),
   });
@@ -68,15 +81,16 @@ export function CollectionPage({
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    const controller = new AbortController();
+    if (browserReady) return;
     let active = true;
     async function initialize() {
       try {
         const db = getCompletionCollection();
         const prefs = getPreferencesCollection();
         await Promise.all([db.preload(), prefs.preload()]);
-        const items = await loadCatalog(undefined, controller.signal);
+        const items = await loadSessionCatalog();
         if (active) {
+          browserReady = { catalog: items, collection: db, preferences: prefs };
           setCollection(db);
           setPreferences(prefs);
           setCatalog(items);
@@ -94,7 +108,6 @@ export function CollectionPage({
     void initialize();
     return () => {
       active = false;
-      controller.abort();
     };
   }, [attempt]);
   return (
