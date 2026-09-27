@@ -1,7 +1,7 @@
 {
   "name": "mddex",
   "version": "1.0.0",
-  "description": "",
+  "description": "Local-first Minecraft Dungeons 2 completion tracker",
   "main": "index.js",
   "scripts": {
     "dev": "vite dev",
@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm run lint && npm test",
+    "ci:build": "npm run check && npm run build",
+    "deploy": "npm run ci:build && wrangler deploy"
   },
   "keywords": [],
   "author": "",

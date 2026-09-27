@@ -25,7 +25,13 @@ npm run preview
 
 Browser tests launch an isolated dev server on port 3100 and intercept catalog requests with a small test fixture; they do not repeatedly fetch the rate-limited R2 development origin. The real 64-entry catalog was also visually verified in desktop and mobile browsers.
 
-`npm run build` produces `dist/client` and `dist/server` with a generated Workers configuration. `npm run preview` serves the production output in the Cloudflare runtime locally. To deploy after configuring your own Cloudflare account, build and run `npx wrangler deploy`. This repository has not been deployed.
+`npm run build` produces `dist/client` and `dist/server` with a generated Workers configuration. `npm run preview` serves the production output in the Cloudflare runtime locally. Production runs at **https://mddex.net** on the `mddex` Cloudflare Worker. For a manual deployment with your authorized Cloudflare account, run `npm run deploy`.
+
+## Release and deployment
+
+The private source repository is `lukivan8/mddex`; `main` is the production branch. GitHub Actions runs type checking, linting, unit tests, Chromium browser tests, and the production build on pushes and pull requests. To enable automatic deployments, connect this repository to the `mddex` Worker using Cloudflare Workers Builds with build command `npm run ci:build` and deploy command `npx wrangler deploy`. GitHub app authorization is currently awaiting account passkey confirmation. Once connected, Cloudflare manages the build credential within its Git integration; no application runtime secrets or GitHub deployment secrets are needed.
+
+`wrangler.jsonc` declares the custom domain and runtime configuration. Catalog configuration is a public build-time setting; collection data never reaches the Worker. Local development and production have separate browser storage because they use different origins.
 
 ## Content configuration
 
