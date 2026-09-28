@@ -13,7 +13,6 @@ export function CollectionProgress({ progress }: { progress: Progress }) {
         <h1>
           Collection<span className="accent">.</span>
         </h1>
-        <p className="intro">Every find, accounted for.</p>
       </div>
       <div className="overall-progress">
         <div className="progress-top">
@@ -45,11 +44,6 @@ export function CollectionProgress({ progress }: { progress: Progress }) {
             <ProgressBar.Fill />
           </ProgressBar.Track>
         </ProgressBar>
-        <p className="progress-caption">
-          {complete
-            ? "Every item. A collection worth keeping."
-            : `${progress.total - progress.owned} more discoveries to make`}
-        </p>
       </div>
     </section>
   );

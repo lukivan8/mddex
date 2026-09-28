@@ -2,6 +2,7 @@ import type { CatalogItem } from "../catalog/catalog.types";
 import { categoryLabel } from "../catalog/catalog.helpers";
 import type { CollectionFilters, CompletionRecord } from "./collection.types";
 import { normalizeDiscoveryName } from "./collection.discovery";
+import { isDiscovered } from "./collection.defaults";
 export type CatalogItemView = {
   slug: string;
   category: string;
@@ -11,15 +12,13 @@ export type CatalogItemView = {
   discovered: boolean;
   hidden: boolean;
 };
-export const isDiscovered = (entry?: CompletionRecord) =>
-  entry?.discovered ?? false;
 export const isCollected = (entry?: CompletionRecord) => entry?.owned ?? false;
 export function getCatalogItemView(
   item: CatalogItem,
   entry: CompletionRecord | undefined,
   showAllItems: boolean,
 ): CatalogItemView {
-  const discovered = isDiscovered(entry);
+  const discovered = isDiscovered(item.slug, entry);
   const hidden = !showAllItems && !discovered;
   // Deliberately enumerate fields: never spread canonical data into presentation.
   return {

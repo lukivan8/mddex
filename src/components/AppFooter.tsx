@@ -1,10 +1,7 @@
 export function AppFooter() {
   return (
     <footer className="shell footer">
-      <span>
-        <img src="/mddex-logo.png" alt="" /> YOUR NEXT DISCOVERY AWAITS.
-      </span>
-      <span>Unofficial companion · Minecraft Dungeons 2</span>
+      <img className="footer-logo" src="/mddex-logo.png" alt="MDDEX" />
       <a
         className="coffee-button"
         href="https://buymeacoffee.com/lukivan8"

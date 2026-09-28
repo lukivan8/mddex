@@ -1,9 +1,7 @@
 import type { CatalogItem } from "../catalog/catalog.types";
 import type { CompletionRecord } from "../collection/collection.types";
-import {
-  isDiscovered,
-  isCollected,
-} from "../collection/collection.presentation";
+import { isDiscovered } from "../collection/collection.defaults";
+import { isCollected } from "../collection/collection.presentation";
 import { isCompatible } from "./build.compatibility";
 import {
   BUILD_SLOTS,
@@ -33,7 +31,8 @@ export function pickerItems(
         return false;
       const record = records.get(item.slug);
       if (availability === "owned" && !isCollected(record)) return false;
-      if (availability !== "all" && !isDiscovered(record)) return false;
+      if (availability !== "all" && !isDiscovered(item.slug, record))
+        return false;
       const text =
         target.kind === "enchantment"
           ? item.variation.toLowerCase()

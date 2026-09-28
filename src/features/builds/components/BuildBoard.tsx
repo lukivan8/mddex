@@ -22,7 +22,7 @@ function GearSlotCard({
   const item = equipped ? catalog.get(equipped.itemSlug) : undefined;
   const name =
     item?.variation ?? (equipped ? "Unavailable item" : "Choose item");
-  const active = target.slot === slot && target.kind === "item";
+  const active = target?.slot === slot && target.kind === "item";
   return (
     <div className={`gear-slot ${active ? "active" : ""}`}>
       <Button
@@ -64,7 +64,7 @@ function GearSlotCard({
               enchantment?.variation ??
               (slug ? "Unavailable enchantment" : "Empty enchantment");
             const selected =
-              target.kind === "enchantment" &&
+              target?.kind === "enchantment" &&
               target.slot === slot &&
               target.index === index;
             return (
@@ -105,7 +105,7 @@ function GearSlotCard({
 type BoardProps = {
   build: Build;
   catalog: ReadonlyMap<string, CatalogItem>;
-  target: BuildTarget;
+  target?: BuildTarget;
   onTarget: (target: BuildTarget) => void;
   onClear: (target: BuildTarget) => void;
 };

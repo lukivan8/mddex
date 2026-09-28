@@ -1,5 +1,6 @@
 import type { CatalogItem } from "../catalog/catalog.types";
 import type { CompletionCollection } from "./collection.db";
+import { isDiscovered } from "./collection.defaults";
 export function normalizeDiscoveryName(value: string) {
   return value
     .normalize("NFKC")
@@ -26,7 +27,7 @@ export function tryDiscoverByName(
   if (matches?.length !== 1) return;
   const item = matches[0];
   const existing = collection.get(item.slug);
-  if (existing?.discovered) return;
+  if (isDiscovered(item.slug, existing)) return;
   const transaction = existing
     ? collection.update(item.slug, (draft) => {
         draft.discovered = true;

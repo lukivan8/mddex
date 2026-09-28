@@ -115,10 +115,6 @@ h1 {
 .percentage {
   color: var(--accent);
 }
-.intro {
-  color: var(--muted);
-  font-size: 12px;
-}
 .overall-progress {
   width: 390px;
 }
@@ -146,11 +142,6 @@ h1 {
 .percentage small {
   font-size: 16px;
   margin-left: 3px;
-}
-.progress-caption {
-  color: var(--muted);
-  font-size: 10px;
-  margin-top: 10px;
 }
 .muted {
   color: var(--muted);
@@ -206,18 +197,8 @@ h1 {
   margin: 40px 0 18px;
 }
 .catalog-heading h2 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-size: 16px;
   font-weight: 500;
-}
-.saving-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10px;
-  color: var(--muted);
 }
 .filter-row {
   display: flex;
@@ -363,13 +344,8 @@ h1 {
   opacity: 0;
   transform: scale(0.97);
 }
-.catalog-footnote {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 10px;
-  color: var(--muted);
-  margin: 24px 0 52px;
+.collection-main {
+  padding-bottom: 88px;
 }
 .footer {
   display: flex;
@@ -381,15 +357,10 @@ h1 {
   font-size: 9px;
   color: var(--muted);
 }
-.footer > span:first-child {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  letter-spacing: 1px;
-}
-.footer img {
+.footer-logo {
   width: 24px;
   height: 24px;
+  object-fit: contain;
 }
 .empty-state,
 .page-message {
@@ -503,15 +474,9 @@ h1 {
   .percentage {
     font-size: 22px;
   }
-  .progress-caption {
-    font-size: 9px;
-  }
   .eyebrow {
     font-size: 8px;
     letter-spacing: 1px;
-  }
-  .intro {
-    font-size: 10px;
   }
   h1 {
     letter-spacing: -1.5px;
@@ -525,9 +490,6 @@ h1 {
   }
   .catalog-heading {
     margin-top: 30px;
-  }
-  .saving-status {
-    font-size: 9px;
   }
   .filter-row {
     flex-wrap: wrap;
@@ -557,12 +519,6 @@ h1 {
   }
   .item-bottom {
     font-size: 8px;
-  }
-  .catalog-footnote,
-  .footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
   }
 }
 @media (max-width: 520px) {
@@ -599,12 +555,6 @@ h1 {
   }
   .collection-heading {
     gap: 16px;
-  }
-  .progress-caption {
-    max-width: 150px;
-  }
-  .intro {
-    max-width: 145px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -750,13 +700,6 @@ h1 {
 .build-name:hover,
 .build-name:focus {
   border-color: var(--border);
-}
-.build-summary {
-  display: flex;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 12px;
-  padding: 10px 0 6px;
 }
 .board-section-title {
   font-size: 12px;
@@ -960,12 +903,6 @@ h1 {
 .picker-result .muted {
   font-size: 12px;
 }
-.picker-note {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-  margin-top: 16px;
-}
 .picker-empty {
   min-height: 200px;
   padding: 24px 12px;
@@ -1108,7 +1045,6 @@ h1 {
 .build-workspace-full .loadout-pane {
   position: static;
 }
-.build-page .saving-status,
 .build-heading .eyebrow,
 .picker-pane > .eyebrow {
   font-size: 12px;

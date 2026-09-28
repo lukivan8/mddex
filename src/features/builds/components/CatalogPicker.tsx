@@ -115,7 +115,7 @@ export function CatalogPicker({
         }
       >
         <ToggleButton id="owned">Owned</ToggleButton>
-        <ToggleButton id="discovered">Discovered</ToggleButton>
+        {!allowAll && <ToggleButton id="discovered">Discovered</ToggleButton>}
         {allowAll && <ToggleButton id="all">All</ToggleButton>}
       </ToggleButtonGroup>
       {types.length > 1 && (
@@ -167,7 +167,9 @@ export function CatalogPicker({
           <p>
             {query || type
               ? "Try a different search or type."
-              : `No compatible items in ${availability}. Discover items in Collection${allowAll ? ", or choose All to browse the full catalog." : ", or enable Show all items in the header."}`}
+              : availability === "all"
+                ? "No compatible items in the catalog."
+                : `No compatible items in ${availability}. Discover items in Collection, or enable Show all items in the header.`}
           </p>
           {(query || type) && (
             <Button
@@ -182,11 +184,6 @@ export function CatalogPicker({
           )}
         </div>
       )}
-      <p className="picker-note">
-        {availability === "all"
-          ? "All catalog items are visible here. Your collection is unchanged."
-          : "Only your available items are shown. Equipping never changes your collection."}
-      </p>
     </div>
   );
 }

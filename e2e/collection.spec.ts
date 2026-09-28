@@ -55,6 +55,47 @@ async function showCatalog(page: Page) {
 test.beforeEach(async ({ page }) => {
   await mockCatalog(page);
 });
+test("Sword and Bow start discovered, uncollected, and available to build", async ({
+  page,
+}) => {
+  const starterItems = [
+    {
+      slug: "melee_weapon-sword",
+      category: "melee_weapon",
+      type: "swords",
+      variation: "Sword",
+      image: null,
+    },
+    {
+      slug: "ranged_weapon-bow",
+      category: "ranged_weapon",
+      type: "bows",
+      variation: "Bow",
+      image: null,
+    },
+  ];
+  await page.unroute("**/catalog.json");
+  await page.route("**/catalog.json", (route) =>
+    route.fulfill({ json: [...catalog, ...starterItems] }),
+  );
+  await page.goto("/collection");
+  for (const item of starterItems) {
+    await expect(
+      page.getByRole("checkbox", { name: item.variation, exact: true }),
+    ).not.toBeChecked();
+  }
+  await expect(
+    page.getByRole("progressbar", { name: "Overall collection", exact: true }),
+  ).toHaveAttribute("aria-valuenow", "0");
+  await page.getByRole("link", { name: "Build", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Equip Sword", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Choose Ranged weapon" }).click();
+  await expect(
+    page.getByRole("button", { name: "Equip Bow", exact: true }),
+  ).toBeVisible();
+});
 test("instant ownership, URL search, reload, cross-tab sync and filtered removal", async ({
   page,
   context,

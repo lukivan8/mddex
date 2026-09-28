@@ -1,11 +1,12 @@
 import type { CompletionCollection } from "./collection.db";
+import { isDiscovered } from "./collection.defaults";
 export function toggleOwnership(
   collection: CompletionCollection,
   itemSlug: string,
   allowUndiscovered = false,
 ) {
   const existing = collection.get(itemSlug);
-  if (!existing?.discovered && !allowUndiscovered) return;
+  if (!isDiscovered(itemSlug, existing) && !allowUndiscovered) return;
   return existing
     ? collection.update(itemSlug, (draft) => {
         draft.owned = !draft.owned;

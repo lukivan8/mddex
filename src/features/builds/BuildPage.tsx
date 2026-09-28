@@ -15,7 +15,7 @@ import {
   TextField,
   Toast,
 } from "@heroui/react";
-import { Check, FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus } from "lucide-react";
 import { AppHeader } from "../../components/AppHeader";
 import { loadSessionCatalog } from "../catalog/catalog.session";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
@@ -32,7 +32,7 @@ import {
   renameBuild,
   setWorkspace,
 } from "./build.service";
-import { activeBuild, filledSlots } from "./build.selectors";
+import { activeBuild } from "./build.selectors";
 import { slotRules } from "./build.compatibility";
 import type { BuildTarget } from "./build.types";
 import { BuildBoard } from "./components/BuildBoard";
@@ -177,8 +177,11 @@ function BuildWorkspace({
   );
   const build = activeBuild(builds, preferences[0]?.activeId);
   const savedAvailability = preferences[0]?.availability ?? "discovered";
-  const availability =
-    !showAllItems && savedAvailability === "all"
+  const availability = showAllItems
+    ? savedAvailability === "discovered"
+      ? "all"
+      : savedAvailability
+    : savedAvailability === "all"
       ? "discovered"
       : savedAvailability;
   const records = useMemo(
@@ -333,7 +336,9 @@ function BuildWorkspace({
         <section className="loadout-pane" aria-label="Active loadout">
           <div className="build-heading">
             <div>
-              <span className="eyebrow">LOADOUT WORKSPACE</span>
+              <span className="eyebrow">
+                Build<span className="accent">.</span>
+              </span>
               <TextField
                 aria-label="Loadout name"
                 value={build.name}
@@ -371,24 +376,17 @@ function BuildWorkspace({
               <Plus size={18} />
             </Button>
           </div>
-          <div className="build-summary">
-            <span>{filledSlots(build)} / 12 equipped</span>
-            <span className="saving-status">
-              <Check size={12} />
-              {saveError ? "Save needs attention" : "Saved locally"}
-            </span>
-          </div>
           <BuildBoard
             build={build}
             catalog={catalogMap}
-            target={effectiveTarget}
+            target={
+              (mobile ? pickerOpen : catalogVisible)
+                ? effectiveTarget
+                : undefined
+            }
             onTarget={chooseTarget}
             onClear={clear}
           />
-          <p className="picker-note">
-            Select a slot to choose equipment. Enchantments stay visible on your
-            gear.
-          </p>
         </section>
         {!mobile && catalogVisible && (
           <section

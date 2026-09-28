@@ -51,6 +51,45 @@ function storage() {
   };
 }
 describe("spoiler-free discovery", () => {
+  it("starts Sword and Bow discovered but uncollected", async () => {
+    const db = createCompletionCollection(storage());
+    await db.preload();
+    const defaults: CatalogItem[] = [
+      {
+        slug: "melee_weapon-sword",
+        category: "melee_weapon",
+        type: "swords",
+        variation: "Sword",
+        image: null,
+      },
+      {
+        slug: "ranged_weapon-bow",
+        category: "ranged_weapon",
+        type: "bows",
+        variation: "Bow",
+        image: null,
+      },
+    ];
+    for (const item of defaults) {
+      expect(getCatalogItemView(item, undefined, false)).toMatchObject({
+        displayName: item.variation,
+        discovered: true,
+        hidden: false,
+      });
+      expect(db.get(item.slug)).toBeUndefined();
+      expect(
+        tryDiscoverByName(db, buildDiscoveryIndex(defaults), item.variation),
+      ).toBeUndefined();
+    }
+    await toggleOwnership(db, defaults[0].slug)!.isPersisted.promise;
+    expect(db.get(defaults[0].slug)).toMatchObject({
+      owned: true,
+      discovered: true,
+    });
+    await toggleOwnership(db, defaults[0].slug)!.isPersisted.promise;
+    expect(db.get(defaults[0].slug)?.owned).toBe(false);
+    await db.cleanup();
+  });
   it("defaults to protection and passes only safe presentation data", async () => {
     const prefs = createPreferencesCollection(storage());
     await prefs.preload();

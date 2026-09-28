@@ -1,8 +1,8 @@
 import { AppFooter } from "../../components/AppFooter";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "@tanstack/react-db";
-import { Button, Chip, Toast } from "@heroui/react";
-import { Check, SearchX, TriangleAlert } from "lucide-react";
+import { Button, Toast } from "@heroui/react";
+import { SearchX, TriangleAlert } from "lucide-react";
 import { AppHeader } from "../../components/AppHeader";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
 import { loadSessionCatalog } from "../catalog/catalog.session";
@@ -25,6 +25,7 @@ import {
 import { SpoilerControl } from "./components/SpoilerControl";
 import { DiscoveryDialog } from "./components/DiscoveryDialog";
 import { toggleOwnership } from "./collection.service";
+import { isDiscovered } from "./collection.defaults";
 import {
   getCategoryProgress,
   getOverallProgress,
@@ -119,7 +120,7 @@ export function CollectionPage({
           disabled={!preferences}
         />
       </AppHeader>
-      <main id="main" className="shell">
+      <main id="main" className="shell collection-main">
         <>
           {error ? (
             <div role="alert" className="page-message">
@@ -249,7 +250,7 @@ function CollectionContent({
   }, []);
   const toggle = useCallback(
     (slug: string) => {
-      if (!showAllItems && !collection.get(slug)?.discovered) {
+      if (!showAllItems && !isDiscovered(slug, collection.get(slug))) {
         if (!explained.current) {
           explained.current = true;
           setExplainDiscovery(true);
@@ -317,16 +318,7 @@ function CollectionContent({
         onSelect={(category) => onChange({ category, type: "" })}
       />
       <div className="catalog-heading">
-        <h2>
-          The catalog{" "}
-          <Chip size="sm" variant="soft">
-            {catalog.length}
-          </Chip>
-        </h2>
-        <span className="saving-status">
-          <Check size={13} />{" "}
-          {saveError ? "Save needs attention" : "Saved on this device"}
-        </span>
+        <h2>Catalog · {catalog.length}</h2>
       </div>
       <CollectionToolbar
         filters={filters}
@@ -379,12 +371,6 @@ function CollectionContent({
           </Button>
         </div>
       )}
-      <div className="catalog-footnote">
-        <span>
-          Click a revealed item to mark it collected. Click again to undo.
-        </span>
-        <span>Progress stays in this browser. No account needed.</span>
-      </div>
     </>
   );
 }

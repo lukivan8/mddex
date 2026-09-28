@@ -72,7 +72,9 @@ test("loadout assembly, inline enchantments, scope isolation, switching and relo
   await enableAll(page);
   await page.getByRole("radio", { name: "All", exact: true }).click();
   await page.getByRole("button", { name: "Equip Battle Hammer" }).click();
-  await expect(page.getByText("1 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", {
       name: "Melee weapon enchantment 2: Empty enchantment",
@@ -96,7 +98,10 @@ test("loadout assembly, inline enchantments, scope isolation, switching and relo
       name: "Melee weapon enchantment 2: Fire Aspect",
     }),
   ).toBeVisible();
-  await page.getByRole("radio", { name: "Discovered", exact: true }).click();
+  await expect(
+    page.getByRole("radio", { name: "Discovered", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("radio", { name: "Owned", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Equip Battle Hammer" }),
   ).toHaveCount(0);
@@ -109,12 +114,16 @@ test("loadout assembly, inline enchantments, scope isolation, switching and relo
     await page.evaluate(() => localStorage.getItem("mddex.collection.v2")),
   ).toBeNull();
   await page.getByRole("button", { name: "New loadout", exact: true }).click();
-  await expect(page.getByText("0 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toHaveCount(0);
   await page
     .getByRole("button", { name: "Saved loadouts", exact: true })
     .click();
   await page.getByRole("button", { name: /^Hammer build/ }).click();
-  await expect(page.getByText("1 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Melee weapon enchantment 2: Fire Aspect" })
     .click();
@@ -127,8 +136,38 @@ test("loadout assembly, inline enchantments, scope isolation, switching and relo
   await page
     .getByRole("button", { name: "Clear Melee weapon", exact: true })
     .click();
-  await expect(page.getByText("0 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
+});
+test("hidden catalog clears slot selection and choosing a slot reopens it", async ({
+  page,
+}) => {
+  await page.goto("/build");
+  const board = page.getByLabel("Loadout equipment", { exact: true });
+  const selectedSlots = board.locator('button[aria-pressed="true"]');
+  await expect(selectedSlots).toHaveCount(1);
+  await page.getByRole("button", { name: "Hide catalog", exact: true }).click();
+  await expect(
+    page.getByRole("region", { name: "Equipment picker" }),
+  ).toHaveCount(0);
+  await expect(selectedSlots).toHaveCount(0);
+  await page.getByRole("button", { name: "New loadout", exact: true }).click();
+  await expect(selectedSlots).toHaveCount(0);
+  await page.getByRole("button", { name: "Show catalog", exact: true }).click();
+  await expect(selectedSlots).toHaveCount(1);
+  await page.getByRole("button", { name: "Hide catalog", exact: true }).click();
+  const headSlot = board.getByRole("button", {
+    name: "Choose Head armor",
+    exact: true,
+  });
+  await headSlot.click();
+  await expect(
+    page.getByRole("region", { name: "Equipment picker" }),
+  ).toBeVisible();
+  await expect(headSlot).toHaveAttribute("aria-pressed", "true");
+  await expect(selectedSlots).toHaveCount(1);
 });
 test("mobile uses the same compatible picker inside a sheet", async ({
   page,
@@ -138,6 +177,10 @@ test("mobile uses the same compatible picker inside a sheet", async ({
   await expect(page.getByRole("textbox", { name: "Loadout name" })).toHaveValue(
     "Loadout 1",
   );
+  const selectedSlots = page
+    .getByLabel("Loadout equipment", { exact: true })
+    .locator('button[aria-pressed="true"]');
+  await expect(selectedSlots).toHaveCount(0);
   await enableAll(page);
   await page
     .getByRole("button", { name: "Choose Head armor", exact: true })
@@ -150,6 +193,7 @@ test("mobile uses the same compatible picker inside a sheet", async ({
   ).toHaveCount(0);
   await dialog.getByRole("button", { name: "Equip Test Helmet" }).click();
   await expect(dialog).toHaveCount(0);
+  await expect(selectedSlots).toHaveCount(0);
   await page
     .getByRole("button", {
       name: "Head armor enchantment 1: Empty enchantment",
@@ -157,6 +201,14 @@ test("mobile uses the same compatible picker inside a sheet", async ({
     .click();
   await dialog.getByRole("button", { name: "Equip Fire Aspect" }).click();
   await expect(dialog).toHaveCount(0);
+  await expect(selectedSlots).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Choose Head armor", exact: true })
+    .click();
+  await expect(dialog).toBeVisible();
+  await dialog.locator('[data-slot="modal-close-trigger"]').click();
+  await expect(dialog).toHaveCount(0);
+  await expect(selectedSlots).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Head armor enchantment 1: Fire Aspect" }),
   ).toBeVisible();
@@ -166,7 +218,7 @@ test("mobile uses the same compatible picker inside a sheet", async ({
     ),
   ).toBe(true);
 });
-test("collection discovery is reused while collection show-all does not reveal the builder", async ({
+test("collection discovery and show-all preference carry into the builder", async ({
   page,
 }) => {
   await page.goto("/collection");
@@ -190,10 +242,23 @@ test("collection discovery is reused while collection show-all does not reveal t
   );
   await expect(
     page.getByRole("radio", { name: "Discovered", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("radio", { name: "All", exact: true }),
   ).toBeChecked();
   await expect(
     page.getByRole("button", { name: "Equip Battle Hammer" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Equip Test Sword" }),
+  ).toBeVisible();
+  await page
+    .locator("header")
+    .getByRole("button", { name: "Show all items", exact: true })
+    .click();
+  await expect(
+    page.getByRole("radio", { name: "Discovered", exact: true }),
+  ).toBeChecked();
   await expect(
     page.getByRole("button", { name: "Equip Test Sword" }),
   ).toHaveCount(0);
@@ -204,7 +269,9 @@ test("collection discovery is reused while collection show-all does not reveal t
     .getByRole("checkbox", { name: "Battle Hammer", exact: true })
     .press("Space");
   await page.getByRole("link", { name: "Build", exact: true }).click();
-  await expect(page.getByText("1 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Equip Battle Hammer" }),
   ).toHaveCount(0);
@@ -221,6 +288,9 @@ test("removed catalog references remain saved and clearable", async ({
     "Loadout 1",
   );
   await enableAll(page);
+  await expect(
+    page.getByRole("radio", { name: "Discovered", exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("radio", { name: "All", exact: true }).click();
   await page.getByRole("button", { name: "Equip Battle Hammer" }).click();
   await page.route("**/latest.json", (route) =>
@@ -238,11 +308,15 @@ test("removed catalog references remain saved and clearable", async ({
   await expect(
     page.getByText("Unavailable item", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("1 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Clear Melee weapon", exact: true })
     .click();
-  await expect(page.getByText("0 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toHaveCount(0);
 });
 test("shared spoiler switch gates All and empty gear keeps enchantment positions", async ({
   page,
@@ -344,7 +418,9 @@ test("delete loadouts with cancellation, active switching and last-loadout repla
   await expect(page.getByRole("textbox", { name: "Loadout name" })).toHaveValue(
     "Loadout 1",
   );
-  await expect(page.getByText("0 / 12 equipped")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toHaveCount(0);
 });
 
 test("navigation reuses the loaded catalog even when content goes offline", async ({
@@ -356,7 +432,7 @@ test("navigation reuses the loaded catalog even when content goes offline", asyn
   });
   await page.goto("/collection");
   await expect(
-    page.getByRole("heading", { name: "The catalog" }),
+    page.getByRole("heading", { name: /^Catalog · \d+$/ }),
   ).toBeVisible();
   await page.route("**/latest.json", (route) => route.abort());
   await page.route("**/catalog.json", (route) => route.abort());
@@ -366,7 +442,7 @@ test("navigation reuses the loaded catalog even when content goes offline", asyn
   );
   await page.getByRole("link", { name: "Collection", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "The catalog" }),
+    page.getByRole("heading", { name: /^Catalog · \d+$/ }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Build", exact: true }).click();
   await expect(page.getByRole("textbox", { name: "Loadout name" })).toHaveValue(
