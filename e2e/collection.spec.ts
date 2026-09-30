@@ -42,117 +42,48 @@ async function mockCatalog(page: Page) {
     route.fulfill({ status: 404 }),
   );
 }
-async function showCatalog(page: Page) {
-  await page
-    .locator("header")
-    .getByRole("button", { name: "Show all items", exact: true })
-    .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Show all items", exact: true })
-    .click();
-}
 test.beforeEach(async ({ page }) => {
   await mockCatalog(page);
 });
-test("Sword and Bow start discovered, uncollected, and available to build", async ({
-  page,
-}) => {
-  const starterItems = [
-    {
-      slug: "melee_weapon-sword",
-      category: "melee_weapon",
-      type: "swords",
-      variation: "Sword",
-      image: null,
-    },
-    {
-      slug: "ranged_weapon-bow",
-      category: "ranged_weapon",
-      type: "bows",
-      variation: "Bow",
-      image: null,
-    },
-  ];
-  await page.unroute("**/catalog.json");
-  await page.route("**/catalog.json", (route) =>
-    route.fulfill({ json: [...catalog, ...starterItems] }),
-  );
-  await page.goto("/collection");
-  for (const item of starterItems) {
-    await expect(
-      page.getByRole("checkbox", { name: item.variation, exact: true }),
-    ).not.toBeChecked();
-  }
-  await expect(
-    page.getByRole("progressbar", { name: "Overall collection", exact: true }),
-  ).toHaveAttribute("aria-valuenow", "0");
-  await page.getByRole("link", { name: "Build", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Equip Sword", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Choose Ranged weapon" }).click();
-  await expect(
-    page.getByRole("button", { name: "Equip Bow", exact: true }),
-  ).toBeVisible();
-});
-test("instant ownership, URL search, reload, cross-tab sync and filtered removal", async ({
-  page,
-  context,
-}) => {
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+test("Build is the main screen and brand destination", async ({ page }) => {
   await page.goto("/");
-  await showCatalog(page);
-  await expect(page).toHaveURL(/\/collection$/);
-  await expect(page.getByRole("checkbox")).toHaveCount(4);
+  await expect(page).toHaveURL(/\/build$/);
+  await expect(
+    page.getByRole("button", { name: "Equip Battle Hammer", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("radio", { name: "Owned", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("link", { name: "Catalog", exact: true }).click();
+  await page.getByRole("link", { name: "MDDEX builds", exact: true }).click();
+  await expect(page).toHaveURL(/\/build$/);
+});
+test("catalog search and filters persist in the URL without ownership controls or writes", async ({
+  page,
+}) => {
+  await page.goto("/collection?status=collected&sort=missing");
+  await expect(page.getByRole("article")).toHaveCount(4);
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(page.locator(".ownership-label")).toHaveCount(0);
   await page.keyboard.press("/");
   await expect(page.getByRole("searchbox")).toBeFocused();
   await page.getByRole("searchbox").fill("HAMmer");
-  await expect(page.getByRole("checkbox")).toHaveCount(2);
+  await expect(page.getByRole("article")).toHaveCount(2);
   await expect(page).toHaveURL(/q=HAMmer/);
-  await page
-    .locator(".item-name")
-    .filter({ hasText: /^Battle Hammer$/ })
-    .click();
-  await expect(
-    page.getByRole("progressbar", { name: "Overall collection", exact: true }),
-  ).toHaveAttribute("aria-valuenow", "1");
   await page.reload();
   await expect(
-    page.getByRole("checkbox", { name: "Battle Hammer", exact: true }),
-  ).toBeChecked();
-  const other = await context.newPage();
-  await mockCatalog(other);
-  await other.goto("/collection");
-  await expect(
-    other.getByRole("checkbox", { name: "Battle Hammer", exact: true }),
-  ).toBeChecked();
-  await other
-    .locator(".item-name")
-    .filter({ hasText: /^Battle Hammer$/ })
-    .click();
-  await expect(
-    page.getByRole("checkbox", { name: "Battle Hammer", exact: true }),
-  ).not.toBeChecked();
-  await page.getByRole("radio", { name: "Missing", exact: true }).click();
-  await page
-    .locator(".item-name")
-    .filter({ hasText: /^Battle Hammer$/ })
-    .click();
-  await expect(page.getByRole("checkbox")).toHaveCount(1);
-  await expect(
-    page.getByRole("checkbox", { name: "War Hammer", exact: true }),
+    page.getByRole("article", { name: "Battle Hammer", exact: true }),
   ).toBeVisible();
-  expect(errors).toEqual([]);
+  await expect(page.getByRole("article")).toHaveCount(2);
+  expect(
+    await page.evaluate(() => localStorage.getItem("mddex.collection.v2")),
+  ).toBeNull();
 });
-test("category and type filters combine; mobile has no overflow and images fail gracefully", async ({
-  page,
-}) => {
+
+test("mobile catalog filters and artwork fallback", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/collection");
-  await showCatalog(page);
-  await expect(page.getByRole("checkbox")).toHaveCount(4);
+  await expect(page.getByRole("article")).toHaveCount(4);
   await expect(page.locator(".art-placeholder")).toHaveCount(4);
   await page
     .getByRole("button", { name: "All categories Category", exact: true })
@@ -163,226 +94,231 @@ test("category and type filters combine; mobile has no overflow and images fail 
     .click();
   await page.getByRole("option", { name: "Head (1)", exact: true }).click();
   await page.getByRole("searchbox").fill("beekeeper");
-  await expect(page.getByRole("checkbox")).toHaveCount(1);
+  await expect(
+    page.getByRole("article", { name: "Beekeeper Helmet", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(1);
   await expect(page).toHaveURL(/category=armor/);
-  await expect(page).toHaveURL(/type=head/);
-  const item = page.getByRole("checkbox", {
-    name: "Beekeeper Helmet",
-    exact: true,
-  });
-  await item.focus();
-  await page.keyboard.press("Space");
-  await expect(item).toBeChecked();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
 });
-test("catalog failure and retry preserve previously saved ownership", async ({
-  page,
-}) => {
-  await page.goto("/collection");
-  await showCatalog(page);
-  await page
-    .locator(".item-name")
-    .filter({ hasText: /^Battle Hammer$/ })
-    .click();
-  const before = await page.evaluate(() =>
-    localStorage.getItem("mddex.collection.v2"),
-  );
-  await page.route("**/latest.json", (route) =>
-    route.fulfill({
-      json: {
-        catalogVersion: "new-release",
-        manifest: "releases/new-release/manifest.json",
-      },
-    }),
-  );
+
+test("catalog retry recovers from release failure", async ({ page }) => {
   await page.route("**/catalog.json", (route) =>
     route.fulfill({ status: 503 }),
   );
-  await page.reload();
+  await page.goto("/collection");
   await expect(
-    page.getByRole("heading", { name: "Collection unavailable" }),
+    page.getByRole("heading", { name: "Catalog unavailable" }),
   ).toBeVisible();
-  expect(
-    await page.evaluate(() => localStorage.getItem("mddex.collection.v2")),
-  ).toBe(before);
   await page.route("**/catalog.json", (route) =>
     route.fulfill({ json: catalog }),
   );
   await page.getByRole("button", { name: "Try again" }).click();
-  await expect(
-    page.getByRole("checkbox", { name: "Battle Hammer", exact: true }),
-  ).toBeChecked();
+  await expect(page.getByRole("article")).toHaveCount(4);
 });
 
-test("new collection masks names and artwork, explains discovery, and rejects partial searches", async ({
+test("legacy and damaged ownership data are ignored without migration or writes", async ({
   page,
 }) => {
-  const images: string[] = [];
-  page.on("request", (request) => {
-    if (request.url().includes("/images/")) images.push(request.url());
+  await page.addInitScript(() => {
+    localStorage.setItem("mddex.collection.v2", "broken");
+    localStorage.setItem("mddb.collection.v1", "legacy");
   });
   await page.goto("/collection");
-  await expect(page.locator(".item-name")).toHaveText([
-    "?????",
-    "?????",
-    "?????",
-    "?????",
-  ]);
-  const html = await page
-    .locator(".item-grid")
-    .evaluate((node) => node.outerHTML);
-  for (const item of catalog) {
-    expect(html).not.toContain(item.variation);
-    expect(html).not.toContain(item.slug);
-  }
-  expect(html).not.toContain("images/broken");
-  await expect.poll(() => images.length).toBe(1);
-  await expect(
-    page.getByRole("button", { name: "Show all items", exact: true }),
-  ).toHaveAttribute("aria-pressed", "false");
-  await page.locator(".item-content").first().click();
-  await expect(page.getByRole("dialog")).toContainText(
-    "Discover items as you find them",
-  );
-  await page.getByRole("button", { name: "Got it" }).click();
-  await expect(
-    page.getByRole("progressbar", { name: "Overall collection", exact: true }),
-  ).toHaveAttribute("aria-valuenow", "0");
-  await page.getByRole("searchbox").fill("battle ham");
+  await expect(page.getByRole("article")).toHaveCount(4);
   await expect(page.getByRole("checkbox")).toHaveCount(0);
-  await expect(page.locator("main")).not.toContainText("Battle Hammer");
-  await page.getByRole("searchbox").fill("hammers");
-  await expect(page.locator(".item-name")).toHaveText(["?????", "?????"]);
-  expect(images).toHaveLength(1);
-});
-
-test("exact discovery is global, persists, and never recollects a known item", async ({
-  page,
-}) => {
-  await page.goto("/collection?category=armor&type=head");
-  await expect(page.locator(".item-name")).toHaveText(["?????"]);
-  await page.getByRole("searchbox").fill("BATTLE   HAMMER");
-  await expect(
-    page.getByText("Battle Hammer discovered and collected.", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("progressbar", { name: "Overall collection", exact: true }),
-  ).toHaveAttribute("aria-valuenow", "1");
-  await expect(page).toHaveURL(/category=armor/);
-  await expect(page.getByRole("searchbox")).toHaveValue("BATTLE   HAMMER");
-  await expect(page.getByRole("checkbox")).toHaveCount(0);
-  await page.goto("/collection?q=hammer");
-  const hammer = page.getByRole("checkbox", {
-    name: "Battle Hammer",
-    exact: true,
-  });
-  await expect(hammer).toBeChecked();
-  await hammer.focus();
-  await page.keyboard.press("Space");
-  await expect(hammer).not.toBeChecked();
-  await page.getByRole("searchbox").fill("Battle Hammer");
-  await expect(hammer).not.toBeChecked();
+  await page.getByRole("searchbox").fill("hammer");
   await page.reload();
-  await expect(hammer).not.toBeChecked();
-  await page.getByRole("searchbox").fill("");
-  await page.getByRole("radio", { name: "Missing", exact: true }).click();
-  await expect(page.getByRole("checkbox")).toHaveCount(4);
-  await expect(page.locator(".item-name")).toHaveText([
-    "Battle Hammer",
-    "?????",
-    "?????",
-    "?????",
-  ]);
-  await page.getByRole("radio", { name: "Collected", exact: true }).click();
-  await expect(page.getByRole("checkbox")).toHaveCount(0);
-});
-
-test("show-all requires confirmation, persists, and never discovers by itself", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/collection");
-  const control = page.locator("header").getByRole("button", {
-    name: "Show all items",
-    exact: true,
-  });
-  await control.click();
-  await expect(page.getByRole("dialog")).toContainText("Show every item?");
-  await page.getByRole("button", { name: "Keep spoiler-free" }).click();
-  await expect(page.locator(".item-name")).toHaveText([
-    "?????",
-    "?????",
-    "?????",
-    "?????",
-  ]);
-  await showCatalog(page);
-  await expect(
-    page.getByRole("checkbox", { name: "Battle Hammer", exact: true }),
-  ).not.toBeChecked();
+  await expect(page.getByRole("article")).toHaveCount(2);
   expect(
-    await page.evaluate(() => localStorage.getItem("mddex.collection.v2")),
-  ).toBeNull();
-  await page.reload();
-  await expect(control).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.getByRole("checkbox", { name: "Battle Hammer", exact: true }),
-  ).toBeVisible();
-  await control.click();
-  await expect(page.locator(".item-name")).toHaveText([
-    "?????",
-    "?????",
-    "?????",
-    "?????",
-  ]);
-  await page.reload();
-  await expect(control).toHaveAttribute("aria-pressed", "false");
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBe(true);
+    await page.evaluate(() => [
+      localStorage.getItem("mddex.collection.v2"),
+      localStorage.getItem("mddb.collection.v1"),
+    ]),
+  ).toEqual(["broken", "legacy"]);
 });
-
-test("legacy collected items migrate visibly and remain discovered after unchecking", async ({
+test("old picker preferences and damaged collection do not restrict builds", async ({
   page,
 }) => {
-  const legacy = JSON.stringify({
-    "s:melee_weapon-battle-hammer": {
-      versionKey: "legacy-1",
-      data: { itemSlug: "melee_weapon-battle-hammer", owned: true },
-    },
-    "s:removed": {
-      versionKey: "legacy-2",
-      data: { itemSlug: "removed", owned: true },
-    },
+  await page.addInitScript(() => {
+    localStorage.setItem("mddex.collection.v2", "broken");
+    localStorage.setItem(
+      "mddex.build-preferences.v1",
+      JSON.stringify({
+        "s:workspace": {
+          versionKey: "1",
+          data: { id: "workspace", activeId: null, availability: "owned" },
+        },
+      }),
+    );
   });
-  await page.addInitScript((value) => {
-    if (!localStorage.getItem("mddb.collection.v1"))
-      localStorage.setItem("mddb.collection.v1", value);
-  }, legacy);
-  await page.goto("/collection");
-  const hammer = page.getByRole("checkbox", {
-    name: "Battle Hammer",
-    exact: true,
-  });
-  await expect(hammer).toBeChecked();
+  await page.goto("/");
   await expect(
-    page.getByRole("progressbar", { name: "Overall collection", exact: true }),
-  ).toHaveAttribute("aria-valuenow", "1");
+    page.getByRole("button", { name: "Equip Battle Hammer", exact: true }),
+  ).toBeVisible();
   await page
-    .locator(".item-name")
-    .filter({ hasText: /^Battle Hammer$/ })
+    .getByRole("button", { name: "Equip Battle Hammer", exact: true })
     .click();
-  await page.reload();
-  await expect(hammer).not.toBeChecked();
-  expect(
-    await page.evaluate(() => localStorage.getItem("mddb.collection.v1")),
-  ).toBe(legacy);
-  expect(
-    await page.evaluate(() => localStorage.getItem("mddex.collection.v2")),
-  ).toContain("removed");
+  await expect(
+    page.getByRole("button", { name: "Clear Melee weapon", exact: true }),
+  ).toBeVisible();
 });
+
+test("top category bar filters and toggles off", async ({ page }) => {
+  await page.goto("/collection");
+  const categories = page.getByRole("group", {
+    name: "Catalog categories",
+    exact: true,
+  });
+  const armor = categories.getByRole("button", { name: /Armor/ });
+  await armor.click();
+  await expect(armor).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("article")).toHaveCount(2);
+  await expect(page).toHaveURL(/category=armor/);
+  await armor.click();
+  await expect(page.getByRole("article")).toHaveCount(4);
+  await expect(page.getByRole("progressbar")).toHaveCount(0);
+});
+
+test("expanded releases show only supported categories in order and retain artwork for locations and mobs", async ({
+  page,
+}) => {
+  const categories = [
+    ["melee_weapon", "Melee Weapons"],
+    ["ranged_weapon", "Ranged Weapons"],
+    ["armor", "Armor"],
+    ["artifact", "Artifacts"],
+    ["talisman", "Talismans"],
+    ["enchantment", "Enchantments"],
+    ["gear_effect", "Gear Effects"],
+  ];
+  const entries = [
+    ...categories.map(([category]) => category).reverse(),
+    "location",
+    "mob",
+    "pet",
+    "cape",
+    "status",
+  ].map((category) => ({
+    slug: category,
+    category,
+    type: category,
+    variation: category,
+    image: `images/${category}`,
+  }));
+  await page.route("**/catalog.json", (route) =>
+    route.fulfill({ json: entries }),
+  );
+  const artwork: string[] = [];
+  await page.route("**/images/*", (route) => {
+    artwork.push(new URL(route.request().url()).pathname.split("/").at(-1)!);
+    return route.fulfill({
+      contentType: "image/svg+xml",
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>',
+    });
+  });
+  await page.goto("/collection?sort=category");
+  const buttons = page
+    .getByRole("group", { name: "Catalog categories", exact: true })
+    .getByRole("button");
+  await expect(buttons).toHaveCount(7);
+  for (const [index, [, label]] of categories.entries()) {
+    await expect(buttons.nth(index)).toContainText(label);
+  }
+  await expect(page.getByRole("article")).toHaveCount(7);
+  await expect(page.locator(".item-name")).toHaveText(
+    categories.map(([category]) => category),
+  );
+  await expect
+    .poll(() => [...new Set(artwork)].sort())
+    .toEqual(
+      [...categories.map(([category]) => category), "location", "mob"].sort(),
+    );
+  await page.reload();
+  await expect(page.getByRole("article")).toHaveCount(7);
+  await page.getByRole("searchbox").fill("location");
+  await expect(
+    page.getByRole("heading", { name: "No items found" }),
+  ).toBeVisible();
+});
+
+for (const mobile of [false, true]) {
+  test(`catalog unique effects show artwork and fixed-value tooltip (${mobile ? "mobile" : "desktop"})`, async ({
+    page,
+  }) => {
+    if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+    await page.route("**/catalog.json", (route) =>
+      route.fulfill({
+        json: [
+          ...catalog,
+          {
+            ...catalog[0],
+            slug: "awesomeaxe",
+            variation: "Awesomeaxe",
+            game_data: {
+              unique: true,
+              effects: [
+                {
+                  catalog_slug: "fire",
+                  tier: "unique",
+                  text: "Burns enemies for 40 damage.",
+                },
+              ],
+            },
+          },
+          {
+            slug: "fire",
+            variation: "Fire",
+            category: "gear_effect",
+            type: "attack",
+            image: "images/unique-effect",
+            description: "Burns enemies for 10 damage.",
+          },
+        ],
+      }),
+    );
+    await page.route("**/images/unique-effect", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><rect width="26" height="26" fill="orange"/></svg>',
+      }),
+    );
+    await page.goto("/collection");
+    const card = page.getByRole("article", { name: "Awesomeaxe", exact: true });
+    const icon = card.locator(".item-unique-effect");
+    await expect(
+      icon.getByRole("img", { name: "Fire", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("article", { name: "Battle Hammer", exact: true })
+        .locator(".item-unique-effect"),
+    ).toHaveCount(0);
+    const cardBox = await card.boundingBox();
+    const iconBox = await icon.boundingBox();
+    expect(iconBox!.x + iconBox!.width).toBeLessThan(
+      cardBox!.x + cardBox!.width,
+    );
+    await page.mouse.move(0, 0);
+    await icon.hover();
+    await expect(page.getByRole("tooltip")).toHaveText(
+      "Fire: Burns enemies for 40 damage.",
+    );
+    await page.mouse.move(0, 0);
+    await icon.focus();
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Shift+Tab");
+    await expect(page.getByRole("tooltip")).toHaveText(
+      "Fire: Burns enemies for 40 damage.",
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  });
+}

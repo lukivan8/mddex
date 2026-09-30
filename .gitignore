@@ -4,7 +4,9 @@ dist/
 .tanstack/
 .wrangler/
 .env*
+.dev.vars*
 !.env.example
 playwright-report/
 test-results/
+.analytics-reports/
 .DS_Store

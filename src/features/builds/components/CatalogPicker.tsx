@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   Button,
   SearchField,
@@ -8,75 +8,193 @@ import {
 import { Check, SearchX, X } from "lucide-react";
 import { buildSearchIndex, humanize } from "../../catalog/catalog.helpers";
 import type { CatalogItem } from "../../catalog/catalog.types";
-import type { CompletionRecord } from "../../collection/collection.types";
 import { pickerItems } from "../build.selectors";
 import { isCompatible } from "../build.compatibility";
-import type { Availability, BuildTarget } from "../build.types";
+import {
+  EFFECT_COUNT,
+  type BuildTarget,
+  type ModifierTier,
+} from "../build.types";
+import { availableTiers, selectedTier, tierDescription } from "../build.tiers";
 import { ItemArtwork } from "./ItemArtwork";
+import { slotRules } from "../build.compatibility";
+import { uniqueEffect } from "../build.unique";
 const PickerResult = memo(function PickerResult({
   item,
   selected,
   onSelect,
+  disabled,
+  effect,
+  locked,
+  tier,
+  innate,
+  gearCategory,
+  builtInEffect,
+  comparison,
 }: {
   item: CatalogItem;
   selected: boolean;
-  onSelect: (item: CatalogItem) => void;
+  disabled: boolean;
+  effect: boolean;
+  locked: boolean;
+  tier?: ModifierTier | null;
+  innate?: CatalogItem;
+  gearCategory: string;
+  builtInEffect?: CatalogItem;
+  comparison: boolean;
+  onSelect: (item: CatalogItem, tier?: ModifierTier) => void;
 }) {
+  const [hoveredTier, setHoveredTier] = useState<ModifierTier>();
+  const [focusedTier, setFocusedTier] = useState<ModifierTier>();
+  const tiers =
+    item.category === "gear_effect" ||
+    item.category === "enchantment" ||
+    item.category === "talisman"
+      ? availableTiers(item, gearCategory)
+      : [];
+  const chosen = selectedTier(item, tier, gearCategory);
+  const description = locked
+    ? (innate?.description ?? item.description)
+    : tierDescription(item, hoveredTier ?? focusedTier ?? tier, gearCategory);
   return (
-    <Button
-      variant="ghost"
-      className={`picker-result ${selected ? "active" : ""}`}
-      aria-label={`Equip ${item.variation}`}
-      aria-pressed={selected}
-      onPress={() => onSelect(item)}
-    >
-      <span className="picker-art">
-        <ItemArtwork item={item} />
-      </span>
-      <span className="picker-result-copy">
-        <strong>{item.variation}</strong>
-        <span className="muted">{humanize(item.type)}</span>
-      </span>
-      {selected && <Check size={15} />}
-    </Button>
+    <div className="picker-result-row">
+      <Button
+        variant="ghost"
+        className={`picker-result ${selected ? "active" : ""} ${locked ? "unique-effect" : ""}`}
+        aria-label={
+          comparison
+            ? `Select ${item.variation} for comparison`
+            : `${effect ? "Add effect" : "Equip"} ${item.variation}`
+        }
+        isDisabled={disabled}
+        aria-pressed={selected}
+        onPress={() => onSelect(item)}
+      >
+        <span className="picker-art">
+          <ItemArtwork item={item} />
+        </span>
+        <span className="picker-result-copy">
+          <span
+            className={`picker-result-name ${tiers.length && !locked ? "with-tiers" : ""}`}
+            style={
+              tiers.length && !locked
+                ? { paddingRight: tiers.length * 33 + 11 }
+                : builtInEffect
+                  ? { paddingRight: 44, minHeight: 32 }
+                  : undefined
+            }
+          >
+            <strong>{item.variation}</strong>
+            {selected && <Check size={15} />}
+          </span>
+          <span className="muted">{humanize(item.type)}</span>
+          {locked && (
+            <span className="unique-effect-label">Unique effect · Locked</span>
+          )}
+          {description && (
+            <span className="picker-description">{description}</span>
+          )}
+        </span>
+        {builtInEffect && (
+          <span
+            className="picker-unique-icon"
+            aria-label={`Unique effect: ${builtInEffect.variation}`}
+            title={`${builtInEffect.variation}${builtInEffect.description ? `: ${builtInEffect.description}` : ""}`}
+          >
+            <ItemArtwork item={builtInEffect} />
+          </span>
+        )}
+      </Button>
+      {tiers.length > 0 && !locked && (
+        <div
+          className="picker-tiers"
+          role="group"
+          aria-label={`${item.variation} tier`}
+        >
+          {tiers.map((entry) => (
+            <button
+              key={entry.tier}
+              type="button"
+              className="tier-button"
+              disabled={disabled}
+              aria-label={`Select ${item.variation} tier ${entry.tier}`}
+              aria-pressed={selected && chosen?.tier === entry.tier}
+              onPointerEnter={(event) => {
+                if (
+                  event.pointerType === "mouse" ||
+                  event.pointerType === "pen"
+                )
+                  setHoveredTier(entry.tier);
+              }}
+              onPointerLeave={() => setHoveredTier(undefined)}
+              onFocus={() => setFocusedTier(entry.tier)}
+              onBlur={() => setFocusedTier(undefined)}
+              onClick={() => onSelect(item, entry.tier)}
+            >
+              {entry.tier}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 });
 export type PickerProps = {
-  allowAll: boolean;
   catalog: CatalogItem[];
-  records: ReadonlyMap<string, CompletionRecord>;
   target: BuildTarget;
-  availability: Availability;
-  onAvailability: (value: Availability) => void;
   query: string;
   onQuery: (value: string) => void;
   type: string;
   onType: (value: string) => void;
   selected?: string | null;
-  onSelect: (item: CatalogItem) => void;
+  selectedSlugs: string[];
+  lockedSlugs: string[];
+  lockedEffect?: CatalogItem;
+  selectedTiers: Record<string, ModifierTier | null | undefined>;
+  multiple: boolean;
+  onSelect: (item: CatalogItem, tier?: ModifierTier) => void;
   onClear: () => void;
+  mode?: "build" | "compare";
 };
 export function CatalogPicker({
-  allowAll,
   catalog,
-  records,
   target,
-  availability,
-  onAvailability,
   query,
   onQuery,
   type,
   onType,
   selected,
+  selectedSlugs,
+  lockedSlugs,
+  lockedEffect,
+  selectedTiers,
+  multiple,
   onSelect,
   onClear,
+  mode = "build",
 }: PickerProps) {
   const index = useMemo(() => buildSearchIndex(catalog), [catalog]);
-  const available = useMemo(
-    () =>
-      pickerItems(catalog, records, target, availability, query, index, type),
-    [catalog, records, target, availability, query, index, type],
-  );
+  const uniqueEffects = useMemo(() => {
+    const lookup = new Map(catalog.map((item) => [item.slug, item]));
+    const effects = new Map<string, CatalogItem>();
+    for (const item of catalog) {
+      const fixed = uniqueEffect(item);
+      if (!fixed) continue;
+      const canonical = lookup.get(fixed.slug);
+      effects.set(item.slug, {
+        ...(canonical ?? fixed),
+        description: fixed.description ?? canonical?.description,
+      });
+    }
+    return effects;
+  }, [catalog]);
+  const available = useMemo(() => {
+    const items = pickerItems(catalog, target, query, index, type);
+    if (target.kind !== "effect" || !lockedEffect) return items;
+    const fixed =
+      catalog.find((item) => item.slug === lockedEffect.slug) ?? lockedEffect;
+    return [fixed, ...items.filter((item) => item.slug !== fixed.slug)];
+  }, [catalog, target, query, index, type, lockedEffect]);
   const types = useMemo(
     () =>
       [
@@ -88,8 +206,22 @@ export function CatalogPicker({
   );
   return (
     <div className="catalog-picker">
+      {multiple && (
+        <p className="muted" role="status">
+          {selectedSlugs.length} / {target.kind === "effect" ? EFFECT_COUNT : 3}{" "}
+          selected. Click {target.kind === "effect" ? "an effect" : "an item"}{" "}
+          to select or deselect it.
+          {lockedSlugs.length > 0 && " Unique effects are locked."}
+        </p>
+      )}
       <SearchField
-        aria-label="Search compatible items"
+        aria-label={
+          mode === "compare"
+            ? "Search weapons"
+            : target.kind === "effect"
+              ? "Search effects"
+              : "Search compatible items"
+        }
         value={query}
         onChange={onQuery}
       >
@@ -97,27 +229,18 @@ export function CatalogPicker({
           <SearchField.SearchIcon />
           <SearchField.Input
             placeholder={
-              target.kind === "enchantment"
-                ? "Search enchantments…"
-                : "Search compatible items…"
+              mode === "compare"
+                ? "Search weapons…"
+                : target.kind === "effect"
+                  ? "Search effects…"
+                  : target.kind === "enchantment"
+                    ? "Search enchantments…"
+                    : "Search compatible items…"
             }
           />
           <SearchField.ClearButton />
         </SearchField.Group>
       </SearchField>
-      <ToggleButtonGroup
-        aria-label="Picker availability"
-        selectionMode="single"
-        disallowEmptySelection
-        selectedKeys={[availability]}
-        onSelectionChange={(keys) =>
-          onAvailability([...keys][0] as Availability)
-        }
-      >
-        <ToggleButton id="owned">Owned</ToggleButton>
-        {!allowAll && <ToggleButton id="discovered">Discovered</ToggleButton>}
-        {allowAll && <ToggleButton id="all">All</ToggleButton>}
-      </ToggleButtonGroup>
       {types.length > 1 && (
         <div className="picker-types">
           <ToggleButtonGroup
@@ -143,10 +266,16 @@ export function CatalogPicker({
           {available.length} compatible{" "}
           {available.length === 1 ? "item" : "items"}
         </span>
-        {selected && (
+        {(multiple
+          ? selectedSlugs.some((slug) => !lockedSlugs.includes(slug))
+          : selected) && (
           <Button variant="ghost" size="sm" onPress={onClear}>
             <X size={13} />
-            Clear selected slot
+            {multiple
+              ? "Clear selection"
+              : mode === "compare"
+                ? "Clear weapon"
+                : "Clear selected slot"}
           </Button>
         )}
       </div>
@@ -155,7 +284,25 @@ export function CatalogPicker({
           <PickerResult
             key={item.slug}
             item={item}
-            selected={selected === item.slug}
+            builtInEffect={uniqueEffects.get(item.slug)}
+            comparison={mode === "compare"}
+            effect={target.kind === "effect"}
+            gearCategory={slotRules[target.slot].category}
+            selected={
+              multiple
+                ? selectedSlugs.includes(item.slug)
+                : selected === item.slug
+            }
+            locked={lockedSlugs.includes(item.slug)}
+            innate={lockedSlugs.includes(item.slug) ? lockedEffect : undefined}
+            tier={selectedTiers[item.slug]}
+            disabled={
+              lockedSlugs.includes(item.slug) ||
+              (multiple &&
+                selectedSlugs.length >=
+                  (target.kind === "effect" ? EFFECT_COUNT : 3) &&
+                !selectedSlugs.includes(item.slug))
+            }
             onSelect={onSelect}
           />
         ))}
@@ -167,9 +314,7 @@ export function CatalogPicker({
           <p>
             {query || type
               ? "Try a different search or type."
-              : availability === "all"
-                ? "No compatible items in the catalog."
-                : `No compatible items in ${availability}. Discover items in Collection, or enable Show all items in the header.`}
+              : "No compatible items in the catalog."}
           </p>
           {(query || type) && (
             <Button

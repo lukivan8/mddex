@@ -1,4 +1,5 @@
 import type { CatalogCache } from "./catalog.db";
+import { hasCatalogArtwork } from "./catalog.helpers";
 import { catalogSchema, latestReleaseSchema } from "./catalog.schema";
 import type { CatalogItem } from "./catalog.types";
 const defaultBase = "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/";
@@ -47,7 +48,10 @@ export async function loadCatalog(
     cached?.version === latest.data.catalogVersion &&
     cached.releaseUrl === releaseUrl.href
   )
-    return cached.items;
+    return cached.items.map((item) => ({
+      ...item,
+      image: hasCatalogArtwork(item) ? item.image : null,
+    }));
 
   const response = await fetch(new URL("catalog.json", releaseUrl).href, {
     signal: requestSignal,
@@ -59,7 +63,9 @@ export async function loadCatalog(
     throw new Error("The published catalog has an unexpected format.");
   const items = parsed.data.map((item) => ({
     ...item,
-    image: resolveImage(item.image, releaseUrl.href),
+    image: hasCatalogArtwork(item)
+      ? resolveImage(item.image, releaseUrl.href)
+      : null,
   }));
   // Cache failures must not prevent using successfully fetched content.
   await cache

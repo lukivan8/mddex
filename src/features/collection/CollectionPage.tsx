@@ -1,99 +1,55 @@
 import { AppFooter } from "../../components/AppFooter";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLiveQuery } from "@tanstack/react-db";
-import { Button, Toast } from "@heroui/react";
+import { trackEvent } from "../analytics/analytics.browser";
+import { analyticsLabels } from "../analytics/analytics.schema";
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "@heroui/react";
 import { SearchX, TriangleAlert } from "lucide-react";
 import { AppHeader } from "../../components/AppHeader";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
 import { loadSessionCatalog } from "../catalog/catalog.session";
-import { getCategories, getTypes } from "../catalog/catalog.helpers";
-import type { CatalogItem } from "../catalog/catalog.types";
 import {
-  getCompletionCollection,
-  type CompletionCollection,
-} from "./collection.db";
-import { buildDiscoveryIndex, tryDiscoverByName } from "./collection.discovery";
+  getCategories,
+  getTypes,
+  isCatalogItem,
+} from "../catalog/catalog.helpers";
+import type { CatalogItem } from "../catalog/catalog.types";
 import {
   getCatalogItemView,
   getVisibleItemViews,
 } from "./collection.presentation";
-import {
-  getPreferencesCollection,
-  setShowAllItems,
-  type PreferencesCollection,
-} from "./collection.preferences";
-import { SpoilerControl } from "./components/SpoilerControl";
-import { DiscoveryDialog } from "./components/DiscoveryDialog";
-import { toggleOwnership } from "./collection.service";
-import { isDiscovered } from "./collection.defaults";
-import {
-  getCategoryProgress,
-  getOverallProgress,
-} from "./collection.selectors";
 import type { CollectionFilters } from "./collection.types";
-import { CollectionProgress } from "./components/CollectionProgress";
-import { CategoryProgress } from "./components/CategoryProgress";
+import { CategoryFilters } from "./components/CategoryFilters";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { CollectionSkeleton } from "./components/CollectionSkeleton";
 import { ItemList } from "./components/ItemList";
-let browserReady:
-  | {
-      catalog: CatalogItem[];
-      collection: CompletionCollection;
-      preferences: PreferencesCollection;
-    }
-  | undefined;
+import { CatalogDirectory } from "../seo/CatalogDirectory";
+import type { CatalogIndexGroup } from "../seo/catalog-index";
+let browserCatalog: CatalogItem[] | undefined;
 export function CollectionPage({
   filters,
   onChange,
+  directory,
 }: {
   filters: CollectionFilters;
   onChange: (patch: CollectionFilters) => void;
+  directory: CatalogIndexGroup[];
 }) {
   const [catalog, setCatalog] = useState<CatalogItem[] | undefined>(
-    () => browserReady?.catalog,
+    () => browserCatalog,
   );
   useEffect(() => {
     if (catalog) return preloadCatalogArtwork(catalog);
   }, [catalog]);
-  const [collection, setCollection] = useState<CompletionCollection | undefined>(
-    () => browserReady?.collection,
-  );
-  const [preferences, setPreferences] = useState<PreferencesCollection | undefined>(
-    () => browserReady?.preferences,
-  );
-  const { data: preferenceData } = useLiveQuery({
-    query: (q) => (preferences ? q.from({ preferences }) : undefined),
-  });
-  const showAllItems = preferenceData?.[0]?.showAllItems ?? false;
-  function changeShowAllItems(value: boolean) {
-    if (!preferences) return;
-    try {
-      const tx = setShowAllItems(preferences, value);
-      void tx.isPersisted.promise.catch(() =>
-        Toast.toast.danger(
-          "Could not save this preference. The change was undone.",
-        ),
-      );
-    } catch {
-      Toast.toast.danger("Could not save this preference. Please try again.");
-    }
-  }
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    if (browserReady) return;
+    if (browserCatalog) return;
     let active = true;
     async function initialize() {
       try {
-        const db = getCompletionCollection();
-        const prefs = getPreferencesCollection();
-        await Promise.all([db.preload(), prefs.preload()]);
         const items = await loadSessionCatalog();
         if (active) {
-          browserReady = { catalog: items, collection: db, preferences: prefs };
-          setCollection(db);
-          setPreferences(prefs);
+          browserCatalog = items;
           setCatalog(items);
           setError("");
         }
@@ -102,7 +58,7 @@ export function CollectionPage({
           setError(
             cause instanceof Error
               ? cause.message
-              : "Could not load your collection.",
+              : "Could not load the catalog.",
           );
       }
     }
@@ -113,23 +69,14 @@ export function CollectionPage({
   }, [attempt]);
   return (
     <>
-      <AppHeader active="collection">
-        <SpoilerControl
-          showAllItems={showAllItems}
-          onChange={changeShowAllItems}
-          disabled={!preferences}
-        />
-      </AppHeader>
+      <AppHeader active="collection" />
       <main id="main" className="shell collection-main">
-        <>
+        <div className="catalog-body">
           {error ? (
             <div role="alert" className="page-message">
               <TriangleAlert size={28} />
-              <h1>Collection unavailable</h1>
-              <p>
-                We couldn’t open the catalog or local collection. Your saved
-                progress has not been cleared.
-              </p>
+              <h1>Catalog unavailable</h1>
+              <p>We couldn’t load the equipment catalog. Please try again.</p>
               <p className="muted error-detail">{error}</p>
               <Button
                 onPress={() => {
@@ -140,74 +87,58 @@ export function CollectionPage({
                 Try again
               </Button>
             </div>
-          ) : catalog && collection ? (
+          ) : catalog ? (
             <CollectionContent
               catalog={catalog}
-              collection={collection}
               filters={filters}
               onChange={onChange}
-              showAllItems={showAllItems}
             />
           ) : (
             <CollectionSkeleton />
           )}
-        </>
+        </div>
+        <section
+          className="page-about"
+          aria-label="About the equipment catalog"
+        >
+          <h2>Minecraft Dungeons 2 equipment catalog</h2>
+          <p>
+            Explore weapons, armor, artifacts, talismans, enchantments, and gear
+            effects. Search by name and filter by equipment type.
+          </p>
+        </section>
+        <CatalogDirectory groups={directory} />
       </main>
-      <Toast.Provider placement="bottom end" />
       <AppFooter />
     </>
   );
 }
 function CollectionContent({
-  showAllItems,
-  catalog,
-  collection,
+  catalog: definitions,
   filters,
   onChange,
 }: {
-  showAllItems: boolean;
   catalog: CatalogItem[];
-  collection: CompletionCollection;
   filters: CollectionFilters;
   onChange: (patch: CollectionFilters) => void;
 }) {
-  const { data } = useLiveQuery({
-    query: (q) => q.from({ completion: collection }),
-  });
-  const owned = useMemo(
-    () => new Set(data.filter((r) => r.owned).map((r) => r.itemSlug)),
-    [data],
+  const catalog = useMemo(
+    () => definitions.filter(isCatalogItem),
+    [definitions],
   );
-  const discoveryIndex = useMemo(() => buildDiscoveryIndex(catalog), [catalog]);
   const views = useMemo(() => {
-    const entries = new Map(data.map((entry) => [entry.itemSlug, entry]));
-    return catalog.map((item) =>
-      getCatalogItemView(item, entries.get(item.slug), showAllItems),
-    );
-  }, [catalog, data, showAllItems]);
-  const [explainDiscovery, setExplainDiscovery] = useState(false);
-  const explained = useRef(false);
-  function changeFilters(patch: CollectionFilters) {
-    onChange(patch);
-    if (showAllItems || patch.q === undefined) return;
-    try {
-      const discovery = tryDiscoverByName(collection, discoveryIndex, patch.q);
-      if (!discovery) return;
-      const toast = Toast.toast.success(
-        `${discovery.item.variation} discovered and collected.`,
-      );
-      setSaveError("");
-      void discovery.transaction.isPersisted.promise.catch(() => {
-        Toast.toast.close(toast);
-        setSaveError(
-          "Discovery could not be saved and was undone. Please enter the name again to retry.",
-        );
-      });
-    } catch {
-      setSaveError("Discovery could not be saved. Please try again.");
-    }
-  }
+    const lookup = new Map(definitions.map((item) => [item.slug, item]));
+    return catalog.map((item) => getCatalogItemView(item, lookup));
+  }, [catalog, definitions]);
   const categories = useMemo(() => getCategories(catalog), [catalog]);
+  const categoryTotals = useMemo(
+    () =>
+      categories.map((category) => ({
+        category,
+        total: catalog.filter((item) => item.category === category).length,
+      })),
+    [catalog, categories],
+  );
   const types = useMemo(
     () => getTypes(catalog, filters.category),
     [catalog, filters.category],
@@ -226,145 +157,70 @@ function CollectionContent({
       ),
     [catalog, types, filters.category],
   );
-  const progress = useMemo(
-    () => getOverallProgress(catalog, owned),
-    [catalog, owned],
+  const visible = useMemo(
+    () => getVisibleItemViews(views, filters),
+    [views, filters],
   );
-  const categoryProgress = useMemo(
-    () =>
-      categories.map((category) => ({
-        category,
-        progress: getCategoryProgress(catalog, owned, category),
-      })),
-    [catalog, owned, categories],
-  );
-  const [saveError, setSaveError] = useState("");
-  const [announcement, setAnnouncement] = useState("");
-  const [leaving, setLeaving] = useState<ReadonlySet<string>>(new Set());
-  const timers = useRef(new Set<ReturnType<typeof setTimeout>>());
-  const status = useRef(filters.status);
-  status.current = filters.status;
-  useEffect(() => {
-    const pending = timers.current;
-    return () => pending.forEach(clearTimeout);
-  }, []);
-  const toggle = useCallback(
-    (slug: string) => {
-      if (!showAllItems && !isDiscovered(slug, collection.get(slug))) {
-        if (!explained.current) {
-          explained.current = true;
-          setExplainDiscovery(true);
-        } else
-          Toast.toast.info(
-            "Enter the item’s full name in search to discover and collect it.",
-          );
-        return;
-      }
-      const wasOwned = collection.get(slug)?.owned ?? false;
-      if (
-        (status.current === "missing" && !wasOwned) ||
-        (status.current === "collected" && wasOwned)
-      ) {
-        setLeaving((current) => new Set(current).add(slug));
-        const timer = setTimeout(() => {
-          setLeaving((current) => {
-            const next = new Set(current);
-            next.delete(slug);
-            return next;
-          });
-          timers.current.delete(timer);
-        }, 180);
-        timers.current.add(timer);
-      }
-      try {
-        const transaction = toggleOwnership(collection, slug, showAllItems);
-        if (!transaction) return;
-        setSaveError("");
-        setAnnouncement(
-          wasOwned
-            ? "Item marked as missing."
-            : "Item collected. Saved locally.",
-        );
-        void transaction.isPersisted.promise.catch(() => {
-          setSaveError(
-            "This change could not be saved. It has been undone. Check that browser storage is available, then try again.",
-          );
-          setAnnouncement("Change could not be saved.");
-        });
-      } catch {
-        setSaveError("This change could not be saved. Please try again.");
-      }
-    },
-    [collection, showAllItems],
-  );
-  const visible = useMemo(() => {
-    const filterOwned = new Set(owned);
-    for (const slug of leaving) {
-      if (filters.status === "missing") filterOwned.delete(slug);
-      if (filters.status === "collected") filterOwned.add(slug);
+  function changeFilters(patch: CollectionFilters) {
+    if (patch.q && !filters.q) trackEvent("catalog_search_used", true);
+    if (patch.category !== undefined && patch.category !== filters.category) {
+      const label = analyticsLabels.find(
+        (value) => value === (patch.category || "all"),
+      );
+      if (label) trackEvent("catalog_category_selected", false, label);
     }
-    return getVisibleItemViews(views, filterOwned, filters);
-  }, [views, owned, filters, leaving]);
+    if (patch.type && patch.type !== filters.type)
+      trackEvent("catalog_filter_used", false, "type");
+    if (patch.appliesTo && patch.appliesTo !== filters.appliesTo)
+      trackEvent("catalog_filter_used", false, "applies_to");
+    if (patch.sort && patch.sort !== filters.sort)
+      trackEvent("catalog_sort_changed");
+    onChange(patch);
+  }
   return (
     <>
-      <DiscoveryDialog
-        open={explainDiscovery}
-        onClose={() => setExplainDiscovery(false)}
-      />
-      <CollectionProgress progress={progress} />
-      <CategoryProgress
-        categories={categoryProgress}
-        selected={filters.category}
-        onSelect={(category) => onChange({ category, type: "" })}
-      />
       <div className="catalog-heading">
-        <h2>Catalog · {catalog.length}</h2>
+        <div>
+          <h1>
+            Catalog<span className="accent">.</span>
+          </h1>
+          <p className="muted">
+            Browse equipment, enchantments, and gear effects.
+          </p>
+        </div>
       </div>
+      <CategoryFilters
+        categories={categoryTotals}
+        selected={filters.category}
+        onSelect={(category) =>
+          changeFilters({ category, type: "", appliesTo: "" })
+        }
+      />
       <CollectionToolbar
         filters={filters}
         categories={categories}
         types={types}
         typeTotals={typeTotals}
         onChange={changeFilters}
-        spoilerFree={!showAllItems}
         count={visible.length}
         total={catalog.length}
       />
-      {saveError && (
-        <div role="alert" className="save-error">
-          <TriangleAlert size={18} />
-          {saveError}
-          <Button size="sm" variant="ghost" onPress={() => setSaveError("")}>
-            Dismiss
-          </Button>
-        </div>
-      )}
-      <p className="sr-only" aria-live="polite">
-        {announcement}
-      </p>
       {visible.length ? (
-        <ItemList
-          items={visible}
-          owned={owned}
-          leaving={leaving}
-          onToggle={toggle}
-        />
+        <ItemList items={visible} />
       ) : (
         <div className="empty-state">
           <SearchX size={32} strokeWidth={1.3} />
-          <h3>
-            {filters.status === "missing" &&
-            !filters.q &&
-            !filters.category &&
-            !filters.type
-              ? "Every item, collected."
-              : "No items found"}
-          </h3>
+          <h3>No items found</h3>
           <p>Try another search or give your filters a little room.</p>
           <Button
             variant="secondary"
             onPress={() =>
-              onChange({ q: "", category: "", type: "", status: "all" })
+              changeFilters({
+                q: "",
+                category: "",
+                type: "",
+                appliesTo: "",
+              })
             }
           >
             Clear filters

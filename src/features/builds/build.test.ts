@@ -75,17 +75,17 @@ describe("local builds", () => {
   it("equips, replaces, clears, and keeps enchantments attached to exact positions", () => {
     let b = compose(emptyBuild(), { kind: "item", slot: "melee" }, catalog[0]);
     b = compose(b, { kind: "item", slot: "head" }, catalog[3]);
-    b = compose(b, { kind: "enchantment", slot: "head", index: 1 }, catalog[9]);
-    expect(b.slots.head?.enchantments).toEqual([null, "Fire", null]);
-    expect(b.slots.melee?.enchantments).toEqual([null, null, null]);
+    b = compose(b, { kind: "enchantment", slot: "head", index: 0 }, catalog[9]);
+    expect(b.slots.head?.enchantments).toEqual(["Fire"]);
+    expect(b.slots.melee?.enchantments).toEqual([null]);
     b = compose(
       b,
-      { kind: "enchantment", slot: "head", index: 1 },
+      { kind: "enchantment", slot: "head", index: 0 },
       catalog[10],
     );
-    expect(b.slots.head?.enchantments[1]).toBe("Ice");
-    b = compose(b, { kind: "enchantment", slot: "head", index: 1 }, null);
-    expect(b.slots.head?.enchantments[1]).toBeNull();
+    expect(b.slots.head?.enchantments[0]).toBe("Ice");
+    b = compose(b, { kind: "enchantment", slot: "head", index: 0 }, null);
+    expect(b.slots.head?.enchantments[0]).toBeNull();
     b = compose(b, { kind: "item", slot: "melee" }, catalog[1]);
     expect(b.slots.melee?.itemSlug).toBe("Sword");
     b = compose(b, { kind: "item", slot: "melee" }, null);
@@ -100,61 +100,23 @@ describe("local builds", () => {
       compose(b, { kind: "enchantment", slot: "head", index: 3 }, catalog[9]),
     ).toThrow();
   });
-  it("uses collection availability independently of spoiler preference; never changes equipped state", () => {
-    const records = new Map([
-      ["Hammer", { itemSlug: "Hammer", owned: false, discovered: true }],
-      ["Sword", { itemSlug: "Sword", owned: true, discovered: true }],
-    ]);
+  it("offers the full compatible catalog without ownership or discovery", () => {
     const target = { kind: "item", slot: "melee" } as const;
     const index = buildSearchIndex(catalog);
+    expect(pickerItems(catalog, target, "", index).map((i) => i.slug)).toEqual([
+      "Hammer",
+      "Sword",
+    ]);
     expect(
-      pickerItems(catalog, records, target, "owned", "", index).map(
-        (i) => i.slug,
-      ),
-    ).toEqual(["Sword"]);
-    expect(
-      pickerItems(catalog, records, target, "discovered", "", index).map(
-        (i) => i.slug,
-      ),
-    ).toEqual(["Hammer", "Sword"]);
-    expect(
-      pickerItems(catalog, new Map(), target, "all", "HAM", index).map(
-        (i) => i.slug,
-      ),
+      pickerItems(catalog, target, "HAM", index).map((i) => i.slug),
     ).toEqual(["Hammer"]);
     expect(
-      pickerItems(catalog, new Map(), target, "discovered", "Hammer", index),
-    ).toEqual([]);
-    expect(
-      pickerItems(
-        catalog,
-        records,
-        target,
-        "discovered",
-        "",
-        index,
-        "swords",
-      ).map((i) => i.slug),
+      pickerItems(catalog, target, "", index, "swords").map((i) => i.slug),
     ).toEqual(["Sword"]);
-    const b = compose(emptyBuild(), target, catalog[0]);
-    records.clear();
-    expect(b.slots.melee?.itemSlug).toBe("Hammer");
     expect(
       pickerItems(
         catalog,
-        records,
         { kind: "enchantment", slot: "melee", index: 0 },
-        "all",
-        "enchantment",
-        index,
-      ),
-    ).toEqual([]);
-    expect(
-      pickerItems(
-        catalog,
-        records,
-        { kind: "enchantment", slot: "melee", index: 0 },
-        "all",
         "fi",
         index,
       ).map((i) => i.slug),
@@ -168,14 +130,13 @@ describe("local builds", () => {
     await a.transaction.isPersisted.promise;
     const b = createBuild(db, "Second");
     await b.transaction.isPersisted.promise;
-    await setWorkspace(db, { activeId: a.build.id, availability: "all" })
-      .isPersisted.promise;
+    await setWorkspace(db, { activeId: a.build.id }).isPersisted.promise;
     await equip(db, a.build.id, { kind: "item", slot: "melee" }, catalog[0])
       .isPersisted.promise;
     await equip(
       db,
       a.build.id,
-      { kind: "enchantment", slot: "melee", index: 2 },
+      { kind: "enchantment", slot: "melee", index: 0 },
       catalog[9],
     ).isPersisted.promise;
     await renameBuild(db, a.build.id, "Renamed").isPersisted.promise;
@@ -188,8 +149,7 @@ describe("local builds", () => {
       db.preferences.get("workspace")?.activeId,
     )!;
     expect(saved.name).toBe("Renamed");
-    expect(saved.slots.melee?.enchantments[2]).toBe("Fire");
-    expect(db.preferences.get("workspace")?.availability).toBe("all");
+    expect(saved.slots.melee?.enchantments[0]).toBe("Fire");
     await setWorkspace(db, { activeId: b.build.id }).isPersisted.promise;
     expect(
       activeBuild(

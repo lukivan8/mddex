@@ -1,0 +1,262 @@
+.compare-page {
+  padding-block: 26px 64px;
+}
+.compare-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.compare-back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.compare-header {
+  margin: 30px 0 22px;
+}
+.compare-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.compare-header h1 {
+  margin: 8px 0;
+  font-size: clamp(28px, 4vw, 42px);
+  letter-spacing: -1.3px;
+}
+.compare-header p,
+.compare-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.compare-page [role="group"] {
+  margin-bottom: 26px;
+}
+.compare-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 32px;
+  align-items: start;
+}
+.compare-main,
+.compare-picker {
+  min-width: 0;
+}
+.compare-weapons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  scroll-margin-top: 20px;
+}
+.compare-weapon {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.compare-weapon.active {
+  border-color: var(--accent);
+}
+.compare-weapon-select {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 128px;
+  padding: 16px;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.compare-weapon-select:hover,
+.compare-weapon-select:focus-visible {
+  background: var(--surface-secondary);
+}
+.compare-weapon-select:focus-visible,
+.compare-detail-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.compare-weapon-art {
+  display: grid;
+  flex: 0 0 76px;
+  place-items: center;
+  color: var(--muted);
+}
+.compare-weapon-art img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+.compare-weapon-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.compare-weapon-copy small,
+.compare-weapon-copy span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.compare-weapon-copy strong {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.compare-detail-link {
+  display: block;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}
+.compare-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.compare-empty h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 18px;
+}
+.compare-empty p {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.compare-legend {
+  margin: 24px 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.compare-legend-better,
+.compare-value--better {
+  color: #91dfab;
+}
+.compare-legend-worse,
+.compare-value--worse {
+  color: #f29b96;
+}
+.compare-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.compare-metrics {
+  margin: 24px 0 30px;
+}
+.compare-metrics h2 {
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.compare-table-scroll {
+  overflow-x: auto;
+}
+.compare-metrics table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.compare-metrics th,
+.compare-metrics td {
+  width: 35%;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.compare-metrics th:first-child {
+  width: 30%;
+}
+.compare-metrics thead th,
+.compare-metrics tbody th {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+.compare-value--better {
+  background: color-mix(in srgb, #2f9a5a 11%, transparent);
+}
+.compare-value--worse {
+  background: color-mix(in srgb, #c94644 11%, transparent);
+}
+.compare-rank {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.compare-picker {
+  position: sticky;
+  top: 18px;
+  max-height: calc(100dvh - 36px);
+  padding-left: 24px;
+  border-left: 1px solid var(--border);
+  scroll-margin-top: 18px;
+}
+.compare-picker h2 {
+  margin: 8px 0 18px;
+  font-size: 21px;
+}
+.compare-picker .picker-results {
+  max-height: calc(100dvh - 210px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 900px) {
+  .compare-layout {
+    grid-template-columns: 1fr;
+  }
+  .compare-picker {
+    position: static;
+    max-height: none;
+    padding: 24px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+  .compare-picker .picker-results {
+    max-height: 520px;
+  }
+}
+@media (max-width: 520px) {
+  .compare-weapons {
+    gap: 8px;
+  }
+  .compare-weapon-select {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 170px;
+    padding: 12px;
+  }
+  .compare-weapon-art {
+    flex-basis: 68px;
+  }
+  .compare-weapon-art img {
+    width: 68px;
+    height: 68px;
+  }
+  .compare-weapon-copy strong {
+    font-size: 13px;
+  }
+  .compare-metrics th,
+  .compare-metrics td {
+    padding-inline: 6px;
+    font-size: 11px;
+  }
+}

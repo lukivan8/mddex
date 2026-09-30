@@ -1,0 +1,49 @@
+.catalog-directory {
+  margin: 48px 0 64px;
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+}
+.catalog-directory h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+.catalog-directory > p {
+  margin: 0 0 20px;
+  color: var(--muted);
+}
+.catalog-directory-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: start;
+  gap: 10px;
+}
+.catalog-directory details {
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+.catalog-directory summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.catalog-directory summary span {
+  float: right;
+  color: var(--muted);
+  font-weight: 400;
+}
+.catalog-directory ul {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.catalog-directory li {
+  break-inside: avoid;
+  margin: 0 0 8px;
+}
+.catalog-directory a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.catalog-directory a:hover,
+.catalog-directory a:focus-visible {
+  text-decoration: underline;
+}

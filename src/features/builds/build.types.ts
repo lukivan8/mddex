@@ -18,11 +18,20 @@ export const BUILD_SLOTS = [
 ] as const;
 export type GearSlot = (typeof GEAR_SLOTS)[number];
 export type BuildSlot = (typeof BUILD_SLOTS)[number];
-// Composition assumption, not a claim about final game eligibility.
-export const ENCHANTMENT_COUNT = 3;
+export const ENCHANTMENT_COUNT = 1;
+export const EFFECT_COUNT = 3;
+export const modifierTierSchema = z.enum(["I", "II", "III", "IV"]);
+export type ModifierTier = z.infer<typeof modifierTierSchema>;
 export const equippedSchema = z.object({
   itemSlug: z.string().min(1),
   enchantments: z.array(z.string().min(1).nullable()).max(ENCHANTMENT_COUNT),
+  effects: z.array(z.string().min(1).nullable()).max(EFFECT_COUNT).default([]),
+  effectTiers: z
+    .array(modifierTierSchema.nullable())
+    .max(EFFECT_COUNT)
+    .optional(),
+  enchantmentTier: modifierTierSchema.nullable().optional(),
+  itemTier: modifierTierSchema.optional(),
 });
 export const buildSchema = z.object({
   id: z.string().min(1),
@@ -34,13 +43,14 @@ export const buildSchema = z.object({
 export type Build = z.infer<typeof buildSchema>;
 export type BuildTarget =
   | { kind: "item"; slot: BuildSlot }
-  | { kind: "enchantment"; slot: GearSlot; index: number };
-export const availabilitySchema = z.enum(["owned", "discovered", "all"]);
-export type Availability = z.infer<typeof availabilitySchema>;
+  | { kind: "enchantment"; slot: GearSlot; index: number }
+  | { kind: "effect"; slot: BuildSlot; index: number };
 export const buildPreferenceSchema = z.object({
   id: z.literal("workspace"),
   activeId: z.string().nullable(),
-  availability: availabilitySchema,
 });
 export const isGearSlot = (slot: BuildSlot): slot is GearSlot =>
   (GEAR_SLOTS as readonly string[]).includes(slot);
+
+export const supportsEffects = (slot: BuildSlot) =>
+  !slot.startsWith("talisman");

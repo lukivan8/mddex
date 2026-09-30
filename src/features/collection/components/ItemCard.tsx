@@ -1,76 +1,99 @@
+import { Link } from "@tanstack/react-router";
+import { detailCategory } from "../../catalog-details/catalog-detail.model";
 import { memo, useState } from "react";
-import { Checkbox } from "@heroui/react";
-import { PackageOpen, LockKeyhole } from "lucide-react";
+import { PackageOpen, Skull } from "lucide-react";
+import { Tooltip } from "@heroui/react";
+import { ItemArtwork } from "../../builds/components/ItemArtwork";
 import type { CatalogItemView } from "../collection.presentation";
 import { categoryLabel, humanize } from "../../catalog/catalog.helpers";
 export const ItemCard = memo(
   function ItemCard({
     item,
-    owned,
-    onToggle,
-    leaving,
+    returnTo,
   }: {
     item: CatalogItemView;
-    owned: boolean;
-    onToggle: (slug: string) => void;
-    leaving?: boolean;
+    returnTo: string;
   }) {
     const [failed, setFailed] = useState(false);
-    return (
-      <Checkbox
-        aria-label={
-          item.hidden
-            ? `Undiscovered ${humanize(item.type)} item`
-            : item.displayName
-        }
-        isSelected={owned}
-        onChange={() => onToggle(item.slug)}
-        className={`item-card ${item.hidden ? "undiscovered" : "revealed"} ${owned ? "owned" : ""} ${leaving ? "leaving" : ""}`}
-      >
-        <Checkbox.Content className="item-content">
-          <span className="item-top">
-            <span>{humanize(item.type)}</span>
-            <Checkbox.Control>
-              <Checkbox.Indicator />
-            </Checkbox.Control>
+    const content = (
+      <>
+        <div
+          className={`item-top${item.uniqueEffect ? " with-unique-effect" : ""}`}
+        >
+          <span>
+            {item.category === "mob"
+              ? humanize(item.kind ?? "other")
+              : (item.applicability ?? humanize(item.type))}
           </span>
-          <span className="item-art">
-            {item.image && !failed ? (
-              <img
-                src={item.image}
-                alt={item.displayName}
-                loading="lazy"
-                decoding="async"
-                onError={() => setFailed(true)}
-              />
-            ) : (
-              <span className="art-placeholder">
-                {item.hidden ? (
-                  <LockKeyhole size={26} strokeWidth={1} />
-                ) : (
-                  <PackageOpen size={30} strokeWidth={1} />
-                )}
-                <span>
-                  {item.hidden ? "Undiscovered" : "Artwork unavailable"}
-                </span>
-              </span>
-            )}
-          </span>
-          <span className="item-name">{item.displayName}</span>
+        </div>
+        <span className="item-art">
+          {item.image && !failed ? (
+            <img
+              src={item.image}
+              alt={item.displayName}
+              loading="lazy"
+              decoding="async"
+              onError={() => setFailed(true)}
+            />
+          ) : item.category === "mob" ? (
+            <span className="art-placeholder">
+              <Skull size={30} strokeWidth={1} />
+            </span>
+          ) : (
+            <span className="art-placeholder">
+              <PackageOpen size={30} strokeWidth={1} />
+              <span>Artwork unavailable</span>
+            </span>
+          )}
+        </span>
+        <h3 className="item-name">{item.displayName}</h3>
+        {item.category !== "mob" && (
           <span className="item-bottom">
             <span>{categoryLabel(item.category)}</span>
-            <span className="ownership-label">
-              {owned ? "Collected" : item.hidden ? "Discover" : "Collect"}
-            </span>
           </span>
-        </Checkbox.Content>
-      </Checkbox>
+        )}
+      </>
+    );
+    return (
+      <article className="item-card" aria-label={item.displayName}>
+        <Link
+          className="item-content"
+          to="/catalog/$category/$slug"
+          params={{
+            category: detailCategory(item.category),
+            slug: item.detailSlug ?? item.slug,
+          }}
+          search={{ returnTo, power: undefined }}
+        >
+          {content}
+        </Link>
+        {item.uniqueEffect && (
+          <Tooltip delay={150}>
+            <Tooltip.Trigger<"button">
+              render={(props) => (
+                <button
+                  {...props}
+                  type="button"
+                  className="item-unique-effect"
+                  aria-label={`Unique effect: ${item.uniqueEffect!.variation}`}
+                >
+                  <ItemArtwork item={item.uniqueEffect} />
+                </button>
+              )}
+            />
+            <Tooltip.Content>
+              {item.uniqueEffect.variation}
+              {item.uniqueEffect.description
+                ? `: ${item.uniqueEffect.description}`
+                : ""}
+            </Tooltip.Content>
+          </Tooltip>
+        )}
+      </article>
     );
   },
   (previous, next) =>
-    previous.owned === next.owned &&
-    previous.leaving === next.leaving &&
-    previous.onToggle === next.onToggle &&
+    previous.returnTo === next.returnTo &&
     (Object.keys(previous.item) as (keyof CatalogItemView)[]).every(
       (key) => previous.item[key] === next.item[key],
     ),

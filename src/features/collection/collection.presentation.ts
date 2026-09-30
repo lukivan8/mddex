@@ -1,73 +1,88 @@
 import type { CatalogItem } from "../catalog/catalog.types";
-import { categoryLabel } from "../catalog/catalog.helpers";
-import type { CollectionFilters, CompletionRecord } from "./collection.types";
-import { normalizeDiscoveryName } from "./collection.discovery";
-import { isDiscovered } from "./collection.defaults";
+import {
+  categoryLabel,
+  enchantmentApplicability,
+  CATALOG_CATEGORIES,
+  isCatalogItem,
+} from "../catalog/catalog.helpers";
+import type { CollectionFilters } from "./collection.types";
+import { uniqueEffect } from "../builds/build.unique";
 export type CatalogItemView = {
   slug: string;
   category: string;
   type: string;
   displayName: string;
   image: string | null;
-  discovered: boolean;
-  hidden: boolean;
+  detailSlug?: string;
+  kind?: "boss" | "hostile" | "companion" | "neutral" | "other";
+  applicable_categories?: CatalogItem["applicable_categories"];
+  applicability?: string;
+  uniqueEffect?: CatalogItem;
 };
-export const isCollected = (entry?: CompletionRecord) => entry?.owned ?? false;
 export function getCatalogItemView(
   item: CatalogItem,
-  entry: CompletionRecord | undefined,
-  showAllItems: boolean,
+  catalog?: ReadonlyMap<string, CatalogItem>,
 ): CatalogItemView {
-  const discovered = isDiscovered(item.slug, entry);
-  const hidden = !showAllItems && !discovered;
-  // Deliberately enumerate fields: never spread canonical data into presentation.
+  const fixed = uniqueEffect(item);
+  const canonical = fixed ? catalog?.get(fixed.slug) : undefined;
   return {
     slug: item.slug,
     category: item.category,
     type: item.type,
-    displayName: hidden ? "?????" : item.variation,
-    image: hidden ? null : item.image,
-    discovered,
-    hidden,
+    displayName: item.variation,
+    image: item.image,
+    detailSlug:
+      typeof item.game_data?.slug === "string"
+        ? item.game_data.slug
+        : item.slug,
+    ...(fixed
+      ? {
+          uniqueEffect: {
+            ...(canonical ?? fixed),
+            description: fixed.description ?? canonical?.description,
+          },
+        }
+      : {}),
+    ...(item.category === "enchantment"
+      ? {
+          applicable_categories: item.applicable_categories,
+          applicability: enchantmentApplicability(item),
+        }
+      : {}),
   };
 }
 export function getVisibleItemViews(
   items: CatalogItemView[],
-  owned: ReadonlySet<string>,
   filters: CollectionFilters,
 ) {
-  const tokens = normalizeDiscoveryName(filters.q || "")
+  const tokens = (filters.q || "")
+    .trim()
+    .toLowerCase()
     .split(/\s+/)
     .filter(Boolean);
-  const bySafeName = (a: CatalogItemView, b: CatalogItemView) => {
-    if (a.hidden && b.hidden) return 0; // Stable catalog order; never compare secret names or slugs.
-    if (a.hidden !== b.hidden) return a.hidden ? 1 : -1;
-    return a.displayName.localeCompare(b.displayName);
-  };
   return items
     .filter((item) => {
-      const publicText = `${categoryLabel(item.category)} ${item.category} ${item.type}`;
-      const searchable = normalizeDiscoveryName(
-        item.hidden
-          ? publicText
-          : `${publicText} ${item.displayName} ${item.slug}`,
-      );
+      const text =
+        `${categoryLabel(item.category)} ${item.category} ${item.type} ${item.displayName} ${item.slug} ${item.applicability ?? ""} ${item.uniqueEffect?.variation ?? ""}`.toLowerCase();
       return (
+        isCatalogItem(item) &&
         (!filters.category || item.category === filters.category) &&
         (!filters.type || item.type === filters.type) &&
-        (filters.status !== "missing" || !owned.has(item.slug)) &&
-        (filters.status !== "collected" || owned.has(item.slug)) &&
-        tokens.every((token) => searchable.includes(token))
+        (!filters.appliesTo ||
+          (item.category === "enchantment" &&
+            (filters.appliesTo === "unknown"
+              ? !item.applicable_categories?.length
+              : item.applicable_categories?.includes(filters.appliesTo)))) &&
+        tokens.every((token) => text.includes(token))
       );
     })
-    .sort((a, b) => {
-      if (filters.sort === "category")
-        return a.category.localeCompare(b.category) || bySafeName(a, b);
-      if (filters.sort === "missing" || filters.sort === "collected")
-        return (
-          (Number(owned.has(a.slug)) - Number(owned.has(b.slug))) *
-            (filters.sort === "missing" ? 1 : -1) || bySafeName(a, b)
-        );
-      return bySafeName(a, b);
-    });
+    .sort(
+      (a, b) =>
+        (filters.sort === "category"
+          ? CATALOG_CATEGORIES.findIndex(
+              (category) => category === a.category,
+            ) -
+            CATALOG_CATEGORIES.findIndex((category) => category === b.category)
+          : 0) || a.displayName.localeCompare(b.displayName),
+    );
 }

@@ -1,0 +1,16 @@
+{
+  "name": "MDDEX — Minecraft Dungeons 2 Build Maker",
+  "short_name": "MDDEX",
+  "description": "Create and share Minecraft Dungeons 2 builds and browse the equipment catalog.",
+  "id": "/",
+  "start_url": "/build",
+  "scope": "/",
+  "display": "browser",
+  "lang": "en",
+  "background_color": "#080f11",
+  "theme_color": "#080f11",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

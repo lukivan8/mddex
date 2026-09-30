@@ -5,7 +5,7 @@ import {
 import { z } from "zod";
 import { catalogSchema } from "./catalog.schema";
 
-export const CATALOG_STORAGE_KEY = "mddex.catalog.v1";
+export const CATALOG_STORAGE_KEY = "mddex.catalog.v5";
 const snapshotSchema = z.object({
   source: z.string().url(),
   version: z.string().min(1),

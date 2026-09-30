@@ -3,12 +3,16 @@ import type { BuildCollections } from "./build.db";
 import {
   BUILD_SLOTS,
   ENCHANTMENT_COUNT,
+  EFFECT_COUNT,
+  supportsEffects,
   isGearSlot,
-  type Availability,
   type Build,
   type BuildTarget,
+  type ModifierTier,
 } from "./build.types";
 import { isCompatible } from "./build.compatibility";
+import { uniqueEffect, withUniqueEffects } from "./build.unique";
+import { availableTiers, selectedTier } from "./build.tiers";
 export function emptyBuild(
   name = "Untitled loadout",
   id = crypto.randomUUID(),
@@ -30,7 +34,7 @@ export function createBuild(db: BuildCollections, name?: string) {
 }
 export function setWorkspace(
   db: BuildCollections,
-  patch: { activeId?: string; availability?: Availability },
+  patch: { activeId?: string },
 ) {
   return db.preferences.has("workspace")
     ? db.preferences.update("workspace", (p) => {
@@ -39,7 +43,6 @@ export function setWorkspace(
     : db.preferences.insert({
         id: "workspace",
         activeId: null,
-        availability: "discovered",
         ...patch,
       });
 }
@@ -53,18 +56,71 @@ export function compose(
   build: Build,
   target: BuildTarget,
   item: CatalogItem | null,
+  catalog: ReadonlyMap<string, CatalogItem> = new Map(),
+  tier?: ModifierTier,
 ): Build {
   if (item && !isCompatible(item, target))
     throw new Error("This item does not fit the selected slot.");
-  const next = structuredClone(build);
+  const next = structuredClone(withUniqueEffects(build, catalog));
   if (target.kind === "item") {
     const old = next.slots[target.slot];
+    const oldFixed = old ? uniqueEffect(catalog.get(old.itemSlug)) : undefined;
+    const fixed = item ? uniqueEffect(item) : undefined;
+    const effects = old?.effects ?? Array(EFFECT_COUNT).fill(null);
+    const keptIndices = effects.flatMap((slug, index) =>
+      slug && slug !== oldFixed?.slug && slug !== fixed?.slug ? [index] : [],
+    );
+    if (
+      tier &&
+      item &&
+      !availableTiers(item, item.category).some((entry) => entry.tier === tier)
+    )
+      throw new Error("This tier is not available for the selected item.");
+    const itemTier =
+      item?.category === "talisman"
+        ? selectedTier(item, tier, item.category)?.tier
+        : undefined;
     next.slots[target.slot] = item
       ? {
           itemSlug: item.slug,
+          ...(itemTier ? { itemTier } : {}),
           enchantments: isGearSlot(target.slot)
             ? (old?.enchantments ?? Array(ENCHANTMENT_COUNT).fill(null))
             : [],
+          effects: supportsEffects(target.slot)
+            ? fixed
+              ? [
+                  fixed.slug,
+                  ...effects.filter(
+                    (slug) =>
+                      slug && slug !== oldFixed?.slug && slug !== fixed.slug,
+                  ),
+                  ...Array(EFFECT_COUNT).fill(null),
+                ].slice(0, EFFECT_COUNT)
+              : oldFixed
+                ? effects.map((slug) => (slug === oldFixed.slug ? null : slug))
+                : effects
+            : [],
+          ...(old?.enchantmentTier !== undefined && isGearSlot(target.slot)
+            ? { enchantmentTier: old.enchantmentTier }
+            : {}),
+          ...(old?.effectTiers && supportsEffects(target.slot)
+            ? {
+                effectTiers: fixed
+                  ? [
+                      null,
+                      ...keptIndices.map(
+                        (index) => old.effectTiers![index] ?? null,
+                      ),
+                      ...Array(EFFECT_COUNT).fill(null),
+                    ].slice(0, EFFECT_COUNT)
+                  : oldFixed
+                    ? old.effectTiers.map((value, index) =>
+                        index === 0 ? null : value,
+                      )
+                    : old.effectTiers,
+              }
+            : {}),
         }
       : null;
   } else {
@@ -72,13 +128,41 @@ export function compose(
     if (
       !gear ||
       target.index < 0 ||
-      target.index >= ENCHANTMENT_COUNT ||
+      (target.kind === "effect" && !supportsEffects(target.slot)) ||
+      target.index >=
+        (target.kind === "effect" ? EFFECT_COUNT : ENCHANTMENT_COUNT) ||
       !Number.isInteger(target.index)
     )
-      throw new Error(
-        "Choose equipped gear and a valid enchantment position first.",
-      );
-    gear.enchantments[target.index] = item?.slug ?? null;
+      throw new Error("Choose equipment and a valid modifier position first.");
+    const modifiers =
+      target.kind === "effect" ? gear.effects : gear.enchantments;
+    const fixed = uniqueEffect(catalog.get(gear.itemSlug));
+    if (
+      target.kind === "effect" &&
+      fixed &&
+      (target.index === 0 || item?.slug === fixed.slug)
+    )
+      throw new Error("The unique effect is locked to this equipment.");
+    modifiers[target.index] = item?.slug ?? null;
+    const gearCategory = catalog.get(gear.itemSlug)?.category;
+    if (
+      tier &&
+      item &&
+      !availableTiers(item, gearCategory).some((entry) => entry.tier === tier)
+    )
+      throw new Error("This tier is not available for the selected modifier.");
+    const chosenTier = item
+      ? selectedTier(item, tier, gearCategory)?.tier
+      : null;
+    if (target.kind === "effect" && (chosenTier || gear.effectTiers)) {
+      gear.effectTiers ??= Array(EFFECT_COUNT).fill(null);
+      gear.effectTiers![target.index] = chosenTier ?? null;
+    } else if (
+      target.kind === "enchantment" &&
+      (chosenTier || gear.enchantmentTier !== undefined)
+    ) {
+      gear.enchantmentTier = chosenTier ?? null;
+    }
   }
   next.updatedAt = new Date().toISOString();
   return next;
@@ -88,10 +172,11 @@ export function equip(
   id: string,
   target: BuildTarget,
   item: CatalogItem | null,
+  catalog?: ReadonlyMap<string, CatalogItem>,
 ) {
   const current = db.builds.get(id);
   if (!current) throw new Error("This loadout is no longer available.");
-  const next = compose(current, target, item);
+  const next = compose(current, target, item, catalog);
   return db.builds.update(id, (b) => {
     b.slots = next.slots;
     b.updatedAt = next.updatedAt;

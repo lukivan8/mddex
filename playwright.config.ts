@@ -4,7 +4,8 @@ export default defineConfig({
   fullyParallel: true,
   use: { baseURL: "http://localhost:3100", ...devices["Desktop Chrome"] },
   webServer: {
-    command: "npm run dev -- --port 3100 --strictPort",
+    command:
+      "npm run db:migrate:local && VITE_ANALYTICS_DEBUG=true npm run dev -- --port 3100 --strictPort",
     url: "http://localhost:3100",
     reuseExistingServer: !process.env.CI,
   },

@@ -1,7 +1,7 @@
 {
   "name": "mddex",
-  "version": "1.0.0",
-  "description": "Local-first Minecraft Dungeons 2 completion tracker",
+  "version": "2.0.0",
+  "description": "Local-first Minecraft Dungeons 2 build maker and equipment catalog",
   "main": "index.js",
   "scripts": {
     "dev": "vite dev",
@@ -13,7 +13,14 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm test",
     "ci:build": "npm run check && npm run build",
-    "deploy": "npm run ci:build && wrangler deploy"
+    "deploy": "npm run ci:build && wrangler deploy",
+    "analytics:report": "node --experimental-strip-types scripts/analytics-report.ts",
+    "analytics:dashboard": "node --experimental-strip-types scripts/analytics-dashboard.ts",
+    "assets:generate": "node scripts/generate-brand-assets.mjs",
+    "cf:types": "wrangler types src/worker-configuration.d.ts",
+    "db:migrate:local": "wrangler d1 migrations apply mddex-builds --local",
+    "db:migrate:remote": "wrangler d1 migrations apply mddex-builds --remote",
+    "setup": "npm run db:migrate:local"
   },
   "keywords": [],
   "author": "",
@@ -51,5 +58,8 @@
     "wrangler": "^4.142.0"
   },
   "type": "module",
-  "private": true
+  "private": true,
+  "engines": {
+    "node": ">=22.22.3 <23"
+  }
 }

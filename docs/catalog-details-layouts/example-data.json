@@ -1,0 +1,2822 @@
+{
+  "version": "1a08178c2e7671d1",
+  "releaseUrl": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/",
+  "weapon": {
+    "slug": "melee_weapon-diamond-pickaxe",
+    "category": "melee_weapon",
+    "type": "other",
+    "variation": "The Prospector's Pick",
+    "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/9e24e9d3-f2dd-4008-b521-2b0a58d3502c",
+    "source_url": "https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+    "evidence_note": "Community preview-footage candidate; verify in launch game.\nAutomated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+    "description": "The chosen weapon for those who miss the good old days of simple emerald mining.",
+    "game_data": {
+      "schema_version": 1,
+      "availability": "available",
+      "slug": "the-prospectors-pick",
+      "name": "The Prospector's Pick",
+      "kind": "melee",
+      "lane": "weapons",
+      "icon": {
+        "artwork_key": "icon"
+      },
+      "render": null,
+      "description": "The chosen weapon for those who miss the good old days of simple emerald mining.",
+      "unique": true,
+      "rarities": [
+        "unique"
+      ],
+      "archetype": "Support",
+      "weight": null,
+      "element": null,
+      "slot": null,
+      "set": null,
+      "baseSet": null,
+      "family": null,
+      "effects": [
+        {
+          "name": "Prospector",
+          "text": "Grants a 20% chance to receive additional emeralds.",
+          "tier": "unique",
+          "href": "https://www.dungeons.tools/2/effects/prospector",
+          "icon": {
+            "artwork_key": "effects.0.icon"
+          },
+          "catalog_slug": "gear-effect-additional-emerald-chance"
+        }
+      ],
+      "melee": {
+        "combo": [
+          {
+            "damage": 16,
+            "stagger": 30,
+            "splash": 0.3,
+            "range": 275,
+            "cone": 80,
+            "speed": 0.9,
+            "weight": "Medium",
+            "knockback": 500,
+            "cooldown": null,
+            "repeat": null,
+            "kind": "TargetAndSplash",
+            "damage_type": "Melee"
+          },
+          {
+            "damage": 16,
+            "stagger": 30,
+            "splash": 0.3,
+            "range": 275,
+            "cone": 80,
+            "speed": 0.9,
+            "weight": "Medium",
+            "knockback": 500,
+            "cooldown": null,
+            "repeat": null,
+            "kind": "TargetAndSplash",
+            "damage_type": "Melee"
+          },
+          {
+            "damage": 24,
+            "stagger": 60,
+            "splash": 0.3,
+            "range": 300,
+            "cone": 180,
+            "speed": 1,
+            "weight": "Heavy",
+            "knockback": 800,
+            "cooldown": null,
+            "repeat": null,
+            "kind": "TargetAndSplash",
+            "damage_type": "Melee"
+          }
+        ],
+        "jump": {
+          "damage": 28,
+          "stagger": 45,
+          "splash": 0.3,
+          "range": 250,
+          "weight": "Heavy"
+        },
+        "combo_reset": 1.15
+      },
+      "ranged": null,
+      "artifact": null,
+      "levels": null,
+      "summons": null,
+      "base": {
+        "name": "Pickaxe",
+        "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+        "catalog_slug": "melee_weapon-pickaxe"
+      },
+      "uniqueVariant": null,
+      "sources": [
+        {
+          "type": "quest",
+          "name": "Quest reward",
+          "href": null,
+          "via": null
+        },
+        {
+          "type": "area",
+          "name": "Howling Woods",
+          "href": "https://www.dungeons.tools/2/locations/howling-woods",
+          "via": "Pickaxe",
+          "catalog_slug": "location-howling-woods"
+        },
+        {
+          "type": "area",
+          "name": "The Deep Dark",
+          "href": "https://www.dungeons.tools/2/locations/the-deep-dark",
+          "via": "Pickaxe",
+          "catalog_slug": "location-the-deep-dark"
+        },
+        {
+          "type": "area",
+          "name": "Cinder Crags",
+          "href": "https://www.dungeons.tools/2/locations/cinder-crags",
+          "via": "Pickaxe",
+          "catalog_slug": "location-cinder-crags"
+        },
+        {
+          "type": "area",
+          "name": "Humbler Huskland",
+          "href": "https://www.dungeons.tools/2/locations/humbler-huskland",
+          "via": "Pickaxe",
+          "catalog_slug": "location-humbler-huskland"
+        }
+      ],
+      "pair": [
+        {
+          "name": "Pickaxe",
+          "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+          "icon": {
+            "artwork_key": "pair.0.icon"
+          },
+          "unique": false,
+          "kind": "melee",
+          "slot": null,
+          "hit": 24,
+          "catalog_slug": "melee_weapon-pickaxe"
+        },
+        {
+          "name": "The Prospector's Pick",
+          "href": "https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+          "icon": {
+            "artwork_key": "pair.1.icon"
+          },
+          "unique": true,
+          "kind": "melee",
+          "slot": null,
+          "hit": 24,
+          "catalog_slug": "melee_weapon-diamond-pickaxe"
+        }
+      ]
+    },
+    "artwork": {
+      "icon": "images/9e24e9d3-f2dd-4008-b521-2b0a58d3502c",
+      "effects.0.icon": "images/f1c443a1-16a7-4577-afe5-a60d313963f3",
+      "pair.0.icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+      "pair.1.icon": "images/9e24e9d3-f2dd-4008-b521-2b0a58d3502c"
+    },
+    "provenance": {
+      "provider": "dungeons.tools",
+      "source_key": "melee:the-prospectors-pick",
+      "source_url": "https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+      "content_sha256": "42d85f5d5403e19393ba94ecefaae77e0c5f62799dd5efa3b8445c8858df3e3b",
+      "game": "Minecraft Dungeons II",
+      "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+      "extraction_claim": "Launch-file datamining reported by source",
+      "automatic": true,
+      "fields": [
+        "identity",
+        "category",
+        "type",
+        "description",
+        "game_data",
+        "artwork"
+      ],
+      "aliases": [
+        "Diamond Pickaxe"
+      ],
+      "prior_descriptions": [],
+      "prior_reference_urls": [
+        "https://www.dungeons.tools/2/weapons/diamond-pickaxe"
+      ]
+    }
+  },
+  "references": {
+    "melee_weapon-pickaxe": {
+      "slug": "melee_weapon-pickaxe",
+      "category": "melee_weapon",
+      "type": "other",
+      "variation": "Pickaxe",
+      "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+      "source_url": "https://www.dungeons.tools/2/weapons/pickaxe",
+      "evidence_note": "Community preview-footage candidate; verify in launch game.\nAutomated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/weapons/pickaxe",
+      "description": "The iconic tool of adventurers and heroes for as long as anyone can remember.",
+      "game_data": {
+        "schema_version": 1,
+        "availability": "available",
+        "slug": "pickaxe",
+        "name": "Pickaxe",
+        "kind": "melee",
+        "lane": "weapons",
+        "icon": {
+          "artwork_key": "icon"
+        },
+        "render": null,
+        "description": "The iconic tool of adventurers and heroes for as long as anyone can remember.",
+        "unique": false,
+        "rarities": [
+          "common",
+          "rare",
+          "special",
+          "unique"
+        ],
+        "archetype": "Support",
+        "weight": null,
+        "element": null,
+        "slot": null,
+        "set": null,
+        "baseSet": null,
+        "family": null,
+        "effects": [],
+        "melee": {
+          "combo": [
+            {
+              "damage": 16,
+              "stagger": 30,
+              "splash": 0.3,
+              "range": 275,
+              "cone": 80,
+              "speed": 0.9,
+              "weight": "Medium",
+              "knockback": 500,
+              "cooldown": null,
+              "repeat": null,
+              "kind": "TargetAndSplash",
+              "damage_type": "Melee"
+            },
+            {
+              "damage": 16,
+              "stagger": 30,
+              "splash": 0.3,
+              "range": 275,
+              "cone": 80,
+              "speed": 0.9,
+              "weight": "Medium",
+              "knockback": 500,
+              "cooldown": null,
+              "repeat": null,
+              "kind": "TargetAndSplash",
+              "damage_type": "Melee"
+            },
+            {
+              "damage": 24,
+              "stagger": 60,
+              "splash": 0.3,
+              "range": 300,
+              "cone": 180,
+              "speed": 1,
+              "weight": "Heavy",
+              "knockback": 800,
+              "cooldown": null,
+              "repeat": null,
+              "kind": "TargetAndSplash",
+              "damage_type": "Melee"
+            }
+          ],
+          "jump": {
+            "damage": 28,
+            "stagger": 45,
+            "splash": 0.3,
+            "range": 250,
+            "weight": "Heavy"
+          },
+          "combo_reset": 1.15
+        },
+        "ranged": null,
+        "artifact": null,
+        "levels": null,
+        "summons": null,
+        "base": null,
+        "uniqueVariant": {
+          "name": "The Prospector's Pick",
+          "href": "https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+          "catalog_slug": "melee_weapon-diamond-pickaxe"
+        },
+        "sources": [
+          {
+            "type": "area",
+            "name": "Howling Woods",
+            "href": "https://www.dungeons.tools/2/locations/howling-woods",
+            "via": null,
+            "catalog_slug": "location-howling-woods"
+          },
+          {
+            "type": "area",
+            "name": "The Deep Dark",
+            "href": "https://www.dungeons.tools/2/locations/the-deep-dark",
+            "via": null,
+            "catalog_slug": "location-the-deep-dark"
+          },
+          {
+            "type": "area",
+            "name": "Cinder Crags",
+            "href": "https://www.dungeons.tools/2/locations/cinder-crags",
+            "via": null,
+            "catalog_slug": "location-cinder-crags"
+          },
+          {
+            "type": "area",
+            "name": "Humbler Huskland",
+            "href": "https://www.dungeons.tools/2/locations/humbler-huskland",
+            "via": null,
+            "catalog_slug": "location-humbler-huskland"
+          },
+          {
+            "type": "quest",
+            "name": "Quest reward",
+            "href": null,
+            "via": null
+          },
+          {
+            "type": "merchant",
+            "name": "Village merchant",
+            "href": null,
+            "via": null
+          }
+        ],
+        "pair": [
+          {
+            "name": "Pickaxe",
+            "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+            "icon": {
+              "artwork_key": "pair.0.icon"
+            },
+            "unique": false,
+            "kind": "melee",
+            "slot": null,
+            "hit": 24,
+            "catalog_slug": "melee_weapon-pickaxe"
+          },
+          {
+            "name": "The Prospector's Pick",
+            "href": "https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+            "icon": {
+              "artwork_key": "pair.1.icon"
+            },
+            "unique": true,
+            "kind": "melee",
+            "slot": null,
+            "hit": 24,
+            "catalog_slug": "melee_weapon-diamond-pickaxe"
+          }
+        ]
+      },
+      "artwork": {
+        "icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+        "pair.0.icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+        "pair.1.icon": "images/9e24e9d3-f2dd-4008-b521-2b0a58d3502c"
+      },
+      "provenance": {
+        "provider": "dungeons.tools",
+        "source_key": "melee:pickaxe",
+        "source_url": "https://www.dungeons.tools/2/weapons/pickaxe",
+        "content_sha256": "dfbad578fa945da0b7c5669eba87a97f00577e14288c7d6817b4f5807e80cf2b",
+        "game": "Minecraft Dungeons II",
+        "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+        "extraction_claim": "Launch-file datamining reported by source",
+        "automatic": true,
+        "fields": [
+          "identity",
+          "category",
+          "type",
+          "description",
+          "game_data",
+          "artwork"
+        ],
+        "aliases": [],
+        "prior_descriptions": [],
+        "prior_reference_urls": []
+      }
+    },
+    "gear-effect-additional-emerald-chance": {
+      "slug": "gear-effect-additional-emerald-chance",
+      "category": "gear_effect",
+      "type": "utility",
+      "variation": "Prospector",
+      "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/f1c443a1-16a7-4577-afe5-a60d313963f3",
+      "source_url": "https://www.dungeons.tools/2/effects/prospector",
+      "evidence_note": "Provisional gear effect listed on Minecraft Wiki, revision 3794672. Descriptive catalog name; group is an editorial build-planning classification, not a confirmed game-menu grouping or an equipment-roll restriction. X% is a variable item value; no default, min/max, stacking rule or item compatibility is inferred. No verified isolated gear-effect PNG found; color square is an intentional fallback, not game artwork.\nAutomated 2026-09-28T18:11:12.702Z; evidence: identity,description=https://minecraft.wiki/w/Dungeons_II:Effect\nAutomated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/effects/prospector",
+      "description": "Grants a 5% chance to receive additional emeralds.",
+      "applicable_categories": [
+        "armor"
+      ],
+      "game_data": {
+        "schema_version": 1,
+        "availability": "available",
+        "slug": "prospector",
+        "name": "Prospector",
+        "kind": "effect",
+        "lane": "effects",
+        "icon": {
+          "artwork_key": "icon"
+        },
+        "render": null,
+        "description": "Grants a 5% chance to receive additional emeralds.",
+        "category": "utility",
+        "gear": [
+          "armor"
+        ],
+        "tiers": [
+          {
+            "tier": "I",
+            "talisman": false,
+            "text": "Grants a 5% chance to receive additional emeralds."
+          },
+          {
+            "tier": "II",
+            "talisman": false,
+            "text": "Grants a 10% chance to receive additional emeralds."
+          },
+          {
+            "tier": "III",
+            "talisman": false,
+            "text": "Grants a 15% chance to receive additional emeralds."
+          },
+          {
+            "tier": "unique",
+            "talisman": false,
+            "text": "Grants a 20% chance to receive additional emeralds."
+          },
+          {
+            "tier": "I",
+            "talisman": true,
+            "text": "Grants a 10% chance to receive additional emeralds."
+          },
+          {
+            "tier": "II",
+            "talisman": true,
+            "text": "Grants a 20% chance to receive additional emeralds."
+          },
+          {
+            "tier": "III",
+            "talisman": true,
+            "text": "Grants a 25% chance to receive additional emeralds."
+          }
+        ],
+        "carriers": [
+          {
+            "name": "The Prospector's Pick",
+            "href": "https://www.dungeons.tools/2/weapons/the-prospectors-pick",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "carriers.0.icon"
+            },
+            "catalog_slug": "melee_weapon-diamond-pickaxe"
+          },
+          {
+            "name": "Emerald of Good Fortune",
+            "href": "https://www.dungeons.tools/2/artifacts/emerald-of-good-fortune",
+            "kind": "talisman",
+            "icon": {
+              "artwork_key": "carriers.1.icon"
+            },
+            "catalog_slug": "talisman-emerald-of-good-fortune"
+          }
+        ]
+      },
+      "artwork": {
+        "icon": "images/f1c443a1-16a7-4577-afe5-a60d313963f3",
+        "carriers.0.icon": "images/9e24e9d3-f2dd-4008-b521-2b0a58d3502c",
+        "carriers.1.icon": "images/884176d3-199e-4b29-b37e-96cd20b37289"
+      },
+      "provenance": {
+        "provider": "dungeons.tools",
+        "source_key": "effect:prospector",
+        "source_url": "https://www.dungeons.tools/2/effects/prospector",
+        "content_sha256": "d5f19d7e7b37974d9dc42340e0ca478a0232a901d074d0dcb483804ff1b208fe",
+        "game": "Minecraft Dungeons II",
+        "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+        "extraction_claim": "Launch-file datamining reported by source",
+        "automatic": true,
+        "fields": [
+          "identity",
+          "category",
+          "type",
+          "description",
+          "game_data",
+          "artwork"
+        ],
+        "aliases": [
+          "Additional emerald chance"
+        ],
+        "prior_descriptions": [
+          "Grants a X% chance to receive additional emeralds."
+        ],
+        "prior_reference_urls": [
+          "https://minecraft.wiki/w/Dungeons_II:Effect"
+        ]
+      }
+    },
+    "location-howling-woods": {
+      "slug": "location-howling-woods",
+      "category": "location",
+      "type": "location",
+      "variation": "Howling Woods",
+      "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/85576872-05e9-4de4-9f3c-253369672c18",
+      "source_url": "https://www.dungeons.tools/2/locations/howling-woods",
+      "evidence_note": "Automated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/locations/howling-woods",
+      "game_data": {
+        "schema_version": 1,
+        "availability": "available",
+        "slug": "howling-woods",
+        "name": "Howling Woods",
+        "kind": "location",
+        "lane": "locations",
+        "icon": {
+          "artwork_key": "icon"
+        },
+        "render": null,
+        "description": null,
+        "level": 6,
+        "subAreas": [
+          "Wishing Well",
+          "Witch's Hut",
+          "Spider Caves"
+        ],
+        "mobs": [
+          {
+            "name": "Spider",
+            "href": "https://www.dungeons.tools/2/enemies/spider",
+            "share": 0.32,
+            "catalog_slug": "mob-spider"
+          },
+          {
+            "name": "Slime",
+            "href": "https://www.dungeons.tools/2/enemies/slime",
+            "share": 0.11,
+            "catalog_slug": "mob-slime"
+          },
+          {
+            "name": "Skeleton",
+            "href": "https://www.dungeons.tools/2/enemies/skeleton",
+            "share": 0.09,
+            "catalog_slug": "mob-skeleton"
+          },
+          {
+            "name": "Zombie",
+            "href": "https://www.dungeons.tools/2/enemies/zombie",
+            "share": 0.07,
+            "catalog_slug": "mob-zombie"
+          },
+          {
+            "name": "Baby Zombie",
+            "href": "https://www.dungeons.tools/2/enemies/baby-zombie",
+            "share": 0.06,
+            "catalog_slug": "mob-baby-zombie"
+          },
+          {
+            "name": "Vanguard",
+            "href": "https://www.dungeons.tools/2/enemies/vanguard",
+            "share": 0.06,
+            "catalog_slug": "mob-vanguard"
+          },
+          {
+            "name": "Mucked",
+            "href": "https://www.dungeons.tools/2/enemies/mucked",
+            "share": 0.05,
+            "catalog_slug": "mob-mucked"
+          },
+          {
+            "name": "Vindicator",
+            "href": "https://www.dungeons.tools/2/enemies/vindicator",
+            "share": 0.05,
+            "catalog_slug": "mob-vindicator"
+          },
+          {
+            "name": "Frozen",
+            "href": "https://www.dungeons.tools/2/enemies/frozen",
+            "share": 0.04,
+            "catalog_slug": "mob-frozen"
+          },
+          {
+            "name": "Chicken Jockey",
+            "href": "https://www.dungeons.tools/2/enemies/chicken-jockey",
+            "share": 0.04,
+            "catalog_slug": "mob-chicken-jockey"
+          },
+          {
+            "name": "Spider Jockey",
+            "href": "https://www.dungeons.tools/2/enemies/spider-jockey",
+            "share": 0.04,
+            "catalog_slug": "mob-spider-jockey"
+          },
+          {
+            "name": "Pillager",
+            "href": "https://www.dungeons.tools/2/enemies/pillager",
+            "share": 0.04,
+            "catalog_slug": "mob-pillager"
+          },
+          {
+            "name": "Husk",
+            "href": "https://www.dungeons.tools/2/enemies/husk",
+            "share": 0.03,
+            "catalog_slug": "mob-husk"
+          },
+          {
+            "name": "Enchanter",
+            "href": "https://www.dungeons.tools/2/enemies/enchanter",
+            "share": 0.01,
+            "catalog_slug": "mob-enchanter"
+          },
+          {
+            "name": "Ravager",
+            "href": "https://www.dungeons.tools/2/enemies/ravager",
+            "share": 0,
+            "catalog_slug": "mob-ravager"
+          },
+          {
+            "name": "Geomancer",
+            "href": "https://www.dungeons.tools/2/enemies/geomancer",
+            "share": 0,
+            "catalog_slug": "mob-geomancer"
+          },
+          {
+            "name": "Royal Guard",
+            "href": "https://www.dungeons.tools/2/enemies/royal-guard",
+            "share": 0,
+            "catalog_slug": "mob-royal-guard"
+          },
+          {
+            "name": "Bogged",
+            "href": "https://www.dungeons.tools/2/enemies/bogged",
+            "share": 0,
+            "catalog_slug": "mob-bogged"
+          },
+          {
+            "name": "Stray",
+            "href": "https://www.dungeons.tools/2/enemies/stray",
+            "share": 0,
+            "catalog_slug": "mob-stray"
+          }
+        ],
+        "minibosses": [
+          {
+            "name": "Enderman",
+            "href": "https://www.dungeons.tools/2/enemies/enderman",
+            "icon": {
+              "artwork_key": "minibosses.0.icon"
+            },
+            "catalog_slug": "mob-enderman"
+          },
+          {
+            "name": "Witch",
+            "href": "https://www.dungeons.tools/2/enemies/witch",
+            "icon": {
+              "artwork_key": "minibosses.1.icon"
+            },
+            "catalog_slug": "mob-witch"
+          },
+          {
+            "name": "Soul Corrupted Enderman",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-enderman",
+            "icon": {
+              "artwork_key": "minibosses.2.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-enderman"
+          },
+          {
+            "name": "Soul Corrupted Witch",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-witch",
+            "icon": {
+              "artwork_key": "minibosses.3.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-witch"
+          },
+          {
+            "name": "Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/evoker",
+            "icon": {
+              "artwork_key": "minibosses.4.icon"
+            },
+            "catalog_slug": "mob-evoker"
+          }
+        ],
+        "arena": [
+          {
+            "name": "Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/evoker",
+            "icon": {
+              "artwork_key": "arena.0.icon"
+            },
+            "catalog_slug": "mob-evoker"
+          },
+          {
+            "name": "Soul Corrupted Enchanter",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-enchanter",
+            "icon": {
+              "artwork_key": "arena.1.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-enchanter"
+          },
+          {
+            "name": "Soul Corrupted Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-evoker",
+            "icon": {
+              "artwork_key": "arena.2.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-evoker"
+          },
+          {
+            "name": "Soul Corrupted Geomancer",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-geomancer",
+            "icon": {
+              "artwork_key": "arena.3.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-geomancer"
+          },
+          {
+            "name": "Soul Corrupted Pillager",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-pillager",
+            "icon": {
+              "artwork_key": "arena.4.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-pillager"
+          },
+          {
+            "name": "Soul Corrupted Ravager",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-ravager",
+            "icon": {
+              "artwork_key": "arena.5.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-ravager"
+          },
+          {
+            "name": "Soul Corrupted Royal Guard",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-royal-guard",
+            "icon": {
+              "artwork_key": "arena.6.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-royal-guard"
+          },
+          {
+            "name": "Soul Corrupted Spider",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-spider",
+            "icon": {
+              "artwork_key": "arena.7.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-spider"
+          },
+          {
+            "name": "Soul Corrupted Spider Jockey",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-spider-jockey",
+            "icon": {
+              "artwork_key": "arena.8.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-spider-jockey"
+          },
+          {
+            "name": "Soul Corrupted Vindicator",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-vindicator",
+            "icon": {
+              "artwork_key": "arena.9.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-vindicator"
+          },
+          {
+            "name": "Soul Corrupted Witch",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-witch",
+            "icon": {
+              "artwork_key": "arena.10.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-witch"
+          }
+        ],
+        "loot": [
+          {
+            "name": "Winter Staff",
+            "href": "https://www.dungeons.tools/2/artifacts/winter-staff",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.0.icon"
+            },
+            "catalog_slug": "artifact-winter-staff"
+          },
+          {
+            "name": "Corrupted Seeds",
+            "href": "https://www.dungeons.tools/2/artifacts/corrupted-seeds",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.1.icon"
+            },
+            "catalog_slug": "artifact-corrupted-seeds"
+          },
+          {
+            "name": "Death Cap Mushroom",
+            "href": "https://www.dungeons.tools/2/artifacts/death-cap-mushroom",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.2.icon"
+            },
+            "catalog_slug": "artifact-death-cap-mushroom"
+          },
+          {
+            "name": "Turtle Master's Mandolin",
+            "href": "https://www.dungeons.tools/2/artifacts/turtle-masters-mandolin",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.3.icon"
+            },
+            "catalog_slug": "artifact-turtle-master-s-mandolin"
+          },
+          {
+            "name": "Venomous Quiver",
+            "href": "https://www.dungeons.tools/2/artifacts/venomous-quiver",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.4.icon"
+            },
+            "catalog_slug": "artifact-venomous-quiver"
+          },
+          {
+            "name": "Pouch of Thunder",
+            "href": "https://www.dungeons.tools/2/artifacts/pouch-of-thunder",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.5.icon"
+            },
+            "catalog_slug": "artifact-pouch-of-thunder"
+          },
+          {
+            "name": "Ender Fog",
+            "href": "https://www.dungeons.tools/2/artifacts/ender-fog",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.6.icon"
+            },
+            "catalog_slug": "artifact-invisibility-potion"
+          },
+          {
+            "name": "Totem of Shielding",
+            "href": "https://www.dungeons.tools/2/artifacts/totem-of-shielding",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.7.icon"
+            },
+            "catalog_slug": "artifact-totem-of-shielding"
+          },
+          {
+            "name": "Witch Brew",
+            "href": "https://www.dungeons.tools/2/artifacts/witch-brew",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.8.icon"
+            },
+            "catalog_slug": "artifact-witch-brew"
+          },
+          {
+            "name": "Axe",
+            "href": "https://www.dungeons.tools/2/weapons/axe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.9.icon"
+            },
+            "catalog_slug": "melee_weapon-axe"
+          },
+          {
+            "name": "Battlestaff",
+            "href": "https://www.dungeons.tools/2/weapons/battlestaff",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.10.icon"
+            },
+            "catalog_slug": "melee_weapon-battlestaff"
+          },
+          {
+            "name": "Wolf Claws",
+            "href": "https://www.dungeons.tools/2/weapons/wolf-claws",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.11.icon"
+            },
+            "catalog_slug": "melee_weapon-claws"
+          },
+          {
+            "name": "Riftslasher",
+            "href": "https://www.dungeons.tools/2/weapons/riftslasher",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.12.icon"
+            },
+            "catalog_slug": "melee_weapon-riftslasher"
+          },
+          {
+            "name": "Twilight Dagger",
+            "href": "https://www.dungeons.tools/2/weapons/twilight-dagger",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.13.icon"
+            },
+            "catalog_slug": "melee_weapon-twilight-dagger"
+          },
+          {
+            "name": "Double Daggers",
+            "href": "https://www.dungeons.tools/2/weapons/double-daggers",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.14.icon"
+            },
+            "catalog_slug": "melee_weapon-double-daggers"
+          },
+          {
+            "name": "Disciple Wraps",
+            "href": "https://www.dungeons.tools/2/armor/disciple-wraps",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.15.icon"
+            },
+            "catalog_slug": "armor-disciple-wraps"
+          },
+          {
+            "name": "Disciple Robe",
+            "href": "https://www.dungeons.tools/2/armor/disciple-robe",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.16.icon"
+            },
+            "catalog_slug": "armor-disciple-robe"
+          },
+          {
+            "name": "Disciple mask",
+            "href": "https://www.dungeons.tools/2/armor/disciple-mask",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.17.icon"
+            },
+            "catalog_slug": "armor-head-disciple-mask"
+          },
+          {
+            "name": "Disciple Leggings",
+            "href": "https://www.dungeons.tools/2/armor/disciple-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.18.icon"
+            },
+            "catalog_slug": "armor-disciple-leggings"
+          },
+          {
+            "name": "Glaive",
+            "href": "https://www.dungeons.tools/2/weapons/glaive",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.19.icon"
+            },
+            "catalog_slug": "melee_weapon-glaive"
+          },
+          {
+            "name": "Greatbow",
+            "href": "https://www.dungeons.tools/2/weapons/greatbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.20.icon"
+            },
+            "catalog_slug": "ranged_weapon-greatbow"
+          },
+          {
+            "name": "Heavy Crossbow",
+            "href": "https://www.dungeons.tools/2/weapons/heavy-crossbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.21.icon"
+            },
+            "catalog_slug": "ranged_weapon-heavy-crossbow"
+          },
+          {
+            "name": "Longbow",
+            "href": "https://www.dungeons.tools/2/weapons/longbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.22.icon"
+            },
+            "catalog_slug": "ranged_weapon-longbow"
+          },
+          {
+            "name": "Tidal Sickle",
+            "href": "https://www.dungeons.tools/2/weapons/tidal-sickle",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.23.icon"
+            },
+            "catalog_slug": "melee_weapon-tidal-sickle"
+          },
+          {
+            "name": "Mushroom Boots",
+            "href": "https://www.dungeons.tools/2/armor/mushroom-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.24.icon"
+            },
+            "catalog_slug": "armor-mushroom-boots"
+          },
+          {
+            "name": "Mushroom Robe",
+            "href": "https://www.dungeons.tools/2/armor/mushroom-robe",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.25.icon"
+            },
+            "catalog_slug": "armor-mushroom-robe"
+          },
+          {
+            "name": "Mushroom Cap",
+            "href": "https://www.dungeons.tools/2/armor/mushroom-cap",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.26.icon"
+            },
+            "catalog_slug": "armor-mushroom-cap"
+          },
+          {
+            "name": "Mushroom Leggings",
+            "href": "https://www.dungeons.tools/2/armor/mushroom-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.27.icon"
+            },
+            "catalog_slug": "armor-mushroom-leggings"
+          },
+          {
+            "name": "Phantom Boots",
+            "href": "https://www.dungeons.tools/2/armor/phantom-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.28.icon"
+            },
+            "catalog_slug": "armor-feet-phantom-boots"
+          },
+          {
+            "name": "Phantom Chestplate",
+            "href": "https://www.dungeons.tools/2/armor/phantom-chestplate",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.29.icon"
+            },
+            "catalog_slug": "armor-phantom-chestplate"
+          },
+          {
+            "name": "Phantom Helmet",
+            "href": "https://www.dungeons.tools/2/armor/phantom-helmet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.30.icon"
+            },
+            "catalog_slug": "armor-phantom-helmet"
+          },
+          {
+            "name": "Phantom Pants",
+            "href": "https://www.dungeons.tools/2/armor/phantom-pants",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.31.icon"
+            },
+            "catalog_slug": "armor-phantom-leggings"
+          },
+          {
+            "name": "Pickaxe",
+            "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.32.icon"
+            },
+            "catalog_slug": "melee_weapon-pickaxe"
+          },
+          {
+            "name": "Rapid Crossbow",
+            "href": "https://www.dungeons.tools/2/weapons/rapid-crossbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.33.icon"
+            },
+            "catalog_slug": "ranged_weapon-rapid-crossbow"
+          },
+          {
+            "name": "Sabre",
+            "href": "https://www.dungeons.tools/2/weapons/sabre",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.34.icon"
+            },
+            "catalog_slug": "melee_weapon-sabre-launch"
+          },
+          {
+            "name": "Scatter Crossbow",
+            "href": "https://www.dungeons.tools/2/weapons/scatter-crossbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.35.icon"
+            },
+            "catalog_slug": "ranged_weapon-scatter-crossbow"
+          },
+          {
+            "name": "Short Spear",
+            "href": "https://www.dungeons.tools/2/weapons/short-spear",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.36.icon"
+            },
+            "catalog_slug": "melee_weapon-spear"
+          },
+          {
+            "name": "Shovel",
+            "href": "https://www.dungeons.tools/2/weapons/shovel",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.37.icon"
+            },
+            "catalog_slug": "melee_weapon-shovel"
+          },
+          {
+            "name": "Wolfpack Boots",
+            "href": "https://www.dungeons.tools/2/armor/wolfpack-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.38.icon"
+            },
+            "catalog_slug": "armor-wolfpack-boots"
+          },
+          {
+            "name": "Wolfpack Jacket",
+            "href": "https://www.dungeons.tools/2/armor/wolfpack-jacket",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.39.icon"
+            },
+            "catalog_slug": "armor-wolfpack-jacket"
+          },
+          {
+            "name": "Wolfpack Hood",
+            "href": "https://www.dungeons.tools/2/armor/wolfpack-hood",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.40.icon"
+            },
+            "catalog_slug": "armor-head-wolfpack-hood"
+          },
+          {
+            "name": "Wolfpack Leggings",
+            "href": "https://www.dungeons.tools/2/armor/wolfpack-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.41.icon"
+            },
+            "catalog_slug": "armor-wolfpack-leggings"
+          }
+        ]
+      },
+      "artwork": {
+        "icon": "images/85576872-05e9-4de4-9f3c-253369672c18",
+        "minibosses.0.icon": "images/4c926cbe-521b-4a12-8843-f435058c98f2",
+        "minibosses.1.icon": "images/fe6eda10-b2a2-4242-8089-6e0ad282d911",
+        "minibosses.2.icon": "images/4c926cbe-521b-4a12-8843-f435058c98f2",
+        "minibosses.3.icon": "images/fe6eda10-b2a2-4242-8089-6e0ad282d911",
+        "minibosses.4.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "arena.0.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "arena.1.icon": "images/e84bc008-04f8-411e-9901-ec853642c33a",
+        "arena.2.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "arena.3.icon": "images/554ea2de-dd1e-4987-9989-7fcbcee3fa42",
+        "arena.4.icon": "images/e5e4c161-6886-4c1b-95c2-d1db3aa9db40",
+        "arena.5.icon": "images/dbff23e1-8c46-42a3-be70-52be5d9a36d5",
+        "arena.6.icon": "images/19716122-cf93-4976-a203-8a3eafc6c118",
+        "arena.7.icon": "images/2e7f1716-2489-412b-9d00-b48fd5589470",
+        "arena.8.icon": "images/de7fb25b-cb57-443e-9b8b-427cc8f5b787",
+        "arena.9.icon": "images/87845a98-c2bd-4efc-997a-9c2c69a100da",
+        "arena.10.icon": "images/fe6eda10-b2a2-4242-8089-6e0ad282d911",
+        "loot.0.icon": "images/e78d89fd-c690-41cc-8e04-a0ef9e85f332",
+        "loot.1.icon": "images/2c7238b8-5b59-41df-896f-96bf261d724c",
+        "loot.2.icon": "images/139602b4-a457-478a-827e-5550e5dfa04f",
+        "loot.3.icon": "images/4b4bbfe0-b8a2-48df-bd5e-9ac69cbc50f5",
+        "loot.4.icon": "images/f12fb6f4-f1b7-48ef-886c-ff9c023c4998",
+        "loot.5.icon": "images/907b61d7-c331-44bd-9eea-4981ff2b176d",
+        "loot.6.icon": "images/1a476302-7d19-4ea5-921a-e3f2dc75e9b3",
+        "loot.7.icon": "images/4929adeb-2f38-4cd5-88bd-63b24acebdb9",
+        "loot.8.icon": "images/ba8bb3b0-731d-449b-84d3-c8aa9744a696",
+        "loot.9.icon": "images/03f9f59c-a9ac-429e-bbd1-21364b968f9c",
+        "loot.10.icon": "images/609bdc55-28a5-4373-bf4c-af3f26ae36a7",
+        "loot.11.icon": "images/46c0346e-13a7-4850-bf2b-a46e4bdbefec",
+        "loot.12.icon": "images/07519aa6-c187-4ae6-97ed-31bd0a5910ae",
+        "loot.13.icon": "images/b8f0b96a-2f73-414c-a9b7-27f43a80a317",
+        "loot.14.icon": "images/9fa27233-656c-49d0-8f62-af6dc2a3ff23",
+        "loot.15.icon": "images/ae3c10da-dc46-45a2-bf5d-07d87162d860",
+        "loot.16.icon": "images/3e92ae01-e8de-433e-bd62-dd3296bd9d08",
+        "loot.17.icon": "images/25f05930-c927-47bc-a80d-8a7f0daae851",
+        "loot.18.icon": "images/9b51ce45-037c-467b-ae57-57c051fc5989",
+        "loot.19.icon": "images/cba07113-56ec-45cd-9f91-4b7203c70a6e",
+        "loot.20.icon": "images/ca0df881-ba09-4857-bfa7-cdc84c0374e2",
+        "loot.21.icon": "images/0e9bcb7e-932f-4170-b3de-ca450ce089b6",
+        "loot.22.icon": "images/c7616576-50e8-47f8-a310-74f151a303ac",
+        "loot.23.icon": "images/0b8df7c3-1a4f-4e55-9c0a-1f8667389101",
+        "loot.24.icon": "images/c55978c5-edd8-4f87-b9e8-a0d694da9b9f",
+        "loot.25.icon": "images/0830b537-5237-4742-931a-0b115b6d7746",
+        "loot.26.icon": "images/9acfa230-b912-417c-810f-fe26bc43f3e5",
+        "loot.27.icon": "images/fb6135c5-fd10-4378-8be7-9df7dbb6fab0",
+        "loot.28.icon": "images/f23fbe7d-bdeb-405b-9e26-07b8ef90468b",
+        "loot.29.icon": "images/7425ec67-0600-4a06-8dc4-558ba6f10f25",
+        "loot.30.icon": "images/7a5c8acc-eb82-4feb-be70-f55e2d709a0e",
+        "loot.31.icon": "images/5d4fbf99-2fec-4ccf-9849-8f1a2b4f2e58",
+        "loot.32.icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+        "loot.33.icon": "images/b1adf052-63e6-4b9f-8059-944d1adff274",
+        "loot.34.icon": "images/e6ba328e-6906-4a25-90d6-f2710e768214",
+        "loot.35.icon": "images/445fddd1-1e01-4457-b4f2-2ed3c68400b0",
+        "loot.36.icon": "images/7fe712b2-b24e-4765-b088-72b098d71c54",
+        "loot.37.icon": "images/cc5c0ace-6b55-4e5f-971d-a0fcda056596",
+        "loot.38.icon": "images/68cc8fbb-8a53-493b-b099-15fb9b41478d",
+        "loot.39.icon": "images/7684c63e-7de0-4c3d-b2bc-37fc3800e09e",
+        "loot.40.icon": "images/bfe44b97-e26c-4718-adba-13185c80ccd9",
+        "loot.41.icon": "images/5d06c00b-2d91-45ce-9482-0b52a887e5c1"
+      },
+      "provenance": {
+        "provider": "dungeons.tools",
+        "source_key": "location:howling-woods",
+        "source_url": "https://www.dungeons.tools/2/locations/howling-woods",
+        "content_sha256": "a1e3307c15e258a08568eae1cb13f8c5ff8137483070e642f2798db5feaf2705",
+        "game": "Minecraft Dungeons II",
+        "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+        "extraction_claim": "Launch-file datamining reported by source",
+        "automatic": true,
+        "fields": [
+          "identity",
+          "category",
+          "type",
+          "description",
+          "game_data",
+          "artwork"
+        ],
+        "aliases": [],
+        "prior_descriptions": [],
+        "prior_reference_urls": []
+      }
+    },
+    "location-the-deep-dark": {
+      "slug": "location-the-deep-dark",
+      "category": "location",
+      "type": "location",
+      "variation": "The Deep Dark",
+      "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/6421cc07-5c69-4a20-996f-763ec0f633b6",
+      "source_url": "https://www.dungeons.tools/2/locations/the-deep-dark",
+      "evidence_note": "Automated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/locations/the-deep-dark",
+      "game_data": {
+        "schema_version": 1,
+        "availability": "available",
+        "slug": "the-deep-dark",
+        "name": "The Deep Dark",
+        "kind": "location",
+        "lane": "locations",
+        "icon": {
+          "artwork_key": "icon"
+        },
+        "render": null,
+        "description": null,
+        "level": 45,
+        "subAreas": [
+          "Dungeons"
+        ],
+        "mobs": [
+          {
+            "name": "Slime",
+            "href": "https://www.dungeons.tools/2/enemies/slime",
+            "share": 0.14,
+            "catalog_slug": "mob-slime"
+          },
+          {
+            "name": "Vindicator",
+            "href": "https://www.dungeons.tools/2/enemies/vindicator",
+            "share": 0.12,
+            "catalog_slug": "mob-vindicator"
+          },
+          {
+            "name": "Spider",
+            "href": "https://www.dungeons.tools/2/enemies/spider",
+            "share": 0.12,
+            "catalog_slug": "mob-spider"
+          },
+          {
+            "name": "Pillager",
+            "href": "https://www.dungeons.tools/2/enemies/pillager",
+            "share": 0.11,
+            "catalog_slug": "mob-pillager"
+          },
+          {
+            "name": "Excavator",
+            "href": "https://www.dungeons.tools/2/enemies/excavator",
+            "share": 0.08,
+            "catalog_slug": "mob-excavator"
+          },
+          {
+            "name": "Skeleton",
+            "href": "https://www.dungeons.tools/2/enemies/skeleton",
+            "share": 0.05,
+            "catalog_slug": "mob-skeleton"
+          },
+          {
+            "name": "Enchanter",
+            "href": "https://www.dungeons.tools/2/enemies/enchanter",
+            "share": 0.04,
+            "catalog_slug": "mob-enchanter"
+          },
+          {
+            "name": "Spider Jockey",
+            "href": "https://www.dungeons.tools/2/enemies/spider-jockey",
+            "share": 0.04,
+            "catalog_slug": "mob-spider-jockey"
+          },
+          {
+            "name": "Cave Spider",
+            "href": "https://www.dungeons.tools/2/enemies/cave-spider",
+            "share": 0.04,
+            "catalog_slug": "mob-cave-spider"
+          },
+          {
+            "name": "Zombie",
+            "href": "https://www.dungeons.tools/2/enemies/zombie",
+            "share": 0.04,
+            "catalog_slug": "mob-zombie"
+          },
+          {
+            "name": "Flame Construct",
+            "href": "https://www.dungeons.tools/2/enemies/flame-construct",
+            "share": 0.03,
+            "catalog_slug": "mob-flame-construct"
+          },
+          {
+            "name": "Baby Zombie",
+            "href": "https://www.dungeons.tools/2/enemies/baby-zombie",
+            "share": 0.03,
+            "catalog_slug": "mob-baby-zombie"
+          },
+          {
+            "name": "Vanguard",
+            "href": "https://www.dungeons.tools/2/enemies/vanguard",
+            "share": 0.03,
+            "catalog_slug": "mob-vanguard"
+          },
+          {
+            "name": "Mucked",
+            "href": "https://www.dungeons.tools/2/enemies/mucked",
+            "share": 0.03,
+            "catalog_slug": "mob-mucked"
+          },
+          {
+            "name": "Frozen",
+            "href": "https://www.dungeons.tools/2/enemies/frozen",
+            "share": 0.02,
+            "catalog_slug": "mob-frozen"
+          },
+          {
+            "name": "Chicken Jockey",
+            "href": "https://www.dungeons.tools/2/enemies/chicken-jockey",
+            "share": 0.02,
+            "catalog_slug": "mob-chicken-jockey"
+          },
+          {
+            "name": "Husk",
+            "href": "https://www.dungeons.tools/2/enemies/husk",
+            "share": 0.02,
+            "catalog_slug": "mob-husk"
+          },
+          {
+            "name": "Ravager",
+            "href": "https://www.dungeons.tools/2/enemies/ravager",
+            "share": 0.02,
+            "catalog_slug": "mob-ravager"
+          },
+          {
+            "name": "Geomancer",
+            "href": "https://www.dungeons.tools/2/enemies/geomancer",
+            "share": 0.01,
+            "catalog_slug": "mob-geomancer"
+          },
+          {
+            "name": "Royal Guard",
+            "href": "https://www.dungeons.tools/2/enemies/royal-guard",
+            "share": 0.01,
+            "catalog_slug": "mob-royal-guard"
+          },
+          {
+            "name": "Bogged",
+            "href": "https://www.dungeons.tools/2/enemies/bogged",
+            "share": 0,
+            "catalog_slug": "mob-bogged"
+          },
+          {
+            "name": "Stray",
+            "href": "https://www.dungeons.tools/2/enemies/stray",
+            "share": 0,
+            "catalog_slug": "mob-stray"
+          }
+        ],
+        "minibosses": [
+          {
+            "name": "Enderman",
+            "href": "https://www.dungeons.tools/2/enemies/enderman",
+            "icon": {
+              "artwork_key": "minibosses.0.icon"
+            },
+            "catalog_slug": "mob-enderman"
+          },
+          {
+            "name": "Witch",
+            "href": "https://www.dungeons.tools/2/enemies/witch",
+            "icon": {
+              "artwork_key": "minibosses.1.icon"
+            },
+            "catalog_slug": "mob-witch"
+          },
+          {
+            "name": "Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/evoker",
+            "icon": {
+              "artwork_key": "minibosses.2.icon"
+            },
+            "catalog_slug": "mob-evoker"
+          },
+          {
+            "name": "Soul Corrupted Enderman",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-enderman",
+            "icon": {
+              "artwork_key": "minibosses.3.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-enderman"
+          },
+          {
+            "name": "Soul Corrupted Witch",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-witch",
+            "icon": {
+              "artwork_key": "minibosses.4.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-witch"
+          },
+          {
+            "name": "Soul Corrupted Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-evoker",
+            "icon": {
+              "artwork_key": "minibosses.5.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-evoker"
+          }
+        ],
+        "arena": [],
+        "loot": [
+          {
+            "name": "Electric Bangle",
+            "href": "https://www.dungeons.tools/2/artifacts/electric-bangle",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.0.icon"
+            },
+            "catalog_slug": "artifact-electric-bangle"
+          },
+          {
+            "name": "Corrupted Seeds",
+            "href": "https://www.dungeons.tools/2/artifacts/corrupted-seeds",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.1.icon"
+            },
+            "catalog_slug": "artifact-corrupted-seeds"
+          },
+          {
+            "name": "Flaming Quiver",
+            "href": "https://www.dungeons.tools/2/artifacts/flaming-quiver",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.2.icon"
+            },
+            "catalog_slug": "artifact-flaming-quiver"
+          },
+          {
+            "name": "Grindstone",
+            "href": "https://www.dungeons.tools/2/artifacts/grindstone",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.3.icon"
+            },
+            "catalog_slug": "artifact-grindstone"
+          },
+          {
+            "name": "Turtle Master's Mandolin",
+            "href": "https://www.dungeons.tools/2/artifacts/turtle-masters-mandolin",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.4.icon"
+            },
+            "catalog_slug": "artifact-turtle-master-s-mandolin"
+          },
+          {
+            "name": "Powershaker",
+            "href": "https://www.dungeons.tools/2/artifacts/powershaker",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.5.icon"
+            },
+            "catalog_slug": "artifact-powershaker"
+          },
+          {
+            "name": "Redstone Mine Launcher",
+            "href": "https://www.dungeons.tools/2/artifacts/redstone-mine-launcher",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.6.icon"
+            },
+            "catalog_slug": "artifact-redstone-mine-launcher"
+          },
+          {
+            "name": "Pouch of Thunder",
+            "href": "https://www.dungeons.tools/2/artifacts/pouch-of-thunder",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.7.icon"
+            },
+            "catalog_slug": "artifact-pouch-of-thunder"
+          },
+          {
+            "name": "Totem of Shielding",
+            "href": "https://www.dungeons.tools/2/artifacts/totem-of-shielding",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.8.icon"
+            },
+            "catalog_slug": "artifact-totem-of-shielding"
+          },
+          {
+            "name": "Warrior Drums",
+            "href": "https://www.dungeons.tools/2/artifacts/warrior-drums",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.9.icon"
+            },
+            "catalog_slug": "artifact-warrior-drums"
+          },
+          {
+            "name": "Axe",
+            "href": "https://www.dungeons.tools/2/weapons/axe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.10.icon"
+            },
+            "catalog_slug": "melee_weapon-axe"
+          },
+          {
+            "name": "Bow",
+            "href": "https://www.dungeons.tools/2/weapons/bow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.11.icon"
+            },
+            "catalog_slug": "ranged_weapon-bow"
+          },
+          {
+            "name": "Sculk Digger Boots",
+            "href": "https://www.dungeons.tools/2/armor/sculk-digger-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.12.icon"
+            },
+            "catalog_slug": "armor-feet-sculk-digger-boots"
+          },
+          {
+            "name": "Sculk Digger Robe",
+            "href": "https://www.dungeons.tools/2/armor/sculk-digger-robe",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.13.icon"
+            },
+            "catalog_slug": "armor-sculk-digger-robe"
+          },
+          {
+            "name": "Sculk Digger Hood",
+            "href": "https://www.dungeons.tools/2/armor/sculk-digger-hood",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.14.icon"
+            },
+            "catalog_slug": "armor-sculk-digger-hood"
+          },
+          {
+            "name": "Sculk Digger Leggings",
+            "href": "https://www.dungeons.tools/2/armor/sculk-digger-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.15.icon"
+            },
+            "catalog_slug": "armor-sculk-digger-leggings"
+          },
+          {
+            "name": "Meat Cleaver",
+            "href": "https://www.dungeons.tools/2/weapons/meat-cleaver",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.16.icon"
+            },
+            "catalog_slug": "melee_weapon-cleaver"
+          },
+          {
+            "name": "Riftslasher",
+            "href": "https://www.dungeons.tools/2/weapons/riftslasher",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.17.icon"
+            },
+            "catalog_slug": "melee_weapon-riftslasher"
+          },
+          {
+            "name": "Twilight Dagger",
+            "href": "https://www.dungeons.tools/2/weapons/twilight-dagger",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.18.icon"
+            },
+            "catalog_slug": "melee_weapon-twilight-dagger"
+          },
+          {
+            "name": "Double Daggers",
+            "href": "https://www.dungeons.tools/2/weapons/double-daggers",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.19.icon"
+            },
+            "catalog_slug": "melee_weapon-double-daggers"
+          },
+          {
+            "name": "Disciple Wraps",
+            "href": "https://www.dungeons.tools/2/armor/disciple-wraps",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.20.icon"
+            },
+            "catalog_slug": "armor-disciple-wraps"
+          },
+          {
+            "name": "Disciple Robe",
+            "href": "https://www.dungeons.tools/2/armor/disciple-robe",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.21.icon"
+            },
+            "catalog_slug": "armor-disciple-robe"
+          },
+          {
+            "name": "Disciple mask",
+            "href": "https://www.dungeons.tools/2/armor/disciple-mask",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.22.icon"
+            },
+            "catalog_slug": "armor-head-disciple-mask"
+          },
+          {
+            "name": "Disciple Leggings",
+            "href": "https://www.dungeons.tools/2/armor/disciple-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.23.icon"
+            },
+            "catalog_slug": "armor-disciple-leggings"
+          },
+          {
+            "name": "Dual Crossbows",
+            "href": "https://www.dungeons.tools/2/weapons/dual-crossbows",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.24.icon"
+            },
+            "catalog_slug": "ranged_weapon-dual-crossbows"
+          },
+          {
+            "name": "Heavy Crossbow",
+            "href": "https://www.dungeons.tools/2/weapons/heavy-crossbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.25.icon"
+            },
+            "catalog_slug": "ranged_weapon-heavy-crossbow"
+          },
+          {
+            "name": "Mystic Boots",
+            "href": "https://www.dungeons.tools/2/armor/mystic-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.26.icon"
+            },
+            "catalog_slug": "armor-mystic-boots"
+          },
+          {
+            "name": "Mystic Robe",
+            "href": "https://www.dungeons.tools/2/armor/mystic-robe",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.27.icon"
+            },
+            "catalog_slug": "armor-mystic-robe"
+          },
+          {
+            "name": "Mystic Circlet",
+            "href": "https://www.dungeons.tools/2/armor/mystic-circlet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.28.icon"
+            },
+            "catalog_slug": "armor-mystic-circlet"
+          },
+          {
+            "name": "Mystic Leggings",
+            "href": "https://www.dungeons.tools/2/armor/mystic-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.29.icon"
+            },
+            "catalog_slug": "armor-mystic-leggings"
+          },
+          {
+            "name": "Pickaxe",
+            "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.30.icon"
+            },
+            "catalog_slug": "melee_weapon-pickaxe"
+          },
+          {
+            "name": "Pike",
+            "href": "https://www.dungeons.tools/2/weapons/pike",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.31.icon"
+            },
+            "catalog_slug": "melee_weapon-pike"
+          },
+          {
+            "name": "Redstone Boots",
+            "href": "https://www.dungeons.tools/2/armor/redstone-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.32.icon"
+            },
+            "catalog_slug": "armor-feet-redstone-boots"
+          },
+          {
+            "name": "Redstone Chestplate",
+            "href": "https://www.dungeons.tools/2/armor/redstone-chestplate",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.33.icon"
+            },
+            "catalog_slug": "armor-redstone-chestplate"
+          },
+          {
+            "name": "Redstone Helmet",
+            "href": "https://www.dungeons.tools/2/armor/redstone-helmet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.34.icon"
+            },
+            "catalog_slug": "armor-head-redstone-helmet"
+          },
+          {
+            "name": "Redstone Shinguards",
+            "href": "https://www.dungeons.tools/2/armor/redstone-shinguards",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.35.icon"
+            },
+            "catalog_slug": "armor-redstone-shinguards"
+          },
+          {
+            "name": "Scythe",
+            "href": "https://www.dungeons.tools/2/weapons/scythe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.36.icon"
+            },
+            "catalog_slug": "melee_weapon-scythe"
+          },
+          {
+            "name": "Shovel",
+            "href": "https://www.dungeons.tools/2/weapons/shovel",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.37.icon"
+            },
+            "catalog_slug": "melee_weapon-shovel"
+          },
+          {
+            "name": "Protector Boots",
+            "href": "https://www.dungeons.tools/2/armor/protector-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.38.icon"
+            },
+            "catalog_slug": "armor-protector-boots"
+          },
+          {
+            "name": "Protector Chestplate",
+            "href": "https://www.dungeons.tools/2/armor/protector-chestplate",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.39.icon"
+            },
+            "catalog_slug": "armor-protector-chestplate"
+          },
+          {
+            "name": "Protector Helmet",
+            "href": "https://www.dungeons.tools/2/armor/protector-helmet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.40.icon"
+            },
+            "catalog_slug": "armor-protector-helmet"
+          },
+          {
+            "name": "Protector Shinguards",
+            "href": "https://www.dungeons.tools/2/armor/protector-shinguards",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.41.icon"
+            },
+            "catalog_slug": "armor-legs-protector-shinguards"
+          },
+          {
+            "name": "Trickbow",
+            "href": "https://www.dungeons.tools/2/weapons/trickbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.42.icon"
+            },
+            "catalog_slug": "ranged_weapon-trickbow"
+          }
+        ]
+      },
+      "artwork": {
+        "icon": "images/6421cc07-5c69-4a20-996f-763ec0f633b6",
+        "minibosses.0.icon": "images/4c926cbe-521b-4a12-8843-f435058c98f2",
+        "minibosses.1.icon": "images/fe6eda10-b2a2-4242-8089-6e0ad282d911",
+        "minibosses.2.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "minibosses.3.icon": "images/4c926cbe-521b-4a12-8843-f435058c98f2",
+        "minibosses.4.icon": "images/fe6eda10-b2a2-4242-8089-6e0ad282d911",
+        "minibosses.5.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "loot.0.icon": "images/9b84000f-b2fe-433d-bd21-e14f7e47460f",
+        "loot.1.icon": "images/2c7238b8-5b59-41df-896f-96bf261d724c",
+        "loot.2.icon": "images/d6b242a0-31fa-41b4-8b72-94fa3f2d65f6",
+        "loot.3.icon": "images/77295da1-d575-4085-9076-79a4537b7a70",
+        "loot.4.icon": "images/4b4bbfe0-b8a2-48df-bd5e-9ac69cbc50f5",
+        "loot.5.icon": "images/e6c2dc80-15a1-444d-8e9a-2a47cd6d4793",
+        "loot.6.icon": "images/9c8049bb-2db1-4945-951b-1fdc930b6647",
+        "loot.7.icon": "images/907b61d7-c331-44bd-9eea-4981ff2b176d",
+        "loot.8.icon": "images/4929adeb-2f38-4cd5-88bd-63b24acebdb9",
+        "loot.9.icon": "images/2a92493c-01a1-45da-830d-63cbbd3b8c85",
+        "loot.10.icon": "images/03f9f59c-a9ac-429e-bbd1-21364b968f9c",
+        "loot.11.icon": "images/8881b8b1-bd8f-44fa-9203-db994cc8d4a1",
+        "loot.12.icon": "images/a949ac74-37d6-4bce-ac56-3d6d9218cbac",
+        "loot.13.icon": "images/7a0ff69f-8512-4444-8497-1fcf4ca6848a",
+        "loot.14.icon": "images/4da19cd7-9e22-4f0f-82b2-ecd18db7ef54",
+        "loot.15.icon": "images/707be0c6-c49f-46da-84ee-1aa9f1955a51",
+        "loot.16.icon": "images/656b3c80-4b0a-4066-97d0-11f952b17b33",
+        "loot.17.icon": "images/07519aa6-c187-4ae6-97ed-31bd0a5910ae",
+        "loot.18.icon": "images/b8f0b96a-2f73-414c-a9b7-27f43a80a317",
+        "loot.19.icon": "images/9fa27233-656c-49d0-8f62-af6dc2a3ff23",
+        "loot.20.icon": "images/ae3c10da-dc46-45a2-bf5d-07d87162d860",
+        "loot.21.icon": "images/3e92ae01-e8de-433e-bd62-dd3296bd9d08",
+        "loot.22.icon": "images/25f05930-c927-47bc-a80d-8a7f0daae851",
+        "loot.23.icon": "images/9b51ce45-037c-467b-ae57-57c051fc5989",
+        "loot.24.icon": "images/8b730606-4f0b-49b3-85c7-af24a34274e4",
+        "loot.25.icon": "images/0e9bcb7e-932f-4170-b3de-ca450ce089b6",
+        "loot.26.icon": "images/9bfa643f-dab9-49ba-a26e-5b5d059f98c1",
+        "loot.27.icon": "images/d4abec90-53fd-4e35-9853-1de43cef0db2",
+        "loot.28.icon": "images/1a0021e6-5b53-42e2-b0a6-4085d5c6215b",
+        "loot.29.icon": "images/0bfdb055-2943-4e91-b77a-ea75c6849c63",
+        "loot.30.icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+        "loot.31.icon": "images/5a4a92a8-a82b-44c5-9f52-ca5caa9c5a32",
+        "loot.32.icon": "images/7613e0b5-9e7f-40ca-b274-fe46e248931f",
+        "loot.33.icon": "images/d3861013-c23e-431a-9103-7f3c5e675ff2",
+        "loot.34.icon": "images/13a82077-be70-4188-8cd9-f4aadd0d3c87",
+        "loot.35.icon": "images/001e85a6-0e1c-41e4-bd44-c43197cb9bb4",
+        "loot.36.icon": "images/bf8852e4-ed11-40e6-a550-1ae8d89aba0a",
+        "loot.37.icon": "images/cc5c0ace-6b55-4e5f-971d-a0fcda056596",
+        "loot.38.icon": "images/d0d9fa18-4b68-4c50-a0fe-16e1fded4ad2",
+        "loot.39.icon": "images/6a93b52b-619e-44ec-b8d6-19321fe42358",
+        "loot.40.icon": "images/ee73660c-9673-483f-9c46-a49210a3185a",
+        "loot.41.icon": "images/019a4382-b5ac-4b0f-bf1f-e43c99cc5a0f",
+        "loot.42.icon": "images/3fbb47e1-fb14-47f2-9195-f44385d366b5"
+      },
+      "provenance": {
+        "provider": "dungeons.tools",
+        "source_key": "location:the-deep-dark",
+        "source_url": "https://www.dungeons.tools/2/locations/the-deep-dark",
+        "content_sha256": "95bc67673d0733863b21c782b53349e8ae37188c8fe932809cae47409a03ea49",
+        "game": "Minecraft Dungeons II",
+        "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+        "extraction_claim": "Launch-file datamining reported by source",
+        "automatic": true,
+        "fields": [
+          "identity",
+          "category",
+          "type",
+          "description",
+          "game_data",
+          "artwork"
+        ],
+        "aliases": [],
+        "prior_descriptions": [],
+        "prior_reference_urls": []
+      }
+    },
+    "location-cinder-crags": {
+      "slug": "location-cinder-crags",
+      "category": "location",
+      "type": "location",
+      "variation": "Cinder Crags",
+      "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/29564983-4387-4428-b753-9f546512d70e",
+      "source_url": "https://www.dungeons.tools/2/locations/cinder-crags",
+      "evidence_note": "Automated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/locations/cinder-crags",
+      "game_data": {
+        "schema_version": 1,
+        "availability": "available",
+        "slug": "cinder-crags",
+        "name": "Cinder Crags",
+        "kind": "location",
+        "lane": "locations",
+        "icon": {
+          "artwork_key": "icon"
+        },
+        "render": null,
+        "description": null,
+        "level": null,
+        "subAreas": [
+          "Plains - Peaks Link"
+        ],
+        "mobs": [],
+        "minibosses": [],
+        "arena": [],
+        "loot": [
+          {
+            "name": "Redstone Mine Launcher",
+            "href": "https://www.dungeons.tools/2/artifacts/redstone-mine-launcher",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.0.icon"
+            },
+            "catalog_slug": "artifact-redstone-mine-launcher"
+          },
+          {
+            "name": "Clobberer",
+            "href": "https://www.dungeons.tools/2/weapons/clobberer",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.1.icon"
+            },
+            "catalog_slug": "melee_weapon-club"
+          },
+          {
+            "name": "Pickaxe",
+            "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.2.icon"
+            },
+            "catalog_slug": "melee_weapon-pickaxe"
+          },
+          {
+            "name": "Redstone Boots",
+            "href": "https://www.dungeons.tools/2/armor/redstone-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.3.icon"
+            },
+            "catalog_slug": "armor-feet-redstone-boots"
+          },
+          {
+            "name": "Redstone Chestplate",
+            "href": "https://www.dungeons.tools/2/armor/redstone-chestplate",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.4.icon"
+            },
+            "catalog_slug": "armor-redstone-chestplate"
+          },
+          {
+            "name": "Redstone Helmet",
+            "href": "https://www.dungeons.tools/2/armor/redstone-helmet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.5.icon"
+            },
+            "catalog_slug": "armor-head-redstone-helmet"
+          },
+          {
+            "name": "Redstone Shinguards",
+            "href": "https://www.dungeons.tools/2/armor/redstone-shinguards",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.6.icon"
+            },
+            "catalog_slug": "armor-redstone-shinguards"
+          }
+        ]
+      },
+      "artwork": {
+        "icon": "images/29564983-4387-4428-b753-9f546512d70e",
+        "loot.0.icon": "images/9c8049bb-2db1-4945-951b-1fdc930b6647",
+        "loot.1.icon": "images/7327a42a-97d5-4c59-b9f2-5168253ece0a",
+        "loot.2.icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+        "loot.3.icon": "images/7613e0b5-9e7f-40ca-b274-fe46e248931f",
+        "loot.4.icon": "images/d3861013-c23e-431a-9103-7f3c5e675ff2",
+        "loot.5.icon": "images/13a82077-be70-4188-8cd9-f4aadd0d3c87",
+        "loot.6.icon": "images/001e85a6-0e1c-41e4-bd44-c43197cb9bb4"
+      },
+      "provenance": {
+        "provider": "dungeons.tools",
+        "source_key": "location:cinder-crags",
+        "source_url": "https://www.dungeons.tools/2/locations/cinder-crags",
+        "content_sha256": "2b77ae319225b1f50d5de5a6a92e3d15213b9369cb3ab5e80161818bf106730e",
+        "game": "Minecraft Dungeons II",
+        "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+        "extraction_claim": "Launch-file datamining reported by source",
+        "automatic": true,
+        "fields": [
+          "identity",
+          "category",
+          "type",
+          "description",
+          "game_data",
+          "artwork"
+        ],
+        "aliases": [],
+        "prior_descriptions": [],
+        "prior_reference_urls": []
+      }
+    },
+    "location-humbler-huskland": {
+      "slug": "location-humbler-huskland",
+      "category": "location",
+      "type": "location",
+      "variation": "Humbler Huskland",
+      "image": "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/releases/1a08178c2e7671d1/images/ba5ce983-a04b-49ca-bfef-818228149bea",
+      "source_url": "https://www.dungeons.tools/2/locations/humbler-huskland",
+      "evidence_note": "Automated 2026-09-29T13:15:12.269Z; evidence: identity,category,type,description,game_data,artwork=https://www.dungeons.tools/2/locations/humbler-huskland",
+      "game_data": {
+        "schema_version": 1,
+        "availability": "available",
+        "slug": "humbler-huskland",
+        "name": "Humbler Huskland",
+        "kind": "location",
+        "lane": "locations",
+        "icon": {
+          "artwork_key": "icon"
+        },
+        "render": null,
+        "description": null,
+        "level": 36,
+        "subAreas": [
+          "Humbler Husk"
+        ],
+        "mobs": [
+          {
+            "name": "Bloombud",
+            "href": "https://www.dungeons.tools/2/enemies/bloombud",
+            "share": 0.5,
+            "catalog_slug": "mob-bloombud"
+          },
+          {
+            "name": "Roamroot",
+            "href": "https://www.dungeons.tools/2/enemies/roamroot",
+            "share": 0.25,
+            "catalog_slug": "mob-roamroot"
+          },
+          {
+            "name": "Hurler",
+            "href": "https://www.dungeons.tools/2/enemies/hurler",
+            "share": 0.17,
+            "catalog_slug": "mob-hurler"
+          },
+          {
+            "name": "Fusefly",
+            "href": "https://www.dungeons.tools/2/enemies/fusefly",
+            "share": 0.08,
+            "catalog_slug": "mob-fusefly"
+          }
+        ],
+        "minibosses": [
+          {
+            "name": "Harmonizer",
+            "href": "https://www.dungeons.tools/2/enemies/harmonizer",
+            "icon": {
+              "artwork_key": "minibosses.0.icon"
+            },
+            "catalog_slug": "mob-harmonizer"
+          },
+          {
+            "name": "Enderman",
+            "href": "https://www.dungeons.tools/2/enemies/enderman",
+            "icon": {
+              "artwork_key": "minibosses.1.icon"
+            },
+            "catalog_slug": "mob-enderman"
+          },
+          {
+            "name": "Dartback",
+            "href": "https://www.dungeons.tools/2/enemies/dartback",
+            "icon": {
+              "artwork_key": "minibosses.2.icon"
+            },
+            "catalog_slug": "mob-dartback"
+          },
+          {
+            "name": "Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/evoker",
+            "icon": {
+              "artwork_key": "minibosses.3.icon"
+            },
+            "catalog_slug": "mob-evoker"
+          },
+          {
+            "name": "Soul Corrupted Harmonizer",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-harmonizer",
+            "icon": {
+              "artwork_key": "minibosses.4.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-harmonizer"
+          },
+          {
+            "name": "Soul Corrupted Enderman",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-enderman",
+            "icon": {
+              "artwork_key": "minibosses.5.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-enderman"
+          },
+          {
+            "name": "Soul Corrupted Dartback",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-dartback",
+            "icon": {
+              "artwork_key": "minibosses.6.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-dartback"
+          },
+          {
+            "name": "Soul Corrupted Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-evoker",
+            "icon": {
+              "artwork_key": "minibosses.7.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-evoker"
+          }
+        ],
+        "arena": [
+          {
+            "name": "Enchanter",
+            "href": "https://www.dungeons.tools/2/enemies/enchanter",
+            "icon": {
+              "artwork_key": "arena.0.icon"
+            },
+            "catalog_slug": "mob-enchanter"
+          },
+          {
+            "name": "Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/evoker",
+            "icon": {
+              "artwork_key": "arena.1.icon"
+            },
+            "catalog_slug": "mob-evoker"
+          },
+          {
+            "name": "Geomancer",
+            "href": "https://www.dungeons.tools/2/enemies/geomancer",
+            "icon": {
+              "artwork_key": "arena.2.icon"
+            },
+            "catalog_slug": "mob-geomancer"
+          },
+          {
+            "name": "Hunter",
+            "href": "https://www.dungeons.tools/2/enemies/hunter",
+            "icon": {
+              "artwork_key": "arena.3.icon"
+            },
+            "catalog_slug": "mob-hunter"
+          },
+          {
+            "name": "Pillager",
+            "href": "https://www.dungeons.tools/2/enemies/pillager",
+            "icon": {
+              "artwork_key": "arena.4.icon"
+            },
+            "catalog_slug": "mob-pillager"
+          },
+          {
+            "name": "Ravager",
+            "href": "https://www.dungeons.tools/2/enemies/ravager",
+            "icon": {
+              "artwork_key": "arena.5.icon"
+            },
+            "catalog_slug": "mob-ravager"
+          },
+          {
+            "name": "Royal Guard",
+            "href": "https://www.dungeons.tools/2/enemies/royal-guard",
+            "icon": {
+              "artwork_key": "arena.6.icon"
+            },
+            "catalog_slug": "mob-royal-guard"
+          },
+          {
+            "name": "Scavenger",
+            "href": "https://www.dungeons.tools/2/enemies/scavenger",
+            "icon": {
+              "artwork_key": "arena.7.icon"
+            },
+            "catalog_slug": "mob-scavenger"
+          },
+          {
+            "name": "Soul Corrupted Enchanter",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-enchanter",
+            "icon": {
+              "artwork_key": "arena.8.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-enchanter"
+          },
+          {
+            "name": "Soul Corrupted Evoker",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-evoker",
+            "icon": {
+              "artwork_key": "arena.9.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-evoker"
+          },
+          {
+            "name": "Soul Corrupted Geomancer",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-geomancer",
+            "icon": {
+              "artwork_key": "arena.10.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-geomancer"
+          },
+          {
+            "name": "Soul Corrupted Hunter",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-hunter",
+            "icon": {
+              "artwork_key": "arena.11.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-hunter"
+          },
+          {
+            "name": "Soul Corrupted Pillager",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-pillager",
+            "icon": {
+              "artwork_key": "arena.12.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-pillager"
+          },
+          {
+            "name": "Soul Corrupted Ravager",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-ravager",
+            "icon": {
+              "artwork_key": "arena.13.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-ravager"
+          },
+          {
+            "name": "Soul Corrupted Royal Guard",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-royal-guard",
+            "icon": {
+              "artwork_key": "arena.14.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-royal-guard"
+          },
+          {
+            "name": "Soul Corrupted Scavenger",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-scavenger",
+            "icon": {
+              "artwork_key": "arena.15.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-scavenger"
+          },
+          {
+            "name": "Soul Corrupted Stalker",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-stalker",
+            "icon": {
+              "artwork_key": "arena.16.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-stalker"
+          },
+          {
+            "name": "Soul Corrupted Trapper",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-trapper",
+            "icon": {
+              "artwork_key": "arena.17.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-trapper"
+          },
+          {
+            "name": "Soul Corrupted Vindicator",
+            "href": "https://www.dungeons.tools/2/enemies/soul-corrupted-vindicator",
+            "icon": {
+              "artwork_key": "arena.18.icon"
+            },
+            "catalog_slug": "mob-soul-corrupted-vindicator"
+          },
+          {
+            "name": "Stalker",
+            "href": "https://www.dungeons.tools/2/enemies/stalker",
+            "icon": {
+              "artwork_key": "arena.19.icon"
+            },
+            "catalog_slug": "mob-stalker"
+          },
+          {
+            "name": "Trapper",
+            "href": "https://www.dungeons.tools/2/enemies/trapper",
+            "icon": {
+              "artwork_key": "arena.20.icon"
+            },
+            "catalog_slug": "mob-trapper"
+          },
+          {
+            "name": "Vindicator",
+            "href": "https://www.dungeons.tools/2/enemies/vindicator",
+            "icon": {
+              "artwork_key": "arena.21.icon"
+            },
+            "catalog_slug": "mob-vindicator"
+          }
+        ],
+        "loot": [
+          {
+            "name": "Echo Ocarina",
+            "href": "https://www.dungeons.tools/2/artifacts/echo-ocarina",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.0.icon"
+            },
+            "catalog_slug": "artifact-echo-ocarina"
+          },
+          {
+            "name": "Firework Arrow",
+            "href": "https://www.dungeons.tools/2/artifacts/firework-arrow",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.1.icon"
+            },
+            "catalog_slug": "artifact-firework-arrow"
+          },
+          {
+            "name": "Flaming Quiver",
+            "href": "https://www.dungeons.tools/2/artifacts/flaming-quiver",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.2.icon"
+            },
+            "catalog_slug": "artifact-flaming-quiver"
+          },
+          {
+            "name": "Blizzard Bangle",
+            "href": "https://www.dungeons.tools/2/artifacts/blizzard-bangle",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.3.icon"
+            },
+            "catalog_slug": "artifact-blizzard-bangle"
+          },
+          {
+            "name": "Lightning Rod",
+            "href": "https://www.dungeons.tools/2/artifacts/lightning-rod",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.4.icon"
+            },
+            "catalog_slug": "artifact-lightning-rod"
+          },
+          {
+            "name": "Fighting Fungus",
+            "href": "https://www.dungeons.tools/2/artifacts/fighting-fungus",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.5.icon"
+            },
+            "catalog_slug": "artifact-fighting-fungus"
+          },
+          {
+            "name": "Powershaker",
+            "href": "https://www.dungeons.tools/2/artifacts/powershaker",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.6.icon"
+            },
+            "catalog_slug": "artifact-powershaker"
+          },
+          {
+            "name": "Pouch of Ember",
+            "href": "https://www.dungeons.tools/2/artifacts/pouch-of-ember",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.7.icon"
+            },
+            "catalog_slug": "artifact-pouch-of-fire"
+          },
+          {
+            "name": "Battle Banner",
+            "href": "https://www.dungeons.tools/2/artifacts/battle-banner",
+            "kind": "artifact",
+            "icon": {
+              "artwork_key": "loot.8.icon"
+            },
+            "catalog_slug": "artifact-banner"
+          },
+          {
+            "name": "Axe",
+            "href": "https://www.dungeons.tools/2/weapons/axe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.9.icon"
+            },
+            "catalog_slug": "melee_weapon-axe"
+          },
+          {
+            "name": "Meat Cleaver",
+            "href": "https://www.dungeons.tools/2/weapons/meat-cleaver",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.10.icon"
+            },
+            "catalog_slug": "melee_weapon-cleaver"
+          },
+          {
+            "name": "Crossbow",
+            "href": "https://www.dungeons.tools/2/weapons/crossbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.11.icon"
+            },
+            "catalog_slug": "ranged_weapon-crossbow"
+          },
+          {
+            "name": "Cookiecutter",
+            "href": "https://www.dungeons.tools/2/weapons/cookiecutter",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.12.icon"
+            },
+            "catalog_slug": "melee_weapon-sabre"
+          },
+          {
+            "name": "Steel Wool Boots",
+            "href": "https://www.dungeons.tools/2/armor/steel-wool-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.13.icon"
+            },
+            "catalog_slug": "armor-feet-steel-wool-boots"
+          },
+          {
+            "name": "Steel Wool Sweater",
+            "href": "https://www.dungeons.tools/2/armor/steel-wool-sweater",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.14.icon"
+            },
+            "catalog_slug": "armor-torso-steel-wool-chestplate"
+          },
+          {
+            "name": "Steel Wool Cap",
+            "href": "https://www.dungeons.tools/2/armor/steel-wool-cap",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.15.icon"
+            },
+            "catalog_slug": "armor-head-steel-wool-hat"
+          },
+          {
+            "name": "Steel Wool Leggings",
+            "href": "https://www.dungeons.tools/2/armor/steel-wool-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.16.icon"
+            },
+            "catalog_slug": "armor-legs-steel-wool-leggings"
+          },
+          {
+            "name": "Clobberer",
+            "href": "https://www.dungeons.tools/2/weapons/clobberer",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.17.icon"
+            },
+            "catalog_slug": "melee_weapon-club"
+          },
+          {
+            "name": "Mob Mallet",
+            "href": "https://www.dungeons.tools/2/weapons/mob-mallet",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.18.icon"
+            },
+            "catalog_slug": "melee_weapon-mob-mallet"
+          },
+          {
+            "name": "Greataxe",
+            "href": "https://www.dungeons.tools/2/weapons/greataxe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.19.icon"
+            },
+            "catalog_slug": "melee_weapon-greataxe"
+          },
+          {
+            "name": "Greatbow",
+            "href": "https://www.dungeons.tools/2/weapons/greatbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.20.icon"
+            },
+            "catalog_slug": "ranged_weapon-greatbow"
+          },
+          {
+            "name": "Battle Hammer",
+            "href": "https://www.dungeons.tools/2/weapons/battle-hammer",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.21.icon"
+            },
+            "catalog_slug": "melee_weapon-battle-hammer"
+          },
+          {
+            "name": "Heavy Crossbow",
+            "href": "https://www.dungeons.tools/2/weapons/heavy-crossbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.22.icon"
+            },
+            "catalog_slug": "ranged_weapon-heavy-crossbow"
+          },
+          {
+            "name": "Phantom Boots",
+            "href": "https://www.dungeons.tools/2/armor/phantom-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.23.icon"
+            },
+            "catalog_slug": "armor-feet-phantom-boots"
+          },
+          {
+            "name": "Phantom Chestplate",
+            "href": "https://www.dungeons.tools/2/armor/phantom-chestplate",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.24.icon"
+            },
+            "catalog_slug": "armor-phantom-chestplate"
+          },
+          {
+            "name": "Phantom Helmet",
+            "href": "https://www.dungeons.tools/2/armor/phantom-helmet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.25.icon"
+            },
+            "catalog_slug": "armor-phantom-helmet"
+          },
+          {
+            "name": "Phantom Pants",
+            "href": "https://www.dungeons.tools/2/armor/phantom-pants",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.26.icon"
+            },
+            "catalog_slug": "armor-phantom-leggings"
+          },
+          {
+            "name": "Pickaxe",
+            "href": "https://www.dungeons.tools/2/weapons/pickaxe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.27.icon"
+            },
+            "catalog_slug": "melee_weapon-pickaxe"
+          },
+          {
+            "name": "Pike",
+            "href": "https://www.dungeons.tools/2/weapons/pike",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.28.icon"
+            },
+            "catalog_slug": "melee_weapon-pike"
+          },
+          {
+            "name": "Scythe",
+            "href": "https://www.dungeons.tools/2/weapons/scythe",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.29.icon"
+            },
+            "catalog_slug": "melee_weapon-scythe"
+          },
+          {
+            "name": "Shortbow",
+            "href": "https://www.dungeons.tools/2/weapons/shortbow",
+            "kind": "ranged",
+            "icon": {
+              "artwork_key": "loot.30.icon"
+            },
+            "catalog_slug": "ranged_weapon-shortbow"
+          },
+          {
+            "name": "Shovel",
+            "href": "https://www.dungeons.tools/2/weapons/shovel",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.31.icon"
+            },
+            "catalog_slug": "melee_weapon-shovel"
+          },
+          {
+            "name": "Protector Boots",
+            "href": "https://www.dungeons.tools/2/armor/protector-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.32.icon"
+            },
+            "catalog_slug": "armor-protector-boots"
+          },
+          {
+            "name": "Protector Chestplate",
+            "href": "https://www.dungeons.tools/2/armor/protector-chestplate",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.33.icon"
+            },
+            "catalog_slug": "armor-protector-chestplate"
+          },
+          {
+            "name": "Protector Helmet",
+            "href": "https://www.dungeons.tools/2/armor/protector-helmet",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.34.icon"
+            },
+            "catalog_slug": "armor-protector-helmet"
+          },
+          {
+            "name": "Protector Shinguards",
+            "href": "https://www.dungeons.tools/2/armor/protector-shinguards",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.35.icon"
+            },
+            "catalog_slug": "armor-legs-protector-shinguards"
+          },
+          {
+            "name": "Longsword",
+            "href": "https://www.dungeons.tools/2/weapons/longsword",
+            "kind": "melee",
+            "icon": {
+              "artwork_key": "loot.36.icon"
+            },
+            "catalog_slug": "melee_weapon-longsword"
+          },
+          {
+            "name": "Sifter Boots",
+            "href": "https://www.dungeons.tools/2/armor/sifter-boots",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.37.icon"
+            },
+            "catalog_slug": "armor-feet-sifter-boots"
+          },
+          {
+            "name": "Sifter Robe",
+            "href": "https://www.dungeons.tools/2/armor/sifter-robe",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.38.icon"
+            },
+            "catalog_slug": "armor-torso-sifter-chestplate"
+          },
+          {
+            "name": "Sifter Hood",
+            "href": "https://www.dungeons.tools/2/armor/sifter-hood",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.39.icon"
+            },
+            "catalog_slug": "armor-head-sifter-hat"
+          },
+          {
+            "name": "Sifter Leggings",
+            "href": "https://www.dungeons.tools/2/armor/sifter-leggings",
+            "kind": "armor",
+            "icon": {
+              "artwork_key": "loot.40.icon"
+            },
+            "catalog_slug": "armor-legs-sifter-leggings"
+          }
+        ]
+      },
+      "artwork": {
+        "icon": "images/ba5ce983-a04b-49ca-bfef-818228149bea",
+        "minibosses.0.icon": "images/10c752bb-d454-4ccc-97ff-77a106320831",
+        "minibosses.1.icon": "images/4c926cbe-521b-4a12-8843-f435058c98f2",
+        "minibosses.2.icon": "images/465d1a0b-fd1f-48cd-86d6-c65bbb126f91",
+        "minibosses.3.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "minibosses.4.icon": "images/10c752bb-d454-4ccc-97ff-77a106320831",
+        "minibosses.5.icon": "images/4c926cbe-521b-4a12-8843-f435058c98f2",
+        "minibosses.6.icon": "images/465d1a0b-fd1f-48cd-86d6-c65bbb126f91",
+        "minibosses.7.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "arena.0.icon": "images/e84bc008-04f8-411e-9901-ec853642c33a",
+        "arena.1.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "arena.2.icon": "images/554ea2de-dd1e-4987-9989-7fcbcee3fa42",
+        "arena.3.icon": "images/32067001-9cc9-4107-aa5b-9c8203c15e17",
+        "arena.4.icon": "images/e5e4c161-6886-4c1b-95c2-d1db3aa9db40",
+        "arena.5.icon": "images/dbff23e1-8c46-42a3-be70-52be5d9a36d5",
+        "arena.6.icon": "images/19716122-cf93-4976-a203-8a3eafc6c118",
+        "arena.7.icon": "images/4cad950b-21be-4cbf-90b6-f1df67b8cb9d",
+        "arena.8.icon": "images/e84bc008-04f8-411e-9901-ec853642c33a",
+        "arena.9.icon": "images/67167a1c-5143-43d1-953c-934009b1a783",
+        "arena.10.icon": "images/554ea2de-dd1e-4987-9989-7fcbcee3fa42",
+        "arena.11.icon": "images/32067001-9cc9-4107-aa5b-9c8203c15e17",
+        "arena.12.icon": "images/e5e4c161-6886-4c1b-95c2-d1db3aa9db40",
+        "arena.13.icon": "images/dbff23e1-8c46-42a3-be70-52be5d9a36d5",
+        "arena.14.icon": "images/19716122-cf93-4976-a203-8a3eafc6c118",
+        "arena.15.icon": "images/4cad950b-21be-4cbf-90b6-f1df67b8cb9d",
+        "arena.16.icon": "images/f8e4e8a9-45fe-4212-8b0e-5a8cc4a4c865",
+        "arena.17.icon": "images/120a494b-7285-44c5-82d1-2a5c3be12a62",
+        "arena.18.icon": "images/87845a98-c2bd-4efc-997a-9c2c69a100da",
+        "arena.19.icon": "images/f8e4e8a9-45fe-4212-8b0e-5a8cc4a4c865",
+        "arena.20.icon": "images/120a494b-7285-44c5-82d1-2a5c3be12a62",
+        "arena.21.icon": "images/87845a98-c2bd-4efc-997a-9c2c69a100da",
+        "loot.0.icon": "images/bbf8cb04-ec93-4c52-a66f-37ec8b23a1c0",
+        "loot.1.icon": "images/42cf726d-15bc-4472-8afc-28f6bc0737ef",
+        "loot.2.icon": "images/d6b242a0-31fa-41b4-8b72-94fa3f2d65f6",
+        "loot.3.icon": "images/3b2e78b8-634b-44d2-acb4-85d4650b88c6",
+        "loot.4.icon": "images/9c39caf4-9fdd-454d-ad1a-29704f143024",
+        "loot.5.icon": "images/9d2b561f-08f6-42d5-873f-bdd5bf0457d9",
+        "loot.6.icon": "images/e6c2dc80-15a1-444d-8e9a-2a47cd6d4793",
+        "loot.7.icon": "images/bc03e33e-c490-45f1-99ec-7f77c032219a",
+        "loot.8.icon": "images/3727981d-ee5a-404c-8f05-dc20897b5dd5",
+        "loot.9.icon": "images/03f9f59c-a9ac-429e-bbd1-21364b968f9c",
+        "loot.10.icon": "images/656b3c80-4b0a-4066-97d0-11f952b17b33",
+        "loot.11.icon": "images/9c6d2629-7ab8-4e58-ad8c-c6bfec334581",
+        "loot.12.icon": "images/c0d042ec-a2a5-4ac5-ae41-404d5ca3a66b",
+        "loot.13.icon": "images/0550e41f-e4a5-458f-82c5-c378f747470b",
+        "loot.14.icon": "images/90d39858-b340-43c5-bf19-7ae2a09bcfe4",
+        "loot.15.icon": "images/52112191-7bd0-44fe-91e4-b595476e00dd",
+        "loot.16.icon": "images/76a0835f-418d-4477-b624-7dd8a952e456",
+        "loot.17.icon": "images/7327a42a-97d5-4c59-b9f2-5168253ece0a",
+        "loot.18.icon": "images/8644a044-0248-4f17-9be0-689a0150b656",
+        "loot.19.icon": "images/a926b0c4-6309-454c-9651-4ec9debbd573",
+        "loot.20.icon": "images/ca0df881-ba09-4857-bfa7-cdc84c0374e2",
+        "loot.21.icon": "images/a8f0fd30-ed8f-4c62-a1b1-0947cd58c98b",
+        "loot.22.icon": "images/0e9bcb7e-932f-4170-b3de-ca450ce089b6",
+        "loot.23.icon": "images/f23fbe7d-bdeb-405b-9e26-07b8ef90468b",
+        "loot.24.icon": "images/7425ec67-0600-4a06-8dc4-558ba6f10f25",
+        "loot.25.icon": "images/7a5c8acc-eb82-4feb-be70-f55e2d709a0e",
+        "loot.26.icon": "images/5d4fbf99-2fec-4ccf-9849-8f1a2b4f2e58",
+        "loot.27.icon": "images/f692bfa5-1d22-4a3c-a93f-34dcf43e163c",
+        "loot.28.icon": "images/5a4a92a8-a82b-44c5-9f52-ca5caa9c5a32",
+        "loot.29.icon": "images/bf8852e4-ed11-40e6-a550-1ae8d89aba0a",
+        "loot.30.icon": "images/8e380c22-bce1-4318-94cf-9a242dee4150",
+        "loot.31.icon": "images/cc5c0ace-6b55-4e5f-971d-a0fcda056596",
+        "loot.32.icon": "images/d0d9fa18-4b68-4c50-a0fe-16e1fded4ad2",
+        "loot.33.icon": "images/6a93b52b-619e-44ec-b8d6-19321fe42358",
+        "loot.34.icon": "images/ee73660c-9673-483f-9c46-a49210a3185a",
+        "loot.35.icon": "images/019a4382-b5ac-4b0f-bf1f-e43c99cc5a0f",
+        "loot.36.icon": "images/cfef62ef-f176-4dba-ae9d-7f77518e0adf",
+        "loot.37.icon": "images/f235d5ce-0fba-4379-be52-8e490455d709",
+        "loot.38.icon": "images/26aeabbb-3152-48bb-9f50-ede25cff432f",
+        "loot.39.icon": "images/1fa7e594-2bf1-467a-88d0-a6e5c6a7e6ab",
+        "loot.40.icon": "images/a4f6dbe3-37d4-4ce3-bc96-785f3fa65ce9"
+      },
+      "provenance": {
+        "provider": "dungeons.tools",
+        "source_key": "location:humbler-huskland",
+        "source_url": "https://www.dungeons.tools/2/locations/humbler-huskland",
+        "content_sha256": "6344d11e80cc6be1d69b4cc27ffb41f0d1f731c6620897fd6a980512bd5c5280",
+        "game": "Minecraft Dungeons II",
+        "build_claim": "Steam build 25041023 (source-reported, not independently extracted)",
+        "extraction_claim": "Launch-file datamining reported by source",
+        "automatic": true,
+        "fields": [
+          "identity",
+          "category",
+          "type",
+          "description",
+          "game_data",
+          "artwork"
+        ],
+        "aliases": [],
+        "prior_descriptions": [],
+        "prior_reference_urls": []
+      }
+    }
+  }
+}

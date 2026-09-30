@@ -12,6 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BuildRouteImport } from './routes/build'
 import { Route as CollectionRouteImport } from './routes/collection'
+import { Route as CommunityRouteImport } from './routes/community'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as MobsRouteImport } from './routes/mobs'
+import { Route as CommunityIndexRouteImport } from './routes/community.index'
+import { Route as CommunityBuildIdRouteImport } from './routes/community.$buildId'
+import { Route as CommunityNewRouteImport } from './routes/community.new'
+import { Route as CatalogCategorySlugRouteImport } from './routes/catalog.$category.$slug'
+import { Route as CommunityBuildIdEditRouteImport } from './routes/community.$buildId_.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +36,135 @@ const CollectionRoute = CollectionRouteImport.update({
   path: '/collection',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MobsRoute = MobsRouteImport.update({
+  id: '/mobs',
+  path: '/mobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityIndexRoute = CommunityIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const CommunityBuildIdRoute = CommunityBuildIdRouteImport.update({
+  id: '/$buildId',
+  path: '/$buildId',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const CommunityNewRoute = CommunityNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const CatalogCategorySlugRoute = CatalogCategorySlugRouteImport.update({
+  id: '/catalog/$category/$slug',
+  path: '/catalog/$category/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityBuildIdEditRoute = CommunityBuildIdEditRouteImport.update({
+  id: '/$buildId_/edit',
+  path: '/$buildId/edit',
+  getParentRoute: () => CommunityRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/build': typeof BuildRoute
   '/collection': typeof CollectionRoute
+  '/community': typeof CommunityRouteWithChildren
+  '/compare': typeof CompareRoute
+  '/mobs': typeof MobsRoute
+  '/community/$buildId': typeof CommunityBuildIdRoute
+  '/community/new': typeof CommunityNewRoute
+  '/community/': typeof CommunityIndexRoute
+  '/catalog/$category/$slug': typeof CatalogCategorySlugRoute
+  '/community/$buildId/edit': typeof CommunityBuildIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/build': typeof BuildRoute
   '/collection': typeof CollectionRoute
+  '/compare': typeof CompareRoute
+  '/mobs': typeof MobsRoute
+  '/community/$buildId': typeof CommunityBuildIdRoute
+  '/community/new': typeof CommunityNewRoute
+  '/community': typeof CommunityIndexRoute
+  '/catalog/$category/$slug': typeof CatalogCategorySlugRoute
+  '/community/$buildId/edit': typeof CommunityBuildIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/build': typeof BuildRoute
   '/collection': typeof CollectionRoute
+  '/community': typeof CommunityRouteWithChildren
+  '/compare': typeof CompareRoute
+  '/mobs': typeof MobsRoute
+  '/community/$buildId': typeof CommunityBuildIdRoute
+  '/community/new': typeof CommunityNewRoute
+  '/community/': typeof CommunityIndexRoute
+  '/catalog/$category/$slug': typeof CatalogCategorySlugRoute
+  '/community/$buildId_/edit': typeof CommunityBuildIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/build' | '/collection'
+  fullPaths:
+    | '/'
+    | '/build'
+    | '/collection'
+    | '/community'
+    | '/compare'
+    | '/mobs'
+    | '/community/$buildId'
+    | '/community/new'
+    | '/community/'
+    | '/catalog/$category/$slug'
+    | '/community/$buildId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/build' | '/collection'
-  id: '__root__' | '/' | '/build' | '/collection'
+  to:
+    | '/'
+    | '/build'
+    | '/collection'
+    | '/compare'
+    | '/mobs'
+    | '/community/$buildId'
+    | '/community/new'
+    | '/community'
+    | '/catalog/$category/$slug'
+    | '/community/$buildId/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/build'
+    | '/collection'
+    | '/community'
+    | '/compare'
+    | '/mobs'
+    | '/community/$buildId'
+    | '/community/new'
+    | '/community/'
+    | '/catalog/$category/$slug'
+    | '/community/$buildId_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BuildRoute: typeof BuildRoute
   CollectionRoute: typeof CollectionRoute
+  CommunityRoute: typeof CommunityRouteWithChildren
+  CompareRoute: typeof CompareRoute
+  MobsRoute: typeof MobsRoute
+  CatalogCategorySlugRoute: typeof CatalogCategorySlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +190,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mobs': {
+      id: '/mobs'
+      path: '/mobs'
+      fullPath: '/mobs'
+      preLoaderRoute: typeof MobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community/': {
+      id: '/community/'
+      path: '/'
+      fullPath: '/community/'
+      preLoaderRoute: typeof CommunityIndexRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/community/$buildId': {
+      id: '/community/$buildId'
+      path: '/$buildId'
+      fullPath: '/community/$buildId'
+      preLoaderRoute: typeof CommunityBuildIdRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/community/new': {
+      id: '/community/new'
+      path: '/new'
+      fullPath: '/community/new'
+      preLoaderRoute: typeof CommunityNewRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/catalog/$category/$slug': {
+      id: '/catalog/$category/$slug'
+      path: '/catalog/$category/$slug'
+      fullPath: '/catalog/$category/$slug'
+      preLoaderRoute: typeof CatalogCategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community/$buildId_/edit': {
+      id: '/community/$buildId_/edit'
+      path: '/$buildId/edit'
+      fullPath: '/community/$buildId/edit'
+      preLoaderRoute: typeof CommunityBuildIdEditRouteImport
+      parentRoute: typeof CommunityRoute
+    }
   }
 }
+
+interface CommunityRouteChildren {
+  CommunityBuildIdRoute: typeof CommunityBuildIdRoute
+  CommunityNewRoute: typeof CommunityNewRoute
+  CommunityIndexRoute: typeof CommunityIndexRoute
+  CommunityBuildIdEditRoute: typeof CommunityBuildIdEditRoute
+}
+
+const CommunityRouteChildren: CommunityRouteChildren = {
+  CommunityBuildIdRoute: CommunityBuildIdRoute,
+  CommunityNewRoute: CommunityNewRoute,
+  CommunityIndexRoute: CommunityIndexRoute,
+  CommunityBuildIdEditRoute: CommunityBuildIdEditRoute,
+}
+
+const CommunityRouteWithChildren = CommunityRoute._addFileChildren(
+  CommunityRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BuildRoute: BuildRoute,
   CollectionRoute: CollectionRoute,
+  CommunityRoute: CommunityRouteWithChildren,
+  CompareRoute: CompareRoute,
+  MobsRoute: MobsRoute,
+  CatalogCategorySlugRoute: CatalogCategorySlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

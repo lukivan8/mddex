@@ -1,15 +1,26 @@
-# MDDEX · Collection
+# MDDEX · Builds
 
-A local-first Minecraft Dungeons 2 completion logger built with TanStack Start, React, TypeScript, TanStack Router, TanStack DB, HeroUI v3, and Tailwind CSS v4. The Cloudflare Vite plugin builds the application for Workers. There is no application database, authentication, or collection API.
+A local-first Minecraft Dungeons 2 build maker and equipment catalog built with TanStack Start, React, TypeScript, TanStack Router, TanStack DB, HeroUI v3, and Tailwind CSS v4. The Cloudflare Vite plugin builds the application for Workers. Anonymous identity and permanent build-link resolution use Cloudflare D1. Build editing and collection tracking remain local.
 
-## Run
+## Fresh Mac setup · version 2.0.0
 
-Use Node.js 22.12+ (tested with 22.22.3).
+Install Apple's command line tools (`xcode-select --install`) and Node.js 22.22.3. If you use nvm, the checked-in `.nvmrc` selects the tested version. Authenticate GitHub with an account that can access the private repository, then:
 
 ```sh
+git clone https://github.com/lukivan8/mddex.git
+cd mddex
+nvm install # if using nvm; otherwise install Node.js 22.22.3 directly
+nvm use     # if using nvm
 npm ci
+npm run setup
 npm run dev
 ```
+
+`setup` applies all checked-in D1 migrations to the local Cloudflare database. Run it again after pulling new migrations; it is safe to repeat. Local development uses simulated Cloudflare bindings and requires no Cloudflare login or production credentials. The default public catalog works without an environment file. Optional overrides are documented in `.env.example`.
+
+To resume this exact snapshot, use `git checkout -b work-from-v2 v2.0.0` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
+
+Email verification needs your own Resend key in ignored `.dev.vars`; see [community setup](docs/community-builds.md). Production deployment and analytics reporting require your authorized Cloudflare account. Never commit `.env.local`, `.dev.vars`, or API tokens.
 
 Open the URL Vite prints (port 3000 by default; it selects another free port when occupied). Browser storage is scoped to the origin, including the port, so use a consistent URL to keep the same collection.
 
@@ -41,59 +52,54 @@ The supplied public development content origin works without configuration. Copy
 VITE_CONTENT_BASE_URL=https://content.example.com
 ```
 
-The base URL is the **public content root containing `latest.json`**, not a release directory. Each fresh browser session revalidates `latest.json` and validates its `{ catalogVersion, manifest }` pointer. TanStack DB persists a validated catalog snapshot in localStorage under `mddex.catalog.v1`, keyed by content source, with the release version and resolved release directory. If both still match, no `catalog.json` request is made. Otherwise the loader fetches `catalog.json` alongside the referenced manifest and replaces the snapshot only after validation succeeds. Navigation between Collection and Build shares the in-memory catalog and retains initialized page data, avoiding repeated requests and skeletons. Relative artwork paths resolve against that same release directory. The manifest path is authoritative; the loader does not construct paths from the version string or fetch the manifest's unused file inventory. Release assets retain normal CDN caching.
+The base URL is the **public content root containing `latest.json`**, not a release directory. Each fresh browser session revalidates `latest.json` and validates its `{ catalogVersion, manifest }` pointer. TanStack DB persists a validated catalog snapshot in localStorage under `mddex.catalog.v4`, keyed by content source, with the release version and resolved release directory. If both still match, no `catalog.json` request is made. Otherwise the loader fetches `catalog.json` alongside the referenced manifest and replaces the snapshot only after validation succeeds. Navigation between Catalog and Build shares the in-memory catalog and retains initialized page data, avoiding repeated requests and skeletons. Relative artwork paths resolve against that same release directory. The manifest path is authoritative; the loader does not construct paths from the version string or fetch the manifest's unused file inventory. Release assets retain normal CDN caching.
 
 Use an R2 custom domain with browser CORS access for production; the supplied `r2.dev` URL is rate limited. Vite variables are public and resolved at build time. Rebuild after changing the content origin; publishing a new release requires no application rebuild. The former `VITE_CATALOG_URL` override has been removed so all loads discover the current release.
 
-`features/catalog` owns release discovery, validation, image URL resolution, display labels, and the search index. It fetches directly from the browser to the content CDN, with no Start-server proxy. `loadCatalog()` keeps discovery separate from UI and completion data. Discovery/catalog failures use the existing retry state without changing local progress or the last valid cached release. Corrupt disposable catalog cache data is refetched; blocked/full storage falls back to the in-memory session. The catalog cache contains externally owned definitions, separate from mutable user data. Artwork remains separately cached by the browser.
+`features/catalog` owns release discovery, validation, image URL resolution, display labels, and the search index. It fetches directly from the browser to the content CDN, with no Start-server proxy. `loadCatalog()` keeps discovery separate from UI and build data. Discovery/catalog failures use the existing retry state without changing saved builds or the last valid cached release. Corrupt disposable catalog cache data is refetched; blocked/full storage falls back to the in-memory session. The catalog cache contains externally owned definitions, separate from mutable user data. Artwork remains separately cached by the browser.
 
-## Local completion
+## Catalog
 
-TanStack DB's `localStorageCollectionOptions` persists normalized `{ itemSlug, owned, discovered }` records under **`mddex.collection.v2`** in browser localStorage. It supplies reactive queries, optimistic mutations, rollback on write failure, and storage-event synchronization between tabs. No full catalog records are copied into user data. `owned` remains the collection flag; `discovered` is permanent when ownership is unchecked. The validated v1 → v2 migration marks existing owned items discovered, preserves unknown slugs, and retains `mddb.collection.v1` untouched as a backup. The rename also migrates the previous `mddb.collection.v2` and `mddb.preferences.v1` keys without removing their backups. Reload older open tabs after upgrading so all tabs use the new keys.
+`/collection` is labeled Catalog in navigation. It contains only Melee Weapons, Ranged Weapons, Armor, Artifacts, Talismans, Enchantments, and Gear Effects, in that category order. Other release definitions remain cached for reference; artwork is retained and warmed only for these seven categories and locations. Published `game_data`, including item drop sources and location loot links, remains available for a future drop-location display. Every catalog item name and artwork is visible, with search, a top category filter bar, category/type dropdowns, enchantment applicability, and name/category sorting. The catalog is read-only; it does not track item ownership or load legacy collection records.
 
-The small `collection.db.ts` / `collection.service.ts` boundary owns persistence and writes. UI components never read or write localStorage directly. A future asynchronous synchronization/identity-claiming layer can attach here without coupling catalog data or UI components to authentication.
-
-Progress selectors count only slugs present in the current catalog. Removed/unknown slugs remain stored so a temporary content change does not erase ownership. Unreadable saved data is preserved and blocks writes instead of being replaced silently. Failed writes are rolled back and reported inline.
-
-Clearing browser site data deletes the collection. There is deliberately no cloud backup, cross-device synchronization, export UI, or account recovery in this slice. Cross-tab sync supports ordinary edits, but does not provide a conflict-free guarantee for simultaneous writes from separate tabs.
-
-## Interaction and accessibility
-
-- `/` redirects to `/collection`.
-- Search, category, type, status, and sorting use typed Router search parameters. Ownership never enters the URL.
-- Search matches all query words against normalized name, slug, category, and type. It makes no semantic guesses.
-- `/` or Cmd/Ctrl+K focuses search. HeroUI supplies the search field, clear button, selects, status controls, checkboxes, progress bars, chips, buttons, and skeletons.
-- Revealed item cards toggle ownership; keyboard users can focus a checkbox and press Space. Hidden cards explain how discovery works.
-- Item components are memoized; toggling a record preserves the other cards. Default order stays stable. Status-filtered removal has a short transition, with reduced-motion support.
-- Category progress cards also filter the catalog; on mobile they form a horizontal swipeable strip.
-- Missing/broken artwork uses the same-size placeholder. Catalog failures offer retry without clearing local state.
-
-## Spoiler-free discovery
-
-New collections hide names and artwork by default. Cards still show category/type and the full catalog contributes to progress. Type filter options include totals. `collection.presentation.ts` creates safe view models before cards render: hidden names are exactly `?????`, artwork is null, and hidden search/sort use only public metadata and stable catalog order. Canonical slugs are internal keys, never DOM attributes.
-
-Entering an exact, unambiguous full name in search reveals and collects that item, regardless of active filters. Case, surrounding/repeated whitespace, punctuation, and apostrophe variants are normalized without fuzzy matching. Partial names do not discover items. Already discovered items are never automatically recollected. Discovery is triggered by editing search, not by opening someone else’s bookmarked query.
-
-The header’s **Show all items** control requires confirmation before revealing the full catalog. Its preference is separately persisted by TanStack DB under `mddex.preferences.v1`. Changing it never mutates collection records. Turning it off hides items that were merely viewed; collecting an item while show-all is enabled also marks it discovered. Success and error feedback use HeroUI toasts, and the discovery explanation and spoiler confirmation use HeroUI modals.
-
-Focused tests cover masking, hidden search/sort, exact and ambiguous discovery, persistence, legacy migration, preference isolation, filtered discovery, and absence of hidden names/artwork in rendered card markup. Background preloading is allowed to request undiscovered artwork; it never reveals cards or changes discovery state.
-
-Artwork is warmed in the browser cache after the catalog renders, starting during an idle period (with a short fallback). The queue uses three low-priority image requests at a time, skips null/duplicate URLs, moves past failures/timeouts, and stops on unmount. Images are never appended to the DOM. This intentionally downloads hidden artwork for faster discovery; spoiler protection covers presentation, not DevTools/network inspection. Requests use ordinary browser/CDN caching, with no extra localStorage copies. The first discovery can still wait for an image that has not finished preloading.
+`/` redirects to `/build`, and the brand link opens Build. `/` or Cmd/Ctrl+K focuses catalog search. Missing artwork uses a placeholder and catalog failures offer retry. Artwork warms in the browser cache through a bounded low-priority queue.
 
 ## Scope and limitations
 
-Once the catalog is loaded, browsing and collection writes require no network. A fresh page load still needs the app and catalog to be reachable; this slice does not install a service worker or provide a fully offline launch. Artwork availability and catalog correctness depend on the published content. No guides, social features, accounts, CMS, or server persistence are implemented. The local build editor is described below.
+Once the catalog is loaded, browsing requires no network. Short-link preparation and first-time resolution require the server; self-contained links remain local. A fresh page load still needs the app and catalog to be reachable; this slice does not install a service worker or provide a fully offline launch. Artwork availability and catalog correctness depend on the published content. Community build publishing and email verification use server storage; see [community builds](docs/community-builds.md). The local build editor is described below.
 
 ## Local build editor
 
 `/build` is one loadout workspace, linked from the shared app header. Desktop uses a compact 12-slot board and contextual catalog pane; narrow screens use the same picker inside a full-height HeroUI modal sheet. A first empty loadout is created automatically when none exist. Rename inline, create another immediately, or switch/delete through Saved loadouts. Deletion asks for confirmation; deleting the active loadout switches to another, and deleting the last creates an empty replacement. Every composition change autosaves without a Save button.
 
-`features/builds` separates schema, local TanStack DB collections, mutation services, selectors, compatibility, and presentation. Each build has an ID, name, creation/update timestamps, and exactly 12 named positions: melee, ranged, head, torso, legs, feet, three artifacts, and three talismans. Equipped records reference canonical `itemSlug` values; gear stores positional nullable enchantment slugs. No catalog metadata, owned copies, rolls, or stats are persisted.
+The Catalog / Summary toggle replaces the catalog visibility control. Summary groups selected effects under Defense, Attack, and Utility, with a separate enchantment group. Equipment flavor descriptions are excluded from the summary. Effect rows show descriptions without names; source equipment text is omitted. Repeated gear effects combine into one description with additive totals from the selected tiers. Effect tier labels are omitted, and numbers are bold amber. Timing conditions remain intact. Enchantments retain separate tier-specific contributions. Effect stacking is treated as additive by design. Selecting a board slot returns to Catalog. Summary appears beside the board on desktop and below it on narrow screens.
 
-Builds live in browser localStorage under `mddex.builds.v1`; active loadout and picker availability live separately under `mddex.build-preferences.v1`. This has the same origin-local, cross-tab, optimistic-write and rollback behavior as collection storage. Unreadable storage is preserved and editing is blocked. Unknown catalog references remain in their slots as clearable placeholders.
+Share build sits beside Catalog / Summary and shows Link copied after copying. Encoding and anonymous identity are prepared in advance, but snapshots are stored only when Share is clicked. First-time short-link sharing waits for committed D1 storage; subsequent shares reuse a confirmed URL immediately. Confirmed links use `/build?share=<id>`; failed or offline requests fall back to the existing self-contained `/build#build=1.…` format. Legacy links remain supported. Shared builds open in the normal editable workspace with Save locally replacing Share. Anonymous identity uses a server-issued HttpOnly cookie and a public local ID for future account migration. See [sharing architecture and rollout](docs/sharing.md).
 
-`build.compatibility.ts` centralizes category/type compatibility. Owned and Discovered reuse the existing collection selectors and reactive completion records. Discovered is the default. Explicit All reveals the complete compatible catalog only within the picker; the shared Show all items control must be enabled before All is offered. Turning it off immediately restricts a saved All scope to Discovered without hiding equipped items. Equipping never discovers or collects an item, and availability changes never remove or hide existing equipped items.
+`features/builds` separates schema, local TanStack DB collections, mutation services, selectors, compatibility, and presentation. Each build has an ID, name, creation/update timestamps, and exactly 12 named positions: melee, ranged, head, torso, legs, feet, three artifacts, and three talismans. Equipped records reference canonical `itemSlug` values; gear stores one nullable enchantment slug and up to two nullable gear-effect slugs. No catalog metadata, owned copies, rolls, or stats are persisted.
 
-The current composition assumption is **three enchantment positions on each weapon/armor item**, controlled by `ENCHANTMENT_COUNT`. Any catalog enchantment may occupy any such position, including duplicates; no unverified per-item restrictions are invented. Replacing gear preserves its enchantments; clearing gear clears its enchantments. Artifacts and talismans have no enchantment positions. Enchantment positions stay visible even on empty gear cards; clicking an empty-gear position prompts equipment selection first. Icons have accessible names/tooltips.
+Inline I / II / III buttons beside each modifier name select or update its tier in one click; clicking the rest of the row selects the highest available equipment tier or deselects an already selected effect. Tier badges appear on the board, and the summary uses the selected tier text. Unique effects retain the published innate tier and text. Tier choices survive reloads and both kinds of sharing links; older builds without tier choices use the highest available tier.
 
-No build sharing, public build URLs, backend persistence, cross-device sync, simulation is included. Browser site-data deletion removes local loadouts.
+Builds live in browser localStorage under `mddex.builds.v3`; the active loadout lives separately under `mddex.build-preferences.v1`. This has the same origin-local, cross-tab, optimistic-write and rollback behavior as collection storage. Unreadable storage is preserved and editing is blocked. Unknown catalog references remain in their slots as clearable placeholders.
+
+`build.compatibility.ts` centralizes category/type compatibility. The picker offers every compatible catalog item. Neither the catalog nor the builder loads legacy collection storage.
+
+Weapons and armor each have one enchantment slot. Talismans use their published built-in effects at the selected I / II / III level, defaulting to the highest level. Their picker previews talisman values and their effects join the additive summary; normal gear uses only non-talisman tiers. Talisman levels persist in local saves and sharing links. All equipment except talismans supports up to two configurable effects; artifacts have effects but no enchantment. Unique equipment automatically fills its first effect position with its published innate effect. That effect has an amber border and cannot be removed or replaced; the second effect remains editable. Saved and shared builds apply the same rule when opened. Changing equipment replaces or removes the former innate effect while preserving the editable effect. Equipment cards keep visible artwork, slot labels, and item names. A compact icon row beneath holds the enchantment and effects, with modifier names in hover/focus tooltips and accessible button labels. Effects have a separate picker with catalog descriptions and attack/defense/utility groups. Published category compatibility is respected; missing metadata remains unknown and effect groups do not imply equipment eligibility. Tier values and innate effects use published metadata; gear-effect bonuses use the additive summary assumption. Replacing equipment retains modifiers; clearing it clears all modifiers.
+
+Existing `mddex.builds.v1` loadouts migrate to v3 using the first non-empty old enchantment. The entire original v1 data is retained as a backup. Effect selections start empty. Existing v2 saves migrate to v3 with all three effects; the original v2 data remains as a backup. Older shared links retain all three effects when opened. New loadouts and subsequent edits use the new format.
+
+Build sharing and public community builds use the Worker and D1. Local loadouts do not automatically sync across devices. Browser site-data deletion removes local loadouts.
+
+## Analytics
+
+Cloudflare Web Analytics measures traffic and Core Web Vitals. Workers Analytics Engine records page views for Build, Catalog, Mobs, and known item pages, plus search/filter use and build engagement. The read-only report shows popular pages, category choices, distinct browsers, and returning sessions. Collection and loadout contents remain local; only allowlisted analytics events and random visitor/session IDs reach the Worker. See [analytics setup, event definitions, reporting, and limitations](src/features/analytics/README.md).
+
+## Search and social previews
+
+Build and Catalog have server-rendered titles, descriptions, canonical URLs, Open Graph and Twitter metadata, plus visible introductory content below the workspace. The Build title targets “Minecraft Dungeons 2 Build Maker.” WebSite and WebApplication JSON-LD describe the free tool without invented ratings. Shared query links use `noindex, follow` and canonicalize to `/build`; API responses use `X-Robots-Tag: noindex, nofollow`. Catalog filter URLs canonicalize to `/collection`. `/` permanently redirects to `/build`.
+
+`public/robots.txt` points to `https://mddex.net/sitemap.xml`. The Worker generates that sitemap from the current published catalog, including equipment, mob, and location detail pages alongside the main pages. The 1200×630 social preview, favicon, and app icons use the existing MDDEX branding. Regenerate the favicon and app icons with `npm run assets:generate` (requires Playwright Chromium). The social preview is a checked-in image at `public/og-image.png` and is preserved by that script. The manifest describes a normal browser app; it does not promise offline installation. Metadata lives in `src/features/seo/metadata.ts`; update the production origin there and in `public/robots.txt` if the domain changes.
+
+The server-rendered equipment and location directories expose canonical detail links even before the interactive grids load. Keep their links and the Build page's initial HTML renderable in the production Worker; a successful HTTP status alone does not mean the page content rendered.
+
+After publishing, submit `/sitemap.xml` in Google Search Console for the verified domain and inspect a representative detail URL. Discovery and ranking still depend on search engines and external links.

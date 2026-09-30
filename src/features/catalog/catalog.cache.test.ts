@@ -34,6 +34,57 @@ function pointer(version = "v1", directory = version) {
 }
 afterEach(() => vi.restoreAllMocks());
 describe("persistent catalog cache", () => {
+  it("refetches snapshots from before the client retained drop-source metadata", async () => {
+    const storage = memoryStorage();
+    const fetcher = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(pointer())
+      .mockResolvedValueOnce(new Response(JSON.stringify(items)));
+    await loadCatalog(source, undefined, createCatalogCache(storage));
+    storage.setItem("mddex.catalog.v3", storage.getItem(CATALOG_STORAGE_KEY)!);
+    storage.removeItem(CATALOG_STORAGE_KEY);
+    storage.setItem("mddex.builds.v1", "saved loadout");
+    const updated = [
+      {
+        ...items[0],
+        description: "Effect description",
+        applicable_categories: ["melee_weapon"],
+        game_data: { sources: [{ catalog_slug: "location-brave-haven" }] },
+      },
+    ];
+    fetcher
+      .mockClear()
+      .mockResolvedValueOnce(pointer())
+      .mockResolvedValueOnce(new Response(JSON.stringify(updated)));
+    expect(
+      await loadCatalog(source, undefined, createCatalogCache(storage)),
+    ).toEqual(updated);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(storage.getItem("mddex.builds.v1")).toBe("saved loadout");
+  });
+  it("retains applicability on fetch and subsequent cache reads", async () => {
+    const catalog = [
+      {
+        ...items[0],
+        category: "enchantment",
+        applicable_categories: ["melee_weapon", "armor"],
+      },
+    ];
+    const storage = memoryStorage();
+    const fetcher = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(pointer())
+      .mockResolvedValueOnce(new Response(JSON.stringify(catalog)));
+    expect(
+      await loadCatalog(source, undefined, createCatalogCache(storage)),
+    ).toEqual(catalog);
+    fetcher.mockClear().mockResolvedValueOnce(pointer());
+    expect(
+      await loadCatalog(source, undefined, createCatalogCache(storage)),
+    ).toEqual(catalog);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it("persists definitions and version together and skips the catalog after reopening", async () => {
     const storage = memoryStorage();
     const fetcher = vi

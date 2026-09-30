@@ -1,9 +1,13 @@
-import { Button, Tooltip } from "@heroui/react";
-import { Plus, X } from "lucide-react";
+import { Button, Skeleton, Tooltip } from "@heroui/react";
+import { Plus, X, Sparkles } from "lucide-react";
 import type { CatalogItem } from "../../catalog/catalog.types";
+import { selectionTargets, visibleEffectIndices } from "../build.selection";
 import { slotRules } from "../build.compatibility";
+import { uniqueEffect } from "../build.unique";
+import { selectedTier } from "../build.tiers";
+import type { ModifierTier } from "../build.types";
 import {
-  ENCHANTMENT_COUNT,
+  supportsEffects,
   isGearSlot,
   type Build,
   type BuildSlot,
@@ -17,30 +21,59 @@ function GearSlotCard({
   target,
   onTarget,
   onClear,
+  readOnly,
+  catalogPending,
 }: BoardProps & { slot: BuildSlot }) {
   const equipped = build.slots[slot];
   const item = equipped ? catalog.get(equipped.itemSlug) : undefined;
+  const fixed = uniqueEffect(item);
+  const tierFor = (slug?: string | null, tier?: ModifierTier | null) => {
+    const modifier = slug ? catalog.get(slug) : undefined;
+    return modifier ? selectedTier(modifier, tier)?.tier : undefined;
+  };
   const name =
     item?.variation ?? (equipped ? "Unavailable item" : "Choose item");
-  const active = target?.slot === slot && target.kind === "item";
+  const talismanTier =
+    item?.category === "talisman"
+      ? selectedTier(item, equipped?.itemTier, item.category)?.tier
+      : undefined;
+  const active =
+    target?.kind === "item" &&
+    selectionTargets(target).some((position) => position.slot === slot);
   return (
     <div className={`gear-slot ${active ? "active" : ""}`}>
-      <Button
-        variant="ghost"
+      <button
+        type="button"
+        disabled={readOnly}
         className="gear-select"
         aria-label={`Choose ${slotRules[slot].label}`}
         aria-pressed={active}
-        onPress={() => onTarget({ kind: "item", slot })}
+        onClick={() => onTarget({ kind: "item", slot })}
       >
         <span className="gear-art">
-          {equipped ? <ItemArtwork item={item} /> : <Plus size={22} />}
+          {equipped ? (
+            catalogPending ? (
+              <Skeleton className="build-loading-art" />
+            ) : (
+              <ItemArtwork item={item} />
+            )
+          ) : (
+            <Plus size={22} />
+          )}
         </span>
         <span className="gear-copy">
           <span className="eyebrow">{slotRules[slot].label}</span>
-          <span className="gear-name">{name}</span>
+          <span className="gear-name">
+            {equipped && catalogPending ? (
+              <Skeleton className="build-loading-item-name" />
+            ) : (
+              name
+            )}
+            {talismanTier ? ` ${talismanTier}` : ""}
+          </span>
         </span>
-      </Button>
-      {equipped && (
+      </button>
+      {equipped && !readOnly && (
         <Button
           isIconOnly
           size="sm"
@@ -52,57 +85,140 @@ function GearSlotCard({
           <X size={13} />
         </Button>
       )}
-      {isGearSlot(slot) && (
+      {(isGearSlot(slot) || supportsEffects(slot)) && (
         <div
-          className="enchantment-strip"
-          aria-label={`${slotRules[slot].label} enchantments`}
+          className={`gear-modifiers ${isGearSlot(slot) ? "with-enchantment" : ""}`}
         >
-          {Array.from({ length: ENCHANTMENT_COUNT }, (_, index) => {
-            const slug = equipped?.enchantments[index];
-            const enchantment = slug ? catalog.get(slug) : undefined;
-            const label =
-              enchantment?.variation ??
-              (slug ? "Unavailable enchantment" : "Empty enchantment");
-            const selected =
-              target?.kind === "enchantment" &&
-              target.slot === slot &&
-              target.index === index;
-            return (
-              <Tooltip key={index} delay={250}>
-                <Button
-                  isIconOnly
-                  variant="ghost"
-                  className={`enchantment-slot ${selected ? "active" : ""}`}
-                  aria-label={`${slotRules[slot].label} enchantment ${index + 1}: ${label}`}
-                  aria-pressed={selected}
-                  onPress={() =>
-                    onTarget(
-                      equipped
-                        ? { kind: "enchantment", slot, index }
-                        : { kind: "item", slot },
-                    )
-                  }
-                >
-                  {slug ? (
-                    <ItemArtwork item={enchantment} />
-                  ) : (
-                    <Plus size={14} />
-                  )}
-                </Button>
-
-                <Tooltip.Content>
-                  {equipped ? label : "Choose equipment first"}
-                </Tooltip.Content>
-              </Tooltip>
-            );
-          })}
-          <span className="enchantment-caption">Enchantments</span>
+          {isGearSlot(slot) && (
+            <ModifierButton
+              slot={slot}
+              kind="enchantment"
+              index={0}
+              equipped={!!equipped}
+              slug={equipped?.enchantments[0]}
+              tier={tierFor(
+                equipped?.enchantments[0],
+                equipped?.enchantmentTier,
+              )}
+              catalog={catalog}
+              target={target}
+              readOnly={readOnly}
+              catalogPending={catalogPending}
+              onTarget={onTarget}
+            />
+          )}
+          {supportsEffects(slot) &&
+            visibleEffectIndices(equipped?.effects).map((index) => (
+              <ModifierButton
+                key={index}
+                slot={slot}
+                kind="effect"
+                index={index}
+                equipped={!!equipped}
+                slug={equipped?.effects[index]}
+                catalog={catalog}
+                target={target}
+                readOnly={readOnly}
+                catalogPending={catalogPending}
+                locked={index === 0 && !!fixed}
+                tier={
+                  index === 0 && fixed
+                    ? typeof fixed.game_data?.fixed_tier === "string"
+                      ? fixed.game_data.fixed_tier
+                      : "unique"
+                    : tierFor(
+                        equipped?.effects[index],
+                        equipped?.effectTiers?.[index],
+                      )
+                }
+                onTarget={onTarget}
+              />
+            ))}
         </div>
       )}
     </div>
   );
 }
+function ModifierButton({
+  slot,
+  kind,
+  index,
+  equipped,
+  slug,
+  catalog,
+  target,
+  onTarget,
+  readOnly,
+  catalogPending,
+  locked = false,
+  tier,
+}: Pick<
+  BoardProps,
+  "catalog" | "target" | "onTarget" | "readOnly" | "catalogPending"
+> & {
+  slot: BuildSlot;
+  kind: "enchantment" | "effect";
+  index: number;
+  equipped: boolean;
+  slug?: string | null;
+  locked?: boolean;
+  tier?: string;
+}) {
+  const item = slug ? catalog.get(slug) : undefined;
+  const label =
+    item?.variation ?? (slug ? `Unavailable ${kind}` : `Empty ${kind}`);
+  const selected = target?.kind === kind && target.slot === slot;
+  const choose = () => {
+    if (!equipped) onTarget({ kind: "item", slot });
+    else if (kind === "enchantment" && isGearSlot(slot))
+      onTarget({ kind, slot, index: 0 });
+    else onTarget({ kind: "effect", slot, index });
+  };
+  return (
+    <Tooltip delay={150}>
+      <Tooltip.Trigger<"button">
+        render={(props) => (
+          <button
+            {...props}
+            type="button"
+            disabled={readOnly}
+            className={`modifier-button ${kind} ${selected ? "active" : ""} ${locked ? "unique-effect" : ""}`}
+            aria-label={`${slotRules[slot].label} ${kind} ${index + 1}: ${label}${locked ? " (unique effect, locked)" : ""}`}
+            aria-pressed={selected}
+            onClick={choose}
+          >
+            <span className="modifier-art">
+              {slug ? (
+                catalogPending ? (
+                  <Skeleton className="build-loading-modifier" />
+                ) : (
+                  <ItemArtwork item={item} />
+                )
+              ) : kind === "enchantment" ? (
+                <Sparkles size={15} />
+              ) : (
+                <Plus size={14} />
+              )}
+            </span>
+            {tier && (
+              <span className="modifier-tier" aria-hidden="true">
+                {tier === "unique" ? "U" : tier}
+              </span>
+            )}
+          </button>
+        )}
+      />
+      <Tooltip.Content>
+        {equipped
+          ? `${label}${tier && tier !== "unique" ? ` · Tier ${tier}` : ""}${locked ? " · Unique effect (locked)" : ""}`
+          : "Choose equipment first"}
+      </Tooltip.Content>
+    </Tooltip>
+  );
+}
 type BoardProps = {
+  readOnly?: boolean;
+  catalogPending?: boolean;
   build: Build;
   catalog: ReadonlyMap<string, CatalogItem>;
   target?: BuildTarget;
@@ -119,7 +235,7 @@ const sections: { label: string; slots: BuildSlot[]; className: string }[] = [
   {
     label: "Artifacts",
     slots: ["artifact1", "artifact2", "artifact3"],
-    className: "trinket-slots",
+    className: "trinket-slots artifact-slots",
   },
   {
     label: "Talismans",

@@ -1,3 +1,6 @@
+import { trackEvent } from "../analytics/analytics.browser";
+import type { AnalyticsEvent } from "../analytics/analytics.schema";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { AppFooter } from "../../components/AppFooter";
 import {
   useCallback,
@@ -14,36 +17,50 @@ import {
   Skeleton,
   TextField,
   Toast,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@heroui/react";
 import { FolderOpen, Plus } from "lucide-react";
+import { buttonVariants } from "@heroui/styles";
 import { AppHeader } from "../../components/AppHeader";
 import { loadSessionCatalog } from "../catalog/catalog.session";
 import { preloadCatalogArtwork } from "../catalog/catalog.artwork";
 import type { CatalogItem } from "../catalog/catalog.types";
-import {
-  getCompletionCollection,
-  type CompletionCollection,
-} from "../collection/collection.db";
 import { getBuildCollections, type BuildCollections } from "./build.db";
 import {
   createBuild,
   deleteBuild,
   equip,
+  compose,
   renameBuild,
   setWorkspace,
 } from "./build.service";
 import { activeBuild } from "./build.selectors";
+import {
+  uniqueEffect,
+  uniqueEffectCatalog,
+  withUniqueEffects,
+} from "./build.unique";
+import {
+  composeSelection,
+  selectedSlug,
+  selectionTargets,
+} from "./build.selection";
 import { slotRules } from "./build.compatibility";
-import type { BuildTarget } from "./build.types";
+import {
+  BUILD_SLOTS,
+  EFFECT_COUNT,
+  type Build,
+  type BuildTarget,
+  type ModifierTier,
+} from "./build.types";
+import { useRouterState } from "@tanstack/react-router";
+import { resolveSharedBuild } from "../sharing/sharing.browser";
+import { ShareBuildButton } from "./components/BuildSharing";
+import { BuildSummary } from "./components/BuildSummary";
 import { BuildBoard } from "./components/BuildBoard";
 import { BuildSwitcher } from "./components/BuildSwitcher";
 import { CatalogPicker, type PickerProps } from "./components/CatalogPicker";
-import {
-  getPreferencesCollection,
-  setShowAllItems,
-  type PreferencesCollection,
-} from "../collection/collection.preferences";
-import { SpoilerControl } from "../collection/components/SpoilerControl";
 const mobileQuery = "(max-width: 900px)";
 function subscribeMobile(callback: () => void) {
   const media = window.matchMedia(mobileQuery);
@@ -53,54 +70,50 @@ function subscribeMobile(callback: () => void) {
 type BuildReady = {
   catalog: CatalogItem[];
   db: BuildCollections;
-  collection: CompletionCollection;
-  spoilers: PreferencesCollection;
 };
 let browserReady: BuildReady | undefined;
+const loadingBuild: Build = {
+  id: "loading-build",
+  name: "Loadout 1",
+  createdAt: "1970-01-01T00:00:00.000Z",
+  updatedAt: "1970-01-01T00:00:00.000Z",
+  slots: Object.fromEntries(
+    BUILD_SLOTS.map((slot) => [slot, null]),
+  ) as Build["slots"],
+};
 export function BuildPage() {
-  const [ready, setReady] = useState<BuildReady | undefined>(() => browserReady);
-  const { data: spoilerData } = useLiveQuery({
-    query: (q) => (ready ? q.from({ preferences: ready.spoilers }) : undefined),
-  });
-  const showAllItems = spoilerData?.[0]?.showAllItems ?? false;
-  function changeSpoilers(value: boolean) {
-    if (!ready) return;
-    try {
-      void setShowAllItems(ready.spoilers, value).isPersisted.promise.catch(
-        () =>
-          Toast.toast.danger(
-            "Could not save this preference. The change was undone.",
-          ),
-      );
-    } catch {
-      Toast.toast.danger("Could not save this preference. Please try again.");
-    }
-  }
+  const returningToCommunity = useRouterState({ select: (state) => state.location.search.community === 'post' });
+  const [ready, setReady] = useState<BuildReady | undefined>(
+    () => browserReady,
+  );
   const [error, setError] = useState("");
+  const [localDb, setLocalDb] = useState<BuildCollections | undefined>(
+    () => browserReady?.db,
+  );
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let active = true;
     if (browserReady) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("share"))
+      void resolveSharedBuild(url, AbortSignal.timeout(15_000)).catch(() => {});
     void (async () => {
       try {
         const db = getBuildCollections();
-        const collection = getCompletionCollection();
-        const spoilers = getPreferencesCollection();
-        const [catalog] = await Promise.all([
-          loadSessionCatalog(),
-          db.builds.preload(),
-          db.preferences.preload(),
-          collection.preload(),
-          spoilers.preload(),
-        ]);
+        const catalogPromise = loadSessionCatalog();
+        // Local storage can fail independently; keep the remote request handled.
+        void catalogPromise.catch(() => {});
+        await Promise.all([db.builds.preload(), db.preferences.preload()]);
         if (!active) return;
         if (db.builds.size === 0) {
           const { build, transaction } = createBuild(db, "Loadout 1");
           await transaction.isPersisted.promise;
           await setWorkspace(db, { activeId: build.id }).isPersisted.promise;
         }
+        setLocalDb(db);
+        const catalog = await catalogPromise;
         if (active) {
-          browserReady = { catalog, db, collection, spoilers };
+          browserReady = { catalog, db };
           setReady(browserReady);
           setError("");
         }
@@ -121,14 +134,16 @@ export function BuildPage() {
   );
   return (
     <>
-      <AppHeader active="build">
-        <SpoilerControl
-          showAllItems={showAllItems}
-          onChange={changeSpoilers}
-          disabled={!ready}
-        />
-      </AppHeader>
+      <AppHeader active="build" />
       <main id="main" className="shell build-page">
+        {returningToCommunity && (
+          <div className="community-builder-return">
+            <span className="muted">Equip your loadout, then share it with the community.</span>
+            <Link to="/community/new" className={buttonVariants({ variant: "secondary" })}>
+              Continue to posting →
+            </Link>
+          </div>
+        )}
         {error ? (
           <div role="alert" className="page-message">
             <h1>Loadouts unavailable</h1>
@@ -144,54 +159,133 @@ export function BuildPage() {
             </Button>
           </div>
         ) : ready ? (
-          <BuildWorkspace {...ready} showAllItems={showAllItems} />
+          <BuildWorkspace {...ready} />
+        ) : localDb ? (
+          <LocalBuildLoading db={localDb} />
         ) : (
-          <div className="build-loading" aria-label="Loading loadout">
-            <Skeleton className="skeleton-heading" />
-            <Skeleton className="skeleton-heading" />
-          </div>
+          <BuildLoadingLayout build={loadingBuild} />
         )}
+        <section className="page-about" aria-label="About the build maker">
+          <h1>Minecraft Dungeons 2 build maker</h1>
+          <p>
+            Plan your loadout with weapons, armor, artifacts, and talismans.
+            Pick enchantments and gear effects, review your build’s summary, and
+            share a link with friends.
+          </p>
+          <p>
+            Free to use, with no account required. Save builds in your browser
+            or open a shared build and save your own copy.{" "}
+            <Link to="/collection">Browse the equipment catalog</Link>.
+          </p>
+        </section>
       </main>
       <Toast.Provider placement="bottom end" />
       <AppFooter />
     </>
   );
 }
+const pendingCatalog = new Map<string, CatalogItem>();
+function LocalBuildLoading({ db }: { db: BuildCollections }) {
+  const { data: builds } = useLiveQuery((q) => q.from({ build: db.builds }));
+  const { data: preferences } = useLiveQuery((q) =>
+    q.from({ preference: db.preferences }),
+  );
+  return (
+    <BuildLoadingLayout
+      build={activeBuild(builds, preferences[0]?.activeId) ?? loadingBuild}
+    />
+  );
+}
+function BuildLoadingLayout({ build }: { build: Build }) {
+  return (
+    <div
+      className="build-loading"
+      role="status"
+      aria-label="Loading equipment catalog"
+    >
+      <span className="sr-only">Loading equipment catalog…</span>
+      <div aria-hidden="true">
+        <div className="build-view-controls">
+          <Skeleton className="build-loading-share" />
+          <div className="build-loading-tabs">
+            <span>Catalog</span>
+            <span>Summary</span>
+          </div>
+        </div>
+        <div className="build-workspace">
+          <section className="loadout-pane">
+            <div className="build-heading">
+              <div>
+                <span className="eyebrow">
+                  Build<span className="accent">.</span>
+                </span>
+                <TextField
+                  aria-label="Loading loadout name"
+                  value={build.name}
+                  isDisabled
+                >
+                  <Input className="build-name" />
+                </TextField>
+              </div>
+              <Button
+                isIconOnly
+                variant="secondary"
+                isDisabled
+                aria-label="Saved loadouts"
+              >
+                <FolderOpen size={18} />
+              </Button>
+              <Button
+                isIconOnly
+                variant="secondary"
+                isDisabled
+                aria-label="New loadout"
+              >
+                <Plus size={18} />
+              </Button>
+            </div>
+            <BuildBoard
+              build={build}
+              catalog={pendingCatalog}
+              catalogPending
+              readOnly
+              target={{ kind: "item", slot: "melee" }}
+              onTarget={() => {}}
+              onClear={() => {}}
+            />
+          </section>
+          <section className="picker-pane" aria-label="Equipment picker">
+            <span className="eyebrow">CATALOG / EQUIPMENT</span>
+            <h2 className="picker-title">Choose Melee weapon</h2>
+            <div className="catalog-picker">
+              <Skeleton className="build-loading-search" />
+              <Skeleton className="build-loading-types" />
+              <Skeleton className="build-loading-meta" />
+              <div className="picker-results">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <Skeleton className="build-loading-result" key={index} />
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
 function BuildWorkspace({
-  showAllItems,
   catalog,
   db,
-  collection,
 }: {
-  showAllItems: boolean;
   catalog: CatalogItem[];
   db: BuildCollections;
-  collection: CompletionCollection;
 }) {
   const { data: builds } = useLiveQuery((q) => q.from({ build: db.builds }));
   const { data: preferences } = useLiveQuery((q) =>
     q.from({ preference: db.preferences }),
   );
-  const { data: completion } = useLiveQuery((q) =>
-    q.from({ completion: collection }),
-  );
-  const build = activeBuild(builds, preferences[0]?.activeId);
-  const savedAvailability = preferences[0]?.availability ?? "discovered";
-  const availability = showAllItems
-    ? savedAvailability === "discovered"
-      ? "all"
-      : savedAvailability
-    : savedAvailability === "all"
-      ? "discovered"
-      : savedAvailability;
-  const records = useMemo(
-    () => new Map(completion.map((r) => [r.itemSlug, r])),
-    [completion],
-  );
-  const catalogMap = useMemo(
-    () => new Map(catalog.map((i) => [i.slug, i])),
-    [catalog],
-  );
+  const savedBuild = activeBuild(builds, preferences[0]?.activeId);
+  const catalogMap = useMemo(() => uniqueEffectCatalog(catalog), [catalog]);
   const [target, setTarget] = useState<BuildTarget>({
     kind: "item",
     slot: "melee",
@@ -200,7 +294,79 @@ function BuildWorkspace({
   const [type, setType] = useState("");
   const [switcher, setSwitcher] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [catalogVisible, setCatalogVisible] = useState(true);
+  const [panel, setPanel] = useState<"catalog" | "summary">("catalog");
+  const catalogVisible = panel === "catalog";
+  const [sharedBuild, setSharedBuild] = useState<Build>();
+  const build = useMemo(() => {
+    const current = sharedBuild ?? savedBuild;
+    return current ? withUniqueEffects(current, catalogMap) : undefined;
+  }, [sharedBuild, savedBuild, catalogMap]);
+  const [savingShared, setSavingShared] = useState(false);
+  const [linkError, setLinkError] = useState("");
+  const [linkLoading, setLinkLoading] = useState(false);
+  const locationHref = useRouterState({
+    select: (state) => state.location.href,
+  });
+  const navigate = useNavigate();
+  const closeShared = () => {
+    setSharedBuild(undefined);
+    setLinkError("");
+    setLinkLoading(false);
+    void navigate({
+      to: "/build",
+      search: {},
+      hash: "",
+      replace: true,
+      resetScroll: false,
+    });
+  };
+  useEffect(() => {
+    let revision = 0;
+    let controller: AbortController;
+    const readLink = () => {
+      const current = ++revision;
+      setSharedBuild(undefined);
+      setLinkError("");
+      controller?.abort();
+      setLinkLoading(false);
+      const url = new URL(window.location.href);
+      if (!url.hash.startsWith("#build=") && !url.searchParams.has("share"))
+        return;
+      setLinkLoading(true);
+      controller = new AbortController();
+      const linkHref = url.href;
+      void resolveSharedBuild(url, controller.signal)
+        .then((shared) => {
+          if (current === revision && window.location.href === linkHref) {
+            setSharedBuild(shared);
+            trackEvent("shared_build_opened");
+            setPanel("summary");
+            setPickerOpen(false);
+            setQuery("");
+            setType("");
+            setTarget({ kind: "item", slot: "melee" });
+          }
+        })
+        .catch((cause) => {
+          if (current === revision && window.location.href === linkHref)
+            setLinkError(
+              cause instanceof Error
+                ? cause.message
+                : "Could not open this build link.",
+            );
+        })
+        .finally(() => {
+          if (current === revision) setLinkLoading(false);
+        });
+    };
+    readLink();
+    window.addEventListener("hashchange", readLink);
+    return () => {
+      revision++;
+      controller?.abort();
+      window.removeEventListener("hashchange", readLink);
+    };
+  }, [locationHref]);
   const [saveError, setSaveError] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const mobile = useSyncExternalStore(
@@ -209,17 +375,26 @@ function BuildWorkspace({
     () => false,
   );
   const persist = useCallback(
-    (action: () => { isPersisted: { promise: Promise<unknown> } }) => {
+    (
+      action: () => { isPersisted: { promise: Promise<unknown> } },
+      success?: AnalyticsEvent,
+    ) => {
       try {
         const tx = action();
         setSaveError("");
-        void tx.isPersisted.promise.catch(() => {
-          setSaveError(
-            "Could not save locally. The change was undone. Check browser storage and try again.",
-          );
-          setAnnouncement("Change could not be saved.");
-        });
+        void tx.isPersisted.promise
+          .then(() => {
+            if (success) trackEvent(success);
+          })
+          .catch(() => {
+            trackEvent("build_save_failed");
+            setSaveError(
+              "Could not save locally. The change was undone. Check browser storage and try again.",
+            );
+            setAnnouncement("Change could not be saved.");
+          });
       } catch (cause) {
+        trackEvent("build_save_failed");
         setSaveError(
           cause instanceof Error
             ? cause.message
@@ -230,13 +405,15 @@ function BuildWorkspace({
     [],
   );
   const newLoadout = () => {
+    trackEvent("build_create_attempt");
     try {
       const { build: created, transaction } = createBuild(
         db,
         `Loadout ${builds.length + 1}`,
       );
-      persist(() => transaction);
+      persist(() => transaction, "build_created");
       persist(() => setWorkspace(db, { activeId: created.id }));
+      closeShared();
       setTarget({ kind: "item", slot: "melee" });
       setQuery("");
       setType("");
@@ -247,52 +424,124 @@ function BuildWorkspace({
     }
   };
   const chooseTarget = (next: BuildTarget) => {
+    trackEvent("build_slot_selected");
     setTarget(next);
     setQuery("");
     setType("");
     setPickerOpen(true);
-    setCatalogVisible(true);
+    setPanel("catalog");
   };
   // Other tabs can clear gear. Keep the picker pointed at a valid equipment target.
   const effectiveTarget = useMemo<BuildTarget>(
     () =>
-      target.kind === "enchantment" && !build?.slots[target.slot]
+      target.kind !== "item" && !build?.slots[target.slot]
         ? { kind: "item", slot: target.slot }
         : target,
     [target, build],
   );
-  const onSelect = useCallback(
-    (item: CatalogItem) => {
-      if (!build) return;
-      persist(() => equip(db, build.id, effectiveTarget, item));
-      setAnnouncement(`${item.variation} equipped.`);
-      setPickerOpen(false);
+  const groupTargets = selectionTargets(effectiveTarget);
+  const multiple = groupTargets.length > 1;
+  const saveSelection = useCallback(
+    (item: CatalogItem | null, tier?: ModifierTier) => {
+      if (!build) throw new Error("This loadout is no longer available.");
+      if (sharedBuild) {
+        setSharedBuild((current) =>
+          current
+            ? composeSelection(current, effectiveTarget, item, catalogMap, tier)
+            : current,
+        );
+        return { isPersisted: { promise: Promise.resolve() } };
+      }
+      const current = db.builds.get(build.id);
+      if (!current) throw new Error("This loadout is no longer available.");
+      const next = composeSelection(
+        current,
+        effectiveTarget,
+        item,
+        catalogMap,
+        tier,
+      );
+      return db.builds.update(build.id, (saved) => {
+        saved.slots = next.slots;
+        saved.updatedAt = next.updatedAt;
+      });
     },
-    [build, db, effectiveTarget, persist],
+    [build, sharedBuild, db, effectiveTarget, catalogMap],
   );
-  if (!build)
+  const onSelect = useCallback(
+    (item: CatalogItem, tier?: ModifierTier) => {
+      if (!build) return;
+      trackEvent("build_equip_attempt");
+      persist(() => saveSelection(item, tier), "build_equipped");
+      setAnnouncement(`${item.variation} selection updated.`);
+      if (!multiple) setPickerOpen(false);
+    },
+    [build, saveSelection, multiple, persist],
+  );
+  if (!build || linkLoading)
     return (
       <div className="build-loading" aria-label="Loading loadout">
         <Skeleton className="skeleton-heading" />
       </div>
     );
   const equipped = build.slots[effectiveTarget.slot];
+  const fixed = equipped
+    ? uniqueEffect(catalogMap.get(equipped.itemSlug))
+    : undefined;
   const title =
-    effectiveTarget.kind === "item"
-      ? `Choose ${slotRules[effectiveTarget.slot].label}`
-      : `Choose Enchantment for ${catalogMap.get(equipped!.itemSlug)?.variation ?? "unavailable gear"}`;
+    effectiveTarget.kind === "item" && multiple
+      ? `Choose up to 3 ${effectiveTarget.slot.startsWith("artifact") ? "Artifacts" : "Talismans"}`
+      : effectiveTarget.kind === "item"
+        ? `Choose ${slotRules[effectiveTarget.slot].label}`
+        : `Choose ${effectiveTarget.kind === "effect" ? `up to ${EFFECT_COUNT} Effects` : "Enchantment"} for ${catalogMap.get(equipped!.itemSlug)?.variation ?? "unavailable gear"}`;
   const clear = (next: BuildTarget) => {
-    persist(() => equip(db, build.id, next, null));
+    if (sharedBuild)
+      setSharedBuild((current) =>
+        current ? compose(current, next, null, catalogMap) : current,
+      );
+    else
+      persist(
+        () => equip(db, build.id, next, null, catalogMap),
+        "build_slot_cleared",
+      );
     setAnnouncement("Slot cleared.");
   };
+  const rename = (name: string) => {
+    if (sharedBuild)
+      setSharedBuild((current) =>
+        current
+          ? {
+              ...current,
+              name: name.slice(0, 80),
+              updatedAt: new Date().toISOString(),
+            }
+          : current,
+      );
+    else persist(() => renameBuild(db, build.id, name));
+  };
+  const saveLocally = async () => {
+    if (!sharedBuild || savingShared) return;
+    setSavingShared(true);
+    setSaveError("");
+    try {
+      if (db.builds.has(sharedBuild.id)) {
+        await db.builds.update(sharedBuild.id, (saved) => {
+          Object.assign(saved, build);
+        }).isPersisted.promise;
+      } else await db.builds.insert(build).isPersisted.promise;
+      await setWorkspace(db, { activeId: sharedBuild.id }).isPersisted.promise;
+      trackEvent("shared_build_saved");
+      closeShared();
+      setAnnouncement("Build saved locally.");
+    } catch {
+      setSaveError("Could not save locally. Try again.");
+    } finally {
+      setSavingShared(false);
+    }
+  };
   const pickerProps: PickerProps = {
-    allowAll: showAllItems,
     catalog,
-    records,
     target: effectiveTarget,
-    availability,
-    onAvailability: (value) =>
-      persist(() => setWorkspace(db, { availability: value })),
     query,
     onQuery: setQuery,
     type,
@@ -300,12 +549,49 @@ function BuildWorkspace({
     selected:
       effectiveTarget.kind === "item"
         ? equipped?.itemSlug
-        : equipped?.enchantments[effectiveTarget.index],
+        : effectiveTarget.kind === "effect"
+          ? equipped?.effects[effectiveTarget.index]
+          : equipped?.enchantments[effectiveTarget.index],
+    selectedSlugs: groupTargets
+      .map((position) => selectedSlug(build, position))
+      .filter((slug): slug is string => !!slug),
+    lockedSlugs: effectiveTarget.kind === "effect" && fixed ? [fixed.slug] : [],
+    lockedEffect: effectiveTarget.kind === "effect" ? fixed : undefined,
+    selectedTiers: Object.fromEntries(
+      groupTargets.flatMap((position) => {
+        const slug = selectedSlug(build, position);
+        const gear = build.slots[position.slot];
+        return slug
+          ? [
+              [
+                slug,
+                position.kind === "item"
+                  ? gear?.itemTier
+                  : position.kind === "effect"
+                    ? gear?.effectTiers?.[position.index]
+                    : gear?.enchantmentTier,
+              ],
+            ]
+          : [];
+      }),
+    ),
+    multiple,
     onSelect,
-    onClear: () => clear(effectiveTarget),
+    onClear: () => {
+      if (multiple) persist(() => saveSelection(null), "build_slot_cleared");
+      else clear(effectiveTarget);
+    },
   };
   return (
     <>
+      {linkError && (
+        <div role="alert" className="save-error">
+          {linkError}
+          <Button variant="ghost" size="sm" onPress={closeShared}>
+            Dismiss
+          </Button>
+        </div>
+      )}
       {saveError && (
         <div role="alert" className="save-error">
           {saveError}
@@ -317,22 +603,40 @@ function BuildWorkspace({
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>
-      {!mobile && (
-        <div className="build-view-controls">
+      <div className="build-view-controls">
+        {sharedBuild ? (
           <Button
             variant="secondary"
             size="sm"
-            aria-expanded={catalogVisible}
-            aria-controls="build-catalog-pane"
-            onPress={() => setCatalogVisible((value) => !value)}
+            isDisabled={savingShared}
+            onPress={() => {
+              void saveLocally();
+            }}
           >
-            {catalogVisible ? "Hide catalog" : "Show catalog"}
+            {savingShared ? "Saving…" : "Save locally"}
           </Button>
-        </div>
-      )}
-      <div
-        className={`build-workspace ${!catalogVisible ? "build-workspace-full" : ""}`}
-      >
+        ) : (
+          <ShareBuildButton build={build} />
+        )}
+
+        <ToggleButtonGroup
+          className="build-panel-switcher"
+          aria-label="Build panel"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={[panel]}
+          onSelectionChange={(keys) => {
+            const next = [...keys][0] === "summary" ? "summary" : "catalog";
+            if (next === "summary" && panel !== "summary")
+              trackEvent("build_summary_viewed", true);
+            setPanel(next);
+          }}
+        >
+          <ToggleButton id="catalog">Catalog</ToggleButton>
+          <ToggleButton id="summary">Summary</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <div className="build-workspace">
         <section className="loadout-pane" aria-label="Active loadout">
           <div className="build-heading">
             <div>
@@ -342,14 +646,10 @@ function BuildWorkspace({
               <TextField
                 aria-label="Loadout name"
                 value={build.name}
-                onChange={(name) =>
-                  persist(() => renameBuild(db, build.id, name))
-                }
+                isDisabled={savingShared}
+                onChange={rename}
                 onBlur={() => {
-                  if (!build.name.trim())
-                    persist(() =>
-                      renameBuild(db, build.id, "Untitled loadout"),
-                    );
+                  if (!build.name.trim()) rename("Untitled loadout");
                 }}
               >
                 <Input
@@ -379,6 +679,7 @@ function BuildWorkspace({
           <BuildBoard
             build={build}
             catalog={catalogMap}
+            readOnly={savingShared}
             target={
               (mobile ? pickerOpen : catalogVisible)
                 ? effectiveTarget
@@ -388,7 +689,7 @@ function BuildWorkspace({
             onClear={clear}
           />
         </section>
-        {!mobile && catalogVisible && (
+        {panel === "catalog" && !mobile && (
           <section
             id="build-catalog-pane"
             className="picker-pane"
@@ -396,14 +697,22 @@ function BuildWorkspace({
           >
             <span className="eyebrow">
               CATALOG /{" "}
-              {effectiveTarget.kind === "enchantment"
-                ? `ENCHANTMENT ${effectiveTarget.index + 1}`
-                : "EQUIPMENT"}
+              {effectiveTarget.kind === "effect"
+                ? "EFFECTS"
+                : effectiveTarget.kind === "enchantment"
+                  ? "ENCHANTMENTS"
+                  : "EQUIPMENT"}
             </span>
-            <h1 className="picker-title">{title}</h1>
+            <h2 className="picker-title">{title}</h2>
             <CatalogPicker {...pickerProps} />
           </section>
         )}
+        <section
+          className={`picker-pane summary-pane${panel === "catalog" ? " summary-pane--mobile-only" : ""}`}
+          aria-label="Build summary"
+        >
+          <BuildSummary build={build} catalog={catalogMap} />
+        </section>
       </div>
       <BuildSwitcher
         open={switcher}
@@ -411,13 +720,15 @@ function BuildWorkspace({
         builds={builds}
         activeId={build.id}
         onSwitch={(id) => {
-          persist(() => setWorkspace(db, { activeId: id }));
+          persist(() => setWorkspace(db, { activeId: id }), "build_switched");
+          closeShared();
           setTarget({ kind: "item", slot: "melee" });
           setQuery("");
           setType("");
         }}
         onDelete={async (id) => {
           await deleteBuild(db, id);
+          trackEvent("build_deleted");
           setAnnouncement("Loadout deleted.");
           if (id === build.id) {
             setTarget({ kind: "item", slot: "melee" });
@@ -439,6 +750,11 @@ function BuildWorkspace({
                 {saveError && <p role="alert">{saveError}</p>}
                 <CatalogPicker {...pickerProps} />
               </Modal.Body>
+              {multiple && (
+                <Modal.Footer>
+                  <Button onPress={() => setPickerOpen(false)}>Done</Button>
+                </Modal.Footer>
+              )}
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>

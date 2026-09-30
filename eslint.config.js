@@ -6,6 +6,7 @@ export default tseslint.config(
   {
     ignores: [
       "dist/**",
+      "src/worker-configuration.d.ts",
       ".wrangler/**",
       ".tanstack/**",
       "src/routeTree.gen.ts",
@@ -13,6 +14,10 @@ export default tseslint.config(
     ],
   },
   js.configs.recommended,
+  {
+    files: ["docs/**/*.mjs"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
   ...tseslint.configs.recommended,
   {
     files: ["**/*.{ts,tsx}"],

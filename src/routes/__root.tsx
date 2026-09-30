@@ -5,24 +5,52 @@ import {
   Scripts,
   Link,
 } from "@tanstack/react-router";
+import { Analytics } from "../features/analytics/Analytics";
+import {
+  pageMetadata,
+  BUILD_TITLE,
+  BUILD_DESCRIPTION,
+  websiteSchema,
+} from "../features/seo/metadata";
 import css from "../styles.css?url";
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MDDEX · Collection" },
-      {
-        name: "description",
-        content:
-          "Your Minecraft Dungeons 2 collection. Every find, accounted for.",
-      },
-    ],
-    links: [
-      { rel: "stylesheet", href: css },
-      { rel: "icon", href: "/mddex-logo.png" },
-    ],
-  }),
+  head: () => {
+    const defaults = pageMetadata({
+      title: BUILD_TITLE,
+      description: BUILD_DESCRIPTION,
+      path: "/build",
+    });
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { name: "theme-color", content: "#080f11" },
+        ...defaults.meta,
+      ],
+      links: [
+        { rel: "stylesheet", href: css },
+        { rel: "icon", href: "/favicon.ico", sizes: "any" },
+        {
+          rel: "icon",
+          href: "/favicon-32x32.png",
+          type: "image/png",
+          sizes: "32x32",
+        },
+        {
+          rel: "apple-touch-icon",
+          href: "/apple-touch-icon.png",
+          sizes: "180x180",
+        },
+        { rel: "manifest", href: "/site.webmanifest" },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(websiteSchema),
+        },
+      ],
+    };
+  },
   component: () => (
     <html lang="en" className="dark" data-theme="dark">
       <head>
@@ -33,14 +61,15 @@ export const Route = createRootRoute({
           Skip to content
         </a>
         <Outlet />
+        <Analytics />
         <Scripts />
       </body>
     </html>
   ),
   notFoundComponent: () => (
     <main id="main" className="page-message">
-      <h1>Nothing to collect here.</h1>
-      <Link to="/collection">Back to collection</Link>
+      <h1>Page not found.</h1>
+      <Link to="/build">Back to builds</Link>
     </main>
   ),
 });

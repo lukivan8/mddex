@@ -3,9 +3,42 @@
   "name": "mddex",
   "account_id": "969c1ae807b3ae3d635b9c72c0818e54",
   "workers_dev": false,
-  "routes": [{ "pattern": "mddex.net", "custom_domain": true }],
-  "main": "@tanstack/react-start/server-entry",
+  "routes": [
+    {
+      "pattern": "mddex.net",
+      "custom_domain": true,
+    },
+  ],
+  "main": "src/server.ts",
   "compatibility_date": "2026-09-27",
   "compatibility_flags": ["nodejs_compat"],
-  "observability": { "enabled": true, "traces": { "enabled": true } },
+  "vars": {
+    "COMMUNITY_EMAIL_FROM": "builds@mddex.net",
+  },
+  "analytics_engine_datasets": [
+    {
+      "binding": "PRODUCT_ANALYTICS",
+      "dataset": "mddex_events",
+    },
+  ],
+  "ratelimits": [
+    {
+      "name": "SHARE_RATE_LIMITER",
+      "namespace_id": "2879401",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true,
+    },
+  },
+  "d1_databases": [
+    {
+      "binding": "BUILD_DB",
+      "database_name": "mddex-builds",
+      "database_id": "512cfa53-a2a4-4ae2-8d88-e88bd434a1c9",
+    },
+  ],
 }
