@@ -480,7 +480,7 @@ test("reload only checks latest until the published catalog version changes", as
   await expect(
     page.getByRole("textbox", { name: "Loadout name" }),
   ).toBeVisible();
-  expect(pointers).toBe(2);
+  await expect.poll(() => pointers).toBe(2);
   expect(catalogs).toBe(1);
   await page.route("**/latest.json", (route) =>
     route.fulfill({
@@ -494,8 +494,8 @@ test("reload only checks latest until the published catalog version changes", as
   await expect(
     page.getByRole("textbox", { name: "Loadout name" }),
   ).toBeVisible();
-  expect(pointers).toBe(3);
-  expect(catalogs).toBe(2);
+  await expect.poll(() => pointers).toBe(3);
+  await expect.poll(() => catalogs).toBe(2);
 });
 
 test("effect and equipment groups supports toggling, limits, filtering and persistence", async ({
