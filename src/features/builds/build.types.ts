@@ -22,8 +22,11 @@ export const ENCHANTMENT_COUNT = 1;
 export const EFFECT_COUNT = 3;
 export const modifierTierSchema = z.enum(["I", "II", "III", "IV"]);
 export type ModifierTier = z.infer<typeof modifierTierSchema>;
+export const MAX_ITEM_POWER = 154;
+export const itemPowerSchema = z.number().int().min(1).max(MAX_ITEM_POWER);
 export const equippedSchema = z.object({
   itemSlug: z.string().min(1),
+  power: itemPowerSchema.optional(),
   enchantments: z.array(z.string().min(1).nullable()).max(ENCHANTMENT_COUNT),
   effects: z.array(z.string().min(1).nullable()).max(EFFECT_COUNT).default([]),
   effectTiers: z
@@ -48,6 +51,7 @@ export type BuildTarget =
 export const buildPreferenceSchema = z.object({
   id: z.literal("workspace"),
   activeId: z.string().nullable(),
+  hideCompatibilityWarnings: z.boolean().optional(),
 });
 export const isGearSlot = (slot: BuildSlot): slot is GearSlot =>
   (GEAR_SLOTS as readonly string[]).includes(slot);

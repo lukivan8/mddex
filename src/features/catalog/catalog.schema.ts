@@ -12,6 +12,7 @@ export const catalogItemSchema = z.object({
   variation: z.string().min(1),
   image: z.string().min(1).nullable(),
   description: z.string().nullish(),
+  detail_path: z.string().min(1).optional(),
   applicable_categories: z.array(equipmentCategorySchema).nullish(),
   // Retain release metadata, including item sources and location loot links.
   game_data: z.record(z.string(), z.unknown()).nullish(),
@@ -26,4 +27,5 @@ export const catalogSchema = z
 export const latestReleaseSchema = z.object({
   catalogVersion: z.string().min(1),
   manifest: z.string().trim().min(1),
+  catalogIndex: z.string().trim().min(1).optional(),
 });

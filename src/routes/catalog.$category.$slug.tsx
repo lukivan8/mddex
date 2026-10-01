@@ -14,6 +14,8 @@ import {
   returnPathAtPower,
 } from "../features/catalog/power";
 export const Route = createFileRoute("/catalog/$category/$slug")({
+  staleTime: Infinity,
+  preloadStaleTime: Infinity,
   validateSearch: (search: Record<string, unknown>) => {
     const returnTo =
       typeof search.returnTo === "string"

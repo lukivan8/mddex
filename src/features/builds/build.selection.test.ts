@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogItem } from "../catalog/catalog.types";
 import { compose, emptyBuild } from "./build.service";
-import { composeSelection, visibleEffectIndices } from "./build.selection";
+import { composeSelection } from "./build.selection";
 import type { BuildTarget } from "./build.types";
 
 const item = (slug: string, category: string): CatalogItem => ({
@@ -107,39 +107,4 @@ describe("published enchantment compatibility", () => {
     ).toThrow("does not fit");
     expect(build.slots.head?.enchantments).toEqual([null]);
   });
-});
-
-describe("visible effect slots", () => {
-  it.each([
-    [[], [0, 1]],
-    [
-      [null, null, null],
-      [0, 1],
-    ],
-    [
-      ["one", null, null],
-      [0, 1],
-    ],
-    [
-      ["one", "two", null],
-      [0, 1],
-    ],
-    [
-      ["one", "two", "three"],
-      [0, 1, 2],
-    ],
-    [
-      ["one", null, "three"],
-      [0, 2],
-    ],
-    [
-      [null, null, "three"],
-      [0, 2],
-    ],
-  ])(
-    "shows two positions unless all three are filled: %j",
-    (effects, indices) => {
-      expect(visibleEffectIndices(effects)).toEqual(indices);
-    },
-  );
 });

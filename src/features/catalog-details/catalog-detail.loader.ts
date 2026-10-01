@@ -1,13 +1,80 @@
+import {
+  applicableEffects,
+  locationMetadata,
+} from "./catalog-detail.enrichment";
 import { notFound } from "@tanstack/react-router";
-import { loadSessionCatalog } from "../catalog/catalog.session";
+import {
+  loadSessionCatalog,
+  loadSessionCatalogDetail,
+} from "../catalog/catalog.session";
 import type { CatalogItem as PublishedItem } from "../catalog/catalog.types";
 import {
   dropSources,
   itemPath,
   type CatalogItem,
 } from "./catalog-detail.model";
+const unusedDetailFields = new Set([
+  "reference_context",
+  "map_context",
+  "gear_rules",
+  "wikily_cards",
+  "enchantment_options",
+  "spawn_conditions",
+  "drop_conditions",
+  "soul_enchantment_rules",
+]);
+function pickFields(value: unknown, keys: string[]) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  return Object.fromEntries(
+    Object.entries(value).filter(([key]) => keys.includes(key)),
+  );
+}
+// Keep the SSR and router payload limited to information the detail page renders.
+function detailGameData(item: PublishedItem) {
+  const data = Object.fromEntries(
+    Object.entries(item.game_data ?? {}).filter(
+      ([key]) => !unusedDetailFields.has(key),
+    ),
+  );
+  if (item.category === "location") {
+    data.wikily = pickFields(data.wikily, [
+      "lead",
+      "region",
+      "nDungeon",
+      "nRift",
+      "nStations",
+      "gear",
+      "books",
+      "mobs",
+      "bosses",
+      "entries",
+      "places",
+      "merchants",
+      "stations",
+    ]);
+    data.location_context = pickFields(data.location_context, [
+      "source_details",
+      "instances",
+    ]);
+    if (data.location_context && typeof data.location_context === "object") {
+      const context = data.location_context as Record<string, unknown>;
+      if (Array.isArray(context.instances))
+        context.instances = context.instances.map((instance) =>
+          pickFields(instance, ["name", "lead", "levels"]),
+        );
+    }
+  } else {
+    delete data.wikily;
+    delete data.location_context;
+  }
+  if (Array.isArray(data.quest_context))
+    data.quest_context = data.quest_context.map((quest) =>
+      pickFields(quest, ["name", "rewards"]),
+    );
+  return data;
+}
 export function normalizeDetailItem(item: PublishedItem): CatalogItem {
-  const data = item.game_data ?? {};
+  const data = detailGameData(item);
   const book = data.book as { sources?: unknown } | null | undefined;
   return {
     slug: item.slug,
@@ -30,10 +97,15 @@ export function normalizeDetailItem(item: PublishedItem): CatalogItem {
   };
 }
 export async function loadDetailPage(category: string, slug: string) {
-  const catalog = (await loadSessionCatalog()).map(normalizeDetailItem);
+  const published = await loadSessionCatalog();
+  const catalog = published.map(normalizeDetailItem);
   const path = `/catalog/${category}/${slug}`;
-  const item = catalog.find((item) => itemPath(item) === path);
-  if (!item) throw notFound();
+  const position = catalog.findIndex((entry) => itemPath(entry) === path);
+  if (position < 0) throw notFound();
+  const item = normalizeDetailItem(
+    await loadSessionCatalogDetail(published[position]),
+  );
+  catalog[position] = item;
   const sources = dropSources(item, catalog);
   const setEquipment =
     item.category === "armor" && item.game_data.set
@@ -51,6 +123,7 @@ export async function loadDetailPage(category: string, slug: string) {
     ...(item.game_data.effects ?? []),
     ...(item.game_data.loot ?? []),
     ...sources,
+    ...applicableEffects(item),
     item.game_data.summons,
     item.game_data.baseMob,
     item.game_data.summonedBy,
@@ -75,9 +148,46 @@ export async function loadDetailPage(category: string, slug: string) {
         : [],
     ),
   ]);
+  if (item.category === "location") {
+    const location = locationMetadata(item, catalog);
+    for (const entries of [
+      location.loot,
+      location.mobs,
+      location.minibosses,
+      location.entrances,
+      location.places,
+    ]) {
+      for (const entry of entries)
+        if (entry.catalog_slug) needed.add(entry.catalog_slug);
+    }
+  }
+  const enrichment = new Set([
+    "wikily",
+    "rollable_effects",
+    "enchantment_options",
+    "acquisition",
+    "quest_context",
+    "spawn_conditions",
+    "drop_conditions",
+    "soul_enchantment_rules",
+    "map_context",
+    "location_context",
+    "reference_context",
+    "gear_rules",
+    "wikily_cards",
+  ]);
   return {
     item,
-    catalog: catalog.filter((entry) => needed.has(entry.slug)),
+    catalog: catalog
+      .filter((entry) => needed.has(entry.slug))
+      .map((entry) => ({
+        ...entry,
+        game_data: Object.fromEntries(
+          Object.entries(entry.game_data).filter(
+            ([key]) => !enrichment.has(key),
+          ),
+        ) as CatalogItem["game_data"],
+      })),
     sources,
   };
 }

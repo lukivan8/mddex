@@ -8,6 +8,8 @@ import {
 import { pageMetadata } from "../features/seo/metadata";
 import { catalogIndex } from "../features/seo/catalog-index";
 export const Route = createFileRoute("/mobs")({
+  staleTime: Infinity,
+  preloadStaleTime: Infinity,
   validateSearch: (search: Record<string, unknown>): MobFilters => ({
     q: typeof search.q === "string" ? search.q : undefined,
     kind:

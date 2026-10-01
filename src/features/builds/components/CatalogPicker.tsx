@@ -142,6 +142,7 @@ const PickerResult = memo(function PickerResult({
 export type PickerProps = {
   catalog: CatalogItem[];
   target: BuildTarget;
+  equipment?: CatalogItem;
   query: string;
   onQuery: (value: string) => void;
   type: string;
@@ -159,6 +160,7 @@ export type PickerProps = {
 export function CatalogPicker({
   catalog,
   target,
+  equipment,
   query,
   onQuery,
   type,
@@ -189,20 +191,22 @@ export function CatalogPicker({
     return effects;
   }, [catalog]);
   const available = useMemo(() => {
-    const items = pickerItems(catalog, target, query, index, type);
+    const items = pickerItems(catalog, target, query, index, type, equipment);
     if (target.kind !== "effect" || !lockedEffect) return items;
     const fixed =
       catalog.find((item) => item.slug === lockedEffect.slug) ?? lockedEffect;
     return [fixed, ...items.filter((item) => item.slug !== fixed.slug)];
-  }, [catalog, target, query, index, type, lockedEffect]);
+  }, [catalog, target, query, index, type, lockedEffect, equipment]);
   const types = useMemo(
     () =>
       [
         ...new Set(
-          catalog.filter((i) => isCompatible(i, target)).map((i) => i.type),
+          catalog
+            .filter((i) => isCompatible(i, target, equipment))
+            .map((i) => i.type),
         ),
       ].sort(),
-    [catalog, target],
+    [catalog, target, equipment],
   );
   return (
     <div className="catalog-picker">

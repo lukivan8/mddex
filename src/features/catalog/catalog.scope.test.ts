@@ -1,3 +1,4 @@
+import { IDBFactory } from "fake-indexeddb";
 import { afterEach, expect, it, vi } from "vitest";
 import { createCatalogCache } from "./catalog.db";
 import { getCategories, getTypes, isCatalogItem } from "./catalog.helpers";
@@ -53,16 +54,7 @@ it("limits catalog filters and category sorting to the requested categories in o
 });
 
 it("keeps other definitions and drop links but only equipment, location and mob artwork across reloads", async () => {
-  const records = new Map<string, string>();
-  const storage = {
-    getItem: (key: string) => records.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      records.set(key, value);
-    },
-    removeItem: (key: string) => {
-      records.delete(key);
-    },
-  };
+  const storage = new IDBFactory();
   const source = { latestUrl: "https://example.com/latest.json" };
   const pointer = () =>
     new Response(

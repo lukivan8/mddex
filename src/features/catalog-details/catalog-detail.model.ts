@@ -1,9 +1,12 @@
+import { acquisitionSources } from "./catalog-detail.enrichment";
 export interface ItemSource {
+  description?: string;
   name: string;
   type: string;
   catalog_slug?: string;
 }
 export interface Reference {
+  description?: string;
   name: string;
   catalog_slug?: string;
 }
@@ -144,7 +147,7 @@ export function dropSources(
   const listed = item.game_data.sources.filter(
     (source) => source.type === "area" || source.type === "mob",
   );
-  const mobDrops = catalog
+  const mobDrops: ItemSource[] = catalog
     .filter(
       (mob) =>
         mob.category === "mob" &&
@@ -152,8 +155,18 @@ export function dropSources(
     )
     .map((mob) => ({ name: mob.name, type: "mob", catalog_slug: mob.slug }));
   const unique = new Map<string, ItemSource>();
-  for (const source of [...listed, ...mobDrops])
-    unique.set(source.catalog_slug ?? `${source.type}:${source.name}`, source);
+  for (const source of [...listed, ...acquisitionSources(item), ...mobDrops]) {
+    const key = source.catalog_slug ?? `${source.type}:${source.name}`;
+    const old = unique.get(key);
+    const description = [
+      ...new Set([old?.description, source.description].filter(Boolean)),
+    ].join(" ");
+    unique.set(key, {
+      ...old,
+      ...source,
+      ...(description ? { description } : {}),
+    });
+  }
   return [...unique.values()];
 }
 

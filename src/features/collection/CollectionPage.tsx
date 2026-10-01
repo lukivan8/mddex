@@ -37,9 +37,6 @@ export function CollectionPage({
   const [catalog, setCatalog] = useState<CatalogItem[] | undefined>(
     () => browserCatalog,
   );
-  useEffect(() => {
-    if (catalog) return preloadCatalogArtwork(catalog);
-  }, [catalog]);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -161,6 +158,7 @@ function CollectionContent({
     () => getVisibleItemViews(views, filters),
     [views, filters],
   );
+  useEffect(() => preloadCatalogArtwork(visible.slice(0, 24)), [visible]);
   function changeFilters(patch: CollectionFilters) {
     if (patch.q && !filters.q) trackEvent("catalog_search_used", true);
     if (patch.category !== undefined && patch.category !== filters.category) {

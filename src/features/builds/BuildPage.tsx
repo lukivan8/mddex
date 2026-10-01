@@ -1,3 +1,4 @@
+import { BuildPowerInputs } from "./components/BuildPowerInputs";
 import { trackEvent } from "../analytics/analytics.browser";
 import type { AnalyticsEvent } from "../analytics/analytics.schema";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -19,8 +20,9 @@ import {
   Toast,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
 } from "@heroui/react";
-import { FolderOpen, Plus } from "lucide-react";
+import { FolderOpen, Plus, TriangleAlert } from "lucide-react";
 import { buttonVariants } from "@heroui/styles";
 import { AppHeader } from "../../components/AppHeader";
 import { loadSessionCatalog } from "../catalog/catalog.session";
@@ -32,6 +34,7 @@ import {
   deleteBuild,
   equip,
   compose,
+  composeItemPower,
   renameBuild,
   setWorkspace,
 } from "./build.service";
@@ -46,11 +49,12 @@ import {
   selectedSlug,
   selectionTargets,
 } from "./build.selection";
-import { slotRules } from "./build.compatibility";
+import { slotRules, incompatibleModifiers } from "./build.compatibility";
 import {
   BUILD_SLOTS,
   EFFECT_COUNT,
   type Build,
+  type BuildSlot,
   type BuildTarget,
   type ModifierTier,
 } from "./build.types";
@@ -82,7 +86,9 @@ const loadingBuild: Build = {
   ) as Build["slots"],
 };
 export function BuildPage() {
-  const returningToCommunity = useRouterState({ select: (state) => state.location.search.community === 'post' });
+  const returningToCommunity = useRouterState({
+    select: (state) => state.location.search.community === "post",
+  });
   const [ready, setReady] = useState<BuildReady | undefined>(
     () => browserReady,
   );
@@ -128,18 +134,19 @@ export function BuildPage() {
       active = false;
     };
   }, [attempt]);
-  useEffect(
-    () => (ready ? preloadCatalogArtwork(ready.catalog) : undefined),
-    [ready],
-  );
   return (
     <>
       <AppHeader active="build" />
       <main id="main" className="shell build-page">
         {returningToCommunity && (
           <div className="community-builder-return">
-            <span className="muted">Equip your loadout, then share it with the community.</span>
-            <Link to="/community/new" className={buttonVariants({ variant: "secondary" })}>
+            <span className="muted">
+              Equip your loadout, then share it with the community.
+            </span>
+            <Link
+              to="/community/new"
+              className={buttonVariants({ variant: "secondary" })}
+            >
               Continue to posting →
             </Link>
           </div>
@@ -301,6 +308,17 @@ function BuildWorkspace({
     const current = sharedBuild ?? savedBuild;
     return current ? withUniqueEffects(current, catalogMap) : undefined;
   }, [sharedBuild, savedBuild, catalogMap]);
+  useEffect(() => {
+    if (!build) return;
+    const slugs = new Set(
+      Object.values(build.slots).flatMap((slot) =>
+        slot ? [slot.itemSlug, ...slot.effects, ...slot.enchantments] : [],
+      ),
+    );
+    return preloadCatalogArtwork(
+      catalog.filter((item) => slugs.has(item.slug)),
+    );
+  }, [build, catalog]);
   const [savingShared, setSavingShared] = useState(false);
   const [linkError, setLinkError] = useState("");
   const [linkLoading, setLinkLoading] = useState(false);
@@ -484,6 +502,27 @@ function BuildWorkspace({
         <Skeleton className="skeleton-heading" />
       </div>
     );
+  const changeItemPower = (slot: BuildSlot, power: number) => {
+    if (sharedBuild) {
+      setSharedBuild((current) =>
+        current ? composeItemPower(current, slot, power) : current,
+      );
+      return;
+    }
+    persist(() => {
+      const current = db.builds.get(build.id);
+      if (!current) throw new Error("This loadout is no longer available.");
+      const next = composeItemPower(current, slot, power);
+      return db.builds.update(build.id, (saved) => {
+        saved.slots = next.slots;
+        saved.updatedAt = next.updatedAt;
+      });
+    });
+  };
+  const compatibilityIssues = incompatibleModifiers(build, catalogMap);
+  const hideWarnings = preferences[0]?.hideCompatibilityWarnings ?? false;
+  const setWarningsHidden = (hidden: boolean) =>
+    persist(() => setWorkspace(db, { hideCompatibilityWarnings: hidden }));
   const equipped = build.slots[effectiveTarget.slot];
   const fixed = equipped
     ? uniqueEffect(catalogMap.get(equipped.itemSlug))
@@ -542,6 +581,7 @@ function BuildWorkspace({
   const pickerProps: PickerProps = {
     catalog,
     target: effectiveTarget,
+    equipment: equipped ? catalogMap.get(equipped.itemSlug) : undefined,
     query,
     onQuery: setQuery,
     type,
@@ -643,21 +683,53 @@ function BuildWorkspace({
               <span className="eyebrow">
                 Build<span className="accent">.</span>
               </span>
-              <TextField
-                aria-label="Loadout name"
-                value={build.name}
-                isDisabled={savingShared}
-                onChange={rename}
-                onBlur={() => {
-                  if (!build.name.trim()) rename("Untitled loadout");
-                }}
-              >
-                <Input
-                  maxLength={80}
-                  placeholder="Untitled loadout"
-                  className="build-name"
-                />
-              </TextField>
+              <div className="build-name-row">
+                <TextField
+                  className="build-name-field"
+                  style={{ width: `${(build.name.length || 16) + 1}ch` }}
+                  aria-label="Loadout name"
+                  value={build.name}
+                  isDisabled={savingShared}
+                  onChange={rename}
+                  onBlur={() => {
+                    if (!build.name.trim()) rename("Untitled loadout");
+                  }}
+                >
+                  <Input
+                    maxLength={80}
+                    placeholder="Untitled loadout"
+                    className="build-name"
+                  />
+                </TextField>
+                {compatibilityIssues.length > 0 && hideWarnings && (
+                  <Tooltip delay={150}>
+                    <Tooltip.Trigger<"button">
+                      render={(props) => (
+                        <button
+                          {...props}
+                          type="button"
+                          className="build-warning-toggle"
+                          aria-label="Show compatibility warnings"
+                          onClick={() => setWarningsHidden(false)}
+                        >
+                          <TriangleAlert size={18} />
+                        </button>
+                      )}
+                    />
+                    <Tooltip.Content className="build-warning-tooltip">
+                      <p>
+                        Some saved modifiers do not fit the current gear.
+                        Replace or clear them.
+                      </p>
+                      <ul>
+                        {compatibilityIssues.map((issue, index) => (
+                          <li key={index}>{issue}</li>
+                        ))}
+                      </ul>
+                    </Tooltip.Content>
+                  </Tooltip>
+                )}
+              </div>
             </div>
             <Button
               isIconOnly
@@ -676,6 +748,26 @@ function BuildWorkspace({
               <Plus size={18} />
             </Button>
           </div>
+          {compatibilityIssues.length > 0 && !hideWarnings && (
+            <div className="build-compatibility-warning" role="status">
+              <p>
+                Some saved modifiers do not fit the current gear. Replace or
+                clear them.
+              </p>
+              <ul>
+                {compatibilityIssues.map((issue, index) => (
+                  <li key={index}>{issue}</li>
+                ))}
+              </ul>
+              <Button
+                size="sm"
+                variant="ghost"
+                onPress={() => setWarningsHidden(true)}
+              >
+                Hide warnings
+              </Button>
+            </div>
+          )}
           <BuildBoard
             build={build}
             catalog={catalogMap}
@@ -687,6 +779,12 @@ function BuildWorkspace({
             }
             onTarget={chooseTarget}
             onClear={clear}
+          />
+          <BuildPowerInputs
+            key={build.id}
+            build={build}
+            disabled={savingShared}
+            onChange={changeItemPower}
           />
         </section>
         {panel === "catalog" && !mobile && (

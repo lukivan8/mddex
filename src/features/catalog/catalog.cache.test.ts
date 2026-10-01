@@ -1,5 +1,6 @@
+import { IDBFactory } from "fake-indexeddb";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CATALOG_STORAGE_KEY, createCatalogCache } from "./catalog.db";
+import { createCatalogCache, CATALOG_DATABASE } from "./catalog.db";
 import { loadCatalog } from "./catalog.loader";
 
 const source = { latestUrl: "https://example.com/latest.json" };
@@ -13,16 +14,7 @@ const items = [
   },
 ];
 function memoryStorage() {
-  const values = new Map<string, string>();
-  return {
-    getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      values.set(key, value);
-    },
-    removeItem: (key: string) => {
-      values.delete(key);
-    },
-  };
+  return new IDBFactory();
 }
 function pointer(version = "v1", directory = version) {
   return new Response(
@@ -34,34 +26,6 @@ function pointer(version = "v1", directory = version) {
 }
 afterEach(() => vi.restoreAllMocks());
 describe("persistent catalog cache", () => {
-  it("refetches snapshots from before the client retained drop-source metadata", async () => {
-    const storage = memoryStorage();
-    const fetcher = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(pointer())
-      .mockResolvedValueOnce(new Response(JSON.stringify(items)));
-    await loadCatalog(source, undefined, createCatalogCache(storage));
-    storage.setItem("mddex.catalog.v3", storage.getItem(CATALOG_STORAGE_KEY)!);
-    storage.removeItem(CATALOG_STORAGE_KEY);
-    storage.setItem("mddex.builds.v1", "saved loadout");
-    const updated = [
-      {
-        ...items[0],
-        description: "Effect description",
-        applicable_categories: ["melee_weapon"],
-        game_data: { sources: [{ catalog_slug: "location-brave-haven" }] },
-      },
-    ];
-    fetcher
-      .mockClear()
-      .mockResolvedValueOnce(pointer())
-      .mockResolvedValueOnce(new Response(JSON.stringify(updated)));
-    expect(
-      await loadCatalog(source, undefined, createCatalogCache(storage)),
-    ).toEqual(updated);
-    expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(storage.getItem("mddex.builds.v1")).toBe("saved loadout");
-  });
   it("retains applicability on fetch and subsequent cache reads", async () => {
     const catalog = [
       {
@@ -94,7 +58,9 @@ describe("persistent catalog cache", () => {
     expect(
       await loadCatalog(source, undefined, createCatalogCache(storage)),
     ).toEqual(items);
-    expect(storage.getItem(CATALOG_STORAGE_KEY)).toContain('"version":"v1"');
+    expect(
+      (await createCatalogCache(storage).read(source.latestUrl))?.version,
+    ).toBe("v1");
     fetcher.mockClear().mockResolvedValueOnce(pointer());
     expect(
       await loadCatalog(source, undefined, createCatalogCache(storage)),
@@ -153,14 +119,26 @@ describe("persistent catalog cache", () => {
   });
   it("repairs corrupt cache data without touching user state", async () => {
     const storage = memoryStorage();
-    storage.setItem(CATALOG_STORAGE_KEY, "invalid json");
-    storage.setItem("mddex.collection.v2", "user progress");
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      const request = storage.open(CATALOG_DATABASE, 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("snapshots");
+        request.result.createObjectStore("details");
+      };
+      request.onsuccess = () => resolve(request.result);
+    });
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction("snapshots", "readwrite");
+      tx.objectStore("snapshots").put("corrupt", source.latestUrl);
+      tx.oncomplete = () => resolve();
+    });
+    db.close();
     const cache = createCatalogCache(storage);
     vi.spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(pointer())
       .mockResolvedValueOnce(new Response(JSON.stringify(items)));
     expect(await loadCatalog(source, undefined, cache)).toEqual(items);
-    expect(storage.getItem("mddex.collection.v2")).toBe("user progress");
+    expect((await cache.read(source.latestUrl))?.items).toEqual(items);
   });
   it("still returns valid content when persistence is unavailable", async () => {
     vi.spyOn(globalThis, "fetch")

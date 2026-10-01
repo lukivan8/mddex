@@ -29,7 +29,7 @@ test("existing three-effect local builds retain three effects and keep the backu
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: /effect 3:/ })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /effect 3:/ })).toHaveCount(9);
   await page.getByRole("radio", { name: "Summary", exact: true }).click();
   const summary = page.getByRole("region", { name: "Build summary" });
   await expect(summary).toContainText("Effect 1 description");
@@ -324,6 +324,36 @@ test("removed catalog references remain saved and clearable", async ({
     route.fulfill({ json: catalog.filter((i) => i.slug !== "hammer") }),
   );
   await page.reload();
+  // Cached sessions stage the refreshed release for the next full page load.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<string[]>((resolve, reject) => {
+            const request = indexedDB.open("mddex-catalog-v1", 1);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+              const db = request.result;
+              const transaction = db.transaction("snapshots", "readonly");
+              const snapshots = transaction.objectStore("snapshots").getAll();
+              transaction.oncomplete = () => {
+                db.close();
+                resolve(
+                  snapshots.result.map(
+                    (snapshot: { version: string }) => snapshot.version,
+                  ),
+                );
+              };
+              transaction.onabort = () => {
+                db.close();
+                reject(transaction.error);
+              };
+            };
+          }),
+      ),
+    )
+    .toContain("removed-hammer");
+  await page.reload();
   await expect(
     page.getByText("Unavailable item", { exact: true }),
   ).toBeVisible();
@@ -478,7 +508,7 @@ test("effect and equipment groups supports toggling, limits, filtering and persi
   const effects = page.getByRole("button", {
     name: /^Melee weapon effect \d:/,
   });
-  await expect(effects).toHaveCount(2);
+  await expect(effects).toHaveCount(3);
   for (const category of ["gear_effect", "artifact", "talisman"]) {
     await page
       .getByRole("button", {
@@ -496,8 +526,7 @@ test("effect and equipment groups supports toggling, limits, filtering and persi
           exact: true,
         })
         .click();
-      if (category === "gear_effect")
-        await expect(effects).toHaveCount(number === 3 ? 3 : 2);
+      if (category === "gear_effect") await expect(effects).toHaveCount(3);
     }
     await expect(
       page.getByText("3 / 3 selected.", { exact: false }),
@@ -514,7 +543,7 @@ test("effect and equipment groups supports toggling, limits, filtering and persi
         exact: true,
       })
       .click();
-    if (category === "gear_effect") await expect(effects).toHaveCount(2);
+    if (category === "gear_effect") await expect(effects).toHaveCount(3);
     await page
       .getByRole("button", {
         name: `${category === "gear_effect" ? "Add effect" : "Equip"} ${category} 4`,
@@ -746,7 +775,7 @@ test("one enchantment and effects have separate selectors and persist", async ({
   ).toHaveCount(6);
   await expect(
     page.getByRole("button", { name: /effect [123]: Empty effect/ }),
-  ).toHaveCount(18);
+  ).toHaveCount(27);
   await page
     .getByRole("button", { name: "Equip Battle Hammer", exact: true })
     .click();

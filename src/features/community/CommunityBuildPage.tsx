@@ -356,7 +356,7 @@ export function CommunityBuildPage({ buildId }: { buildId: string }) {
           <span className="accent">.</span>
         </h1>
         <div className="community-detail-meta">
-          <div>
+          <div className="community-detail-author">
             <span className="muted">by {post.displayName}</span>
             {post.discord && (
               <span className="community-discord" title="Discord username">

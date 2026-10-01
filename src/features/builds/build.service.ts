@@ -8,6 +8,8 @@ import {
   isGearSlot,
   type Build,
   type BuildTarget,
+  type BuildSlot,
+  itemPowerSchema,
   type ModifierTier,
 } from "./build.types";
 import { isCompatible } from "./build.compatibility";
@@ -34,7 +36,7 @@ export function createBuild(db: BuildCollections, name?: string) {
 }
 export function setWorkspace(
   db: BuildCollections,
-  patch: { activeId?: string },
+  patch: { activeId?: string; hideCompatibilityWarnings?: boolean },
 ) {
   return db.preferences.has("workspace")
     ? db.preferences.update("workspace", (p) => {
@@ -59,7 +61,19 @@ export function compose(
   catalog: ReadonlyMap<string, CatalogItem> = new Map(),
   tier?: ModifierTier,
 ): Build {
-  if (item && !isCompatible(item, target))
+  const equipment = build.slots[target.slot];
+  if (
+    item &&
+    !isCompatible(
+      item,
+      target,
+      target.kind === "item"
+        ? undefined
+        : equipment
+          ? catalog.get(equipment.itemSlug)
+          : undefined,
+    )
+  )
     throw new Error("This item does not fit the selected slot.");
   const next = structuredClone(withUniqueEffects(build, catalog));
   if (target.kind === "item") {
@@ -83,6 +97,7 @@ export function compose(
     next.slots[target.slot] = item
       ? {
           itemSlug: item.slug,
+          ...(old?.power !== undefined ? { power: old.power } : {}),
           ...(itemTier ? { itemTier } : {}),
           enchantments: isGearSlot(target.slot)
             ? (old?.enchantments ?? Array(ENCHANTMENT_COUNT).fill(null))
@@ -123,6 +138,39 @@ export function compose(
             : {}),
         }
       : null;
+    // Explicit gear replacement keeps compatible selections and their tiers.
+    const equipped = next.slots[target.slot];
+    if (item && equipped) {
+      equipped.enchantments = equipped.enchantments.map((slug, index) => {
+        const modifier = slug ? catalog.get(slug) : undefined;
+        if (
+          !modifier ||
+          isCompatible(
+            modifier,
+            { kind: "enchantment", slot: target.slot, index } as BuildTarget,
+            item,
+          )
+        )
+          return slug;
+        equipped.enchantmentTier = null;
+        return null;
+      });
+      equipped.effects = equipped.effects.map((slug, index) => {
+        if (index === 0 && slug === fixed?.slug) return slug;
+        const modifier = slug ? catalog.get(slug) : undefined;
+        if (
+          !modifier ||
+          isCompatible(
+            modifier,
+            { kind: "effect", slot: target.slot, index },
+            item,
+          )
+        )
+          return slug;
+        if (equipped.effectTiers) equipped.effectTiers[index] = null;
+        return null;
+      });
+    }
   } else {
     const gear = next.slots[target.slot];
     if (
@@ -164,6 +212,19 @@ export function compose(
       gear.enchantmentTier = chosenTier ?? null;
     }
   }
+  next.updatedAt = new Date().toISOString();
+  return next;
+}
+export function composeItemPower(
+  build: Build,
+  slot: BuildSlot,
+  power: number,
+): Build {
+  const valid = itemPowerSchema.parse(power);
+  const next = structuredClone(build);
+  const equipment = next.slots[slot];
+  if (!equipment) throw new Error("Choose an item before setting its power.");
+  equipment.power = valid;
   next.updatedAt = new Date().toISOString();
   return next;
 }

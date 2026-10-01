@@ -1,4 +1,9 @@
-import { Accordion } from "@heroui/react";
+import { CatalogNavigationLink } from "../../components/CatalogNavigationLink";
+import {
+  applicableEffects,
+  questRewardNames,
+} from "./catalog-detail.enrichment";
+import { Accordion, Tooltip } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
@@ -22,6 +27,7 @@ import {
   isChestTalisman,
   type CatalogItem,
   type ItemSource,
+  type Reference,
 } from "./catalog-detail.model";
 import { itemSeo } from "./catalog-detail.seo";
 import type { loadDetailPage } from "./catalog-detail.loader";
@@ -50,11 +56,18 @@ function Numbers({ text }: { text: string }) {
     </>
   );
 }
-function Artwork({ item }: { item: CatalogItem }) {
+function Artwork({
+  item,
+  priority = false,
+}: {
+  item: CatalogItem;
+  priority?: boolean;
+}) {
   if (item.category === "mob" && !item.image)
     return <Skull size={48} aria-label={item.name} />;
   return (
     <ItemArtwork
+      priority={priority}
       item={{
         slug: item.slug,
         category: item.category,
@@ -63,6 +76,65 @@ function Artwork({ item }: { item: CatalogItem }) {
         image: item.image,
       }}
     />
+  );
+}
+function ApplicableEffects({
+  entries,
+  catalog,
+  returnTo,
+}: {
+  entries: Reference[];
+  catalog: CatalogItem[];
+  returnTo: string;
+}) {
+  return (
+    <div className="detail-effect-icons">
+      {entries.map((entry) => {
+        const target = catalog.find((item) => item.slug === entry.catalog_slug);
+        const name = target?.name ?? entry.name;
+        const description =
+          entry.description ??
+          target?.description ??
+          target?.game_data.tiers
+            ?.map((tier) => tier.text)
+            .filter(Boolean)
+            .join(" ");
+        return (
+          <Tooltip key={entry.catalog_slug ?? entry.name} delay={150}>
+            <Tooltip.Trigger<"a">
+              render={(props) => (
+                <CatalogNavigationLink
+                  {...props}
+                  role={target ? "link" : "button"}
+                  className="detail-effect-icon"
+                  aria-label={name}
+                  tabIndex={0}
+                  href={
+                    target
+                      ? `${itemPath(target)}?returnTo=${encodeURIComponent(returnTo)}`
+                      : undefined
+                  }
+                >
+                  {target ? (
+                    <Artwork item={target} />
+                  ) : (
+                    <span aria-hidden="true">{name.slice(0, 2)}</span>
+                  )}
+                </CatalogNavigationLink>
+              )}
+            />
+            <Tooltip.Content className="detail-effect-tooltip">
+              <strong>{name}</strong>
+              {description && (
+                <p>
+                  <Numbers text={description} />
+                </p>
+              )}
+            </Tooltip.Content>
+          </Tooltip>
+        );
+      })}
+    </div>
   );
 }
 function ReferenceCard({
@@ -75,7 +147,7 @@ function ReferenceCard({
   returnTo: string;
 }) {
   return (
-    <a
+    <CatalogNavigationLink
       href={`${itemPath(item)}?returnTo=${encodeURIComponent(returnTo)}`}
       className="detail-reference"
     >
@@ -85,7 +157,7 @@ function ReferenceCard({
         <h3>{item.name}</h3>
       </div>
       <ChevronRight size={16} />
-    </a>
+    </CatalogNavigationLink>
   );
 }
 function Sources({
@@ -115,24 +187,26 @@ function Sources({
             <div>
               <h3>{source.name}</h3>
               {source.type === "mob" && <small>Mob drop</small>}
+              {source.description && (
+                <p className="detail-reference-note">{source.description}</p>
+              )}
             </div>
-            <ChevronRight size={15} />
+            {target && <ChevronRight size={15} />}
           </>
         );
         return target ? (
-          <a
+          <CatalogNavigationLink
             key={target.slug}
             className="detail-source"
             href={`${itemPath(target)}?returnTo=${encodeURIComponent(returnTo)}`}
           >
             {body}
-          </a>
+          </CatalogNavigationLink>
         ) : (
           <div key={source.name} className="detail-source">
             {body}
           </div>
         );
-
       })}
     </div>
   );
@@ -152,14 +226,17 @@ export function CatalogDetailPage({
   const returnTo = returnPathAtPower(initialReturnTo, 1);
   const seo = itemSeo(item, catalog, power);
   const data = item.game_data;
+  const effects = applicableEffects(item);
+  const questNames = questRewardNames(item);
   const foundInChests = isChestTalisman(item);
   const isQuestReward =
-    !foundInChests &&
-    !(
-      item.category === "talisman" &&
-      sources.some((source) => source.type === "mob")
-    ) &&
-    data.sources.some((source) => source.type === "quest");
+    questNames.length > 0 ||
+    (!foundInChests &&
+      !(
+        item.category === "talisman" &&
+        sources.some((source) => source.type === "mob")
+      ) &&
+      data.sources.some((source) => source.type === "quest"));
   const family = data.base ?? data.uniqueVariant;
   const related = catalog.find((entry) => entry.slug === family?.catalog_slug);
   const armorSlots = ["helmet", "chest", "leggings", "boots"];
@@ -192,10 +269,10 @@ export function CatalogDetailPage({
       <AppHeader active={item.category === "mob" ? "mobs" : "collection"} />
       <main id="main" className="shell catalog-detail">
         <div className="detail-toolbar">
-          <a className="detail-back" href={returnTo}>
+          <CatalogNavigationLink className="detail-back" href={returnTo}>
             <ArrowLeft size={15} />
             {returnTo.startsWith("/mobs") ? "Back to mobs" : "Back to catalog"}
-          </a>
+          </CatalogNavigationLink>
           {(item.category === "melee_weapon" ||
             item.category === "ranged_weapon") && (
             <div className="detail-actions">
@@ -231,7 +308,7 @@ export function CatalogDetailPage({
         <div className="detail-dossier">
           <aside>
             <div className="detail-art">
-              <Artwork item={item} />
+              <Artwork item={item} priority />
             </div>
             {item.description && <blockquote>“{item.description}”</blockquote>}
             {data.effects?.map((effect) => {
@@ -241,7 +318,7 @@ export function CatalogDetailPage({
                   entry.name === effect.name,
               );
               return (
-                <a
+                <CatalogNavigationLink
                   className="detail-effect"
                   key={effect.name}
                   href={
@@ -262,7 +339,7 @@ export function CatalogDetailPage({
                       </p>
                     )}
                   </div>
-                </a>
+                </CatalogNavigationLink>
               );
             })}
             {(related || setEquipment.length > 0) && (
@@ -464,6 +541,16 @@ export function CatalogDetailPage({
               catalog={catalog}
               returnTo={returnTo}
             />
+            {effects.length > 0 && (
+              <section>
+                <h2>Applicable effects</h2>
+                <ApplicableEffects
+                  entries={effects}
+                  catalog={catalog}
+                  returnTo={returnTo}
+                />
+              </section>
+            )}
             {(sources.length > 0 ||
               foundInChests ||
               isQuestReward ||
@@ -488,7 +575,12 @@ export function CatalogDetailPage({
                 {isQuestReward && (
                   <div className="detail-quest-reward">
                     <Gift size={16} />
-                    <span>Quest reward</span>
+                    <span>
+                      Quest reward
+                      {questNames.length > 0
+                        ? `: ${questNames.join(", ")}`
+                        : ""}
+                    </span>
                   </div>
                 )}
               </section>

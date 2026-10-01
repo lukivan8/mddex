@@ -1,12 +1,13 @@
 import { Button, Skeleton, Tooltip } from "@heroui/react";
 import { Plus, X, Sparkles } from "lucide-react";
 import type { CatalogItem } from "../../catalog/catalog.types";
-import { selectionTargets, visibleEffectIndices } from "../build.selection";
+import { selectionTargets } from "../build.selection";
 import { slotRules } from "../build.compatibility";
 import { uniqueEffect } from "../build.unique";
 import { selectedTier } from "../build.tiers";
 import type { ModifierTier } from "../build.types";
 import {
+  EFFECT_COUNT,
   supportsEffects,
   isGearSlot,
   type Build,
@@ -60,6 +61,14 @@ function GearSlotCard({
           ) : (
             <Plus size={22} />
           )}
+          {equipped && !catalogPending && (
+            <span
+              className="gear-power"
+              aria-label={`Power ${equipped.power ?? 1}`}
+            >
+              {equipped.power ?? 1}
+            </span>
+          )}
         </span>
         <span className="gear-copy">
           <span className="eyebrow">{slotRules[slot].label}</span>
@@ -108,7 +117,7 @@ function GearSlotCard({
             />
           )}
           {supportsEffects(slot) &&
-            visibleEffectIndices(equipped?.effects).map((index) => (
+            Array.from({ length: EFFECT_COUNT }, (_, index) => (
               <ModifierButton
                 key={index}
                 slot={slot}

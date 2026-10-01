@@ -1,3 +1,4 @@
+import { CatalogNavigationLink } from "../../components/CatalogNavigationLink";
 import { Button, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 import { ArrowLeft, ArrowLeftRight, Plus, Swords } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
@@ -312,12 +313,12 @@ function WeaponCard({
         </span>
       </button>
       {item && (
-        <a
+        <CatalogNavigationLink
           className="compare-detail-link"
           href={`${itemPath(item)}?returnTo=${encodeURIComponent(returnTo)}${powerParam(power) ? `&power=${power}` : ""}`}
         >
           View details
-        </a>
+        </CatalogNavigationLink>
       )}
     </div>
   );
@@ -383,10 +384,10 @@ export function WeaponComparePage({
     <>
       <AppHeader active="collection" />
       <main id="main" className="shell compare-page">
-        <a className="compare-back" href={backHref}>
+        <CatalogNavigationLink className="compare-back" href={backHref}>
           <ArrowLeft size={15} />
           {left ? `Back to ${left.name}` : "Back to catalog"}
-        </a>
+        </CatalogNavigationLink>
         <header className="compare-header">
           <div className="compare-header-top">
             <span className="eyebrow">CATALOG / WEAPONS</span>

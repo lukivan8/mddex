@@ -1,8 +1,12 @@
 import type { CatalogCache } from "./catalog.db";
 import { hasCatalogArtwork } from "./catalog.helpers";
-import { catalogSchema, latestReleaseSchema } from "./catalog.schema";
+import {
+  catalogSchema,
+  catalogItemSchema,
+  latestReleaseSchema,
+} from "./catalog.schema";
 import type { CatalogItem } from "./catalog.types";
-const defaultBase = "https://pub-35f269a579604af2ac5c2103db21e213.r2.dev/";
+const defaultBase = "https://cdn.mddex.net/";
 export function getContentSource() {
   const baseUrl = (
     import.meta.env.VITE_CONTENT_BASE_URL || defaultBase
@@ -42,18 +46,28 @@ export async function loadCatalog(
     throw new Error("The published manifest URL is invalid.");
   // The manifest path is authoritative; never infer a directory from the version string.
   const releaseUrl = new URL(".", manifestUrl);
+  const catalogUrl = latest.data.catalogIndex
+    ? new URL(latest.data.catalogIndex, source.latestUrl)
+    : new URL("catalog.json", releaseUrl);
+  if (
+    catalogUrl.origin !== releaseUrl.origin ||
+    !catalogUrl.href.startsWith(releaseUrl.href)
+  )
+    throw new Error("The catalog index is outside its release.");
   // Both the publisher version and resolved release location must match.
   const cached = await cache?.read(source.latestUrl).catch(() => undefined);
   if (
     cached?.version === latest.data.catalogVersion &&
-    cached.releaseUrl === releaseUrl.href
+    cached.releaseUrl === releaseUrl.href &&
+    (cached.catalogUrl ?? new URL("catalog.json", releaseUrl).href) ===
+      catalogUrl.href
   )
     return cached.items.map((item) => ({
       ...item,
       image: hasCatalogArtwork(item) ? item.image : null,
     }));
 
-  const response = await fetch(new URL("catalog.json", releaseUrl).href, {
+  const response = await fetch(catalogUrl.href, {
     signal: requestSignal,
   });
   if (!response.ok)
@@ -63,6 +77,9 @@ export async function loadCatalog(
     throw new Error("The published catalog has an unexpected format.");
   const items = parsed.data.map((item) => ({
     ...item,
+    ...(item.detail_path
+      ? { detail_path: resolveDetailPath(item.detail_path, releaseUrl.href) }
+      : {}),
     image: hasCatalogArtwork(item)
       ? resolveImage(item.image, releaseUrl.href)
       : null,
@@ -73,8 +90,43 @@ export async function loadCatalog(
       source: source.latestUrl,
       version: latest.data.catalogVersion,
       releaseUrl: releaseUrl.href,
+      catalogUrl: catalogUrl.href,
       items,
     })
     .catch(() => undefined);
   return items;
+}
+
+function resolveDetailPath(path: string, releaseUrl: string) {
+  const url = new URL(path, releaseUrl);
+  if (
+    url.origin !== new URL(releaseUrl).origin ||
+    !url.href.startsWith(releaseUrl)
+  )
+    throw new Error("The detail shard is outside its release.");
+  return url.href;
+}
+
+export async function loadCatalogDetail(
+  item: CatalogItem,
+  cache?: CatalogCache,
+): Promise<CatalogItem> {
+  if (!item.detail_path) return item;
+  const url = item.detail_path;
+  const saved = await cache?.readDetail?.(url).catch(() => undefined);
+  if (saved?.slug === item.slug && saved.category === item.category)
+    return saved;
+  const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+  if (!response.ok)
+    throw new Error(`Detail request failed (${response.status})`);
+  const parsed = catalogItemSchema.parse(await response.json());
+  if (parsed.slug !== item.slug || parsed.category !== item.category)
+    throw new Error("The detail shard does not match its catalog entry.");
+  const detail = {
+    ...item,
+    game_data: parsed.game_data,
+    description: parsed.description ?? item.description,
+  };
+  await cache?.writeDetail?.(url, detail).catch(() => undefined);
+  return detail;
 }

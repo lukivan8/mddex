@@ -13,11 +13,15 @@ export function pickerItems(
   query: string,
   index: ReadonlyMap<string, string>,
   type = "",
+  equipment?: CatalogItem,
 ) {
   const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
   return catalog
     .filter((item) => {
-      if (!isCompatible(item, target) || (type && item.type !== type))
+      if (
+        !isCompatible(item, target, equipment) ||
+        (type && item.type !== type)
+      )
         return false;
       const text =
         target.kind === "enchantment"

@@ -175,6 +175,11 @@ button.community-tag:hover {
   gap: 16px;
   flex-wrap: wrap;
 }
+.community-detail-author {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 .community-open-builder {
   color: var(--muted);
   font-size: 11px;
@@ -492,32 +497,7 @@ button.community-tag:hover {
   margin-bottom: 22px;
   border-bottom: 1px solid var(--border);
 }
-@media (max-width: 1000px) {
-  .header-inner {
-    gap: 28px;
-  }
-}
 @media (max-width: 760px) {
-  .header-inner {
-    flex-wrap: wrap;
-    height: auto;
-    gap: 0 24px;
-    padding-top: 12px;
-  }
-  .header-inner .brand {
-    margin-right: auto;
-  }
-  .header-inner nav {
-    order: 3;
-    width: auto;
-    flex: 1;
-  }
-  .header-inner nav .nav-link {
-    height: 46px;
-  }
-  .community-nav-link {
-    height: 46px;
-  }
   .community-page {
     padding-top: 28px;
   }

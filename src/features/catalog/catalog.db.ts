@@ -1,71 +1,99 @@
-import {
-  createCollection,
-  localStorageCollectionOptions,
-} from "@tanstack/react-db";
 import { z } from "zod";
-import { catalogSchema } from "./catalog.schema";
+import { catalogSchema, catalogItemSchema } from "./catalog.schema";
+import type { CatalogItem } from "./catalog.types";
 
-export const CATALOG_STORAGE_KEY = "mddex.catalog.v5";
+export const CATALOG_DATABASE = "mddex-catalog-v1";
 const snapshotSchema = z.object({
   source: z.string().url(),
   version: z.string().min(1),
   releaseUrl: z.string().url(),
+  catalogUrl: z.string().url().optional(),
   items: catalogSchema,
 });
 export type CatalogSnapshot = z.infer<typeof snapshotSchema>;
 export interface CatalogCache {
   read(source: string): Promise<CatalogSnapshot | undefined>;
   write(snapshot: CatalogSnapshot): Promise<void>;
+  readDetail?(url: string): Promise<CatalogItem | undefined>;
+  writeDetail?(url: string, item: CatalogItem): Promise<void>;
 }
 
-// A replaceable cache of external definitions, never user-owned game content.
-// Version and items live in one record so a failed update cannot mismatch them.
-export function createCatalogCache(
-  storage: Pick<Storage, "getItem" | "setItem" | "removeItem">,
-): CatalogCache {
-  const saved = storage.getItem(CATALOG_STORAGE_KEY);
-  if (saved !== null) {
+// Disposable external definitions; user loadouts remain in their existing store.
+export function createCatalogCache(factory: IDBFactory): CatalogCache {
+  async function operation(
+    store: string,
+    key: string,
+    value?: unknown,
+  ): Promise<unknown> {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = factory.open(CATALOG_DATABASE, 1);
+      let expired = false;
+      const fail = (error = new Error("Catalog storage unavailable")) => {
+        expired = true;
+        clearTimeout(timer);
+        reject(error);
+      };
+      const timer = setTimeout(() => fail(), 1500);
+      request.onblocked = () => fail();
+      request.onerror = () => fail(request.error ?? undefined);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore("snapshots");
+        request.result.createObjectStore("details");
+      };
+      request.onsuccess = () => {
+        clearTimeout(timer);
+        if (expired) request.result.close();
+        else resolve(request.result);
+      };
+    });
+    db.onversionchange = () => db.close();
     try {
-      z.record(
-        z.string(),
-        z.object({
-          versionKey: z.string(),
-          data: snapshotSchema,
-        }),
-      ).parse(JSON.parse(saved));
-    } catch {
-      // Only disposable catalog data is cleared; completion/builds are untouched.
-      storage.removeItem(CATALOG_STORAGE_KEY);
+      return await new Promise((resolve, reject) => {
+        const transaction = db.transaction(
+          store,
+          value === undefined ? "readonly" : "readwrite",
+        );
+        const records = transaction.objectStore(store);
+        const request =
+          value === undefined ? records.get(key) : records.put(value, key);
+        transaction.oncomplete = () => resolve(request.result);
+        transaction.onabort = () =>
+          reject(transaction.error ?? new Error("Catalog transaction aborted"));
+        transaction.onerror = () =>
+          reject(transaction.error ?? new Error("Catalog transaction failed"));
+      });
+    } finally {
+      db.close();
     }
   }
-  const collection = createCollection(
-    localStorageCollectionOptions({
-      id: "mddex-catalog-cache",
-      storageKey: CATALOG_STORAGE_KEY,
-      storage,
-      schema: snapshotSchema,
-      getKey: (snapshot) => snapshot.source,
-    }),
-  );
   return {
     async read(source) {
-      await collection.preload();
-      return collection.get(source);
+      const parsed = snapshotSchema.safeParse(
+        await operation("snapshots", source),
+      );
+      return parsed.success && parsed.data.source === source
+        ? parsed.data
+        : undefined;
     },
     async write(snapshot) {
-      await collection.preload();
-      const transaction = collection.has(snapshot.source)
-        ? collection.update(snapshot.source, (draft) => {
-            draft.version = snapshot.version;
-            draft.releaseUrl = snapshot.releaseUrl;
-            draft.items = snapshot.items;
-          })
-        : collection.insert(snapshot);
-      await transaction.isPersisted.promise;
+      await operation(
+        "snapshots",
+        snapshot.source,
+        snapshotSchema.parse(snapshot),
+      );
+    },
+    async readDetail(url) {
+      const parsed = catalogItemSchema.safeParse(
+        await operation("details", url),
+      );
+      return parsed.success ? parsed.data : undefined;
+    },
+    async writeDetail(url, item) {
+      await operation("details", url, catalogItemSchema.parse(item));
     },
   };
 }
 let browserCache: CatalogCache | undefined;
 export function getCatalogCache() {
-  return (browserCache ??= createCatalogCache(window.localStorage));
+  return (browserCache ??= createCatalogCache(window.indexedDB));
 }

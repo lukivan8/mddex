@@ -1,3 +1,4 @@
+import { CatalogNavigationLink } from "../../components/CatalogNavigationLink";
 import type { CatalogIndexGroup } from "./catalog-index";
 import "./catalog-directory.css";
 
@@ -23,7 +24,9 @@ export function CatalogDirectory({
             <ul>
               {group.items.map((item) => (
                 <li key={item.path}>
-                  <a href={item.path}>{item.name}</a>
+                  <CatalogNavigationLink href={item.path}>
+                    {item.name}
+                  </CatalogNavigationLink>
                 </li>
               ))}
             </ul>

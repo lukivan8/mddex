@@ -1,3 +1,5 @@
+import { CatalogNavigationLink } from "../../components/CatalogNavigationLink";
+import { locationMetadata } from "./catalog-detail.enrichment";
 import { type ReactNode } from "react";
 import { WikilyLocationLink } from "./WikilyLocationLink";
 import {
@@ -62,11 +64,14 @@ export function RelatedEntries({
               <div>
                 {label && <small>{label}</small>}
                 <h3>{entry.name}</h3>
+                {entry.description && (
+                  <p className="detail-reference-note">{entry.description}</p>
+                )}
               </div>
             </div>
           );
         return (
-          <a
+          <CatalogNavigationLink
             className="detail-reference"
             href={`${itemPath(target)}?returnTo=${encodeURIComponent(returnTo)}`}
             key={target.slug}
@@ -87,9 +92,12 @@ export function RelatedEntries({
             <div>
               {label && <small>{label}</small>}
               <h3>{target.name}</h3>
+              {entry.description && (
+                <p className="detail-reference-note">{entry.description}</p>
+              )}
             </div>
             <ChevronRight size={15} />
-          </a>
+          </CatalogNavigationLink>
         );
       })}
     </div>
@@ -147,6 +155,8 @@ export function CategorySections({
   returnTo: string;
 }) {
   const d = item.game_data;
+  const location =
+    item.category === "location" ? locationMetadata(item, catalog) : undefined;
   const references = (entries: Reference[], label: string) => (
     <RelatedEntries
       entries={entries}
@@ -198,11 +208,11 @@ export function CategorySections({
                 return (
                   <p key={effect.name}>
                     {target ? (
-                      <a
+                      <CatalogNavigationLink
                         href={`${itemPath(target)}?returnTo=${encodeURIComponent(returnTo)}`}
                       >
                         {effect.name}
-                      </a>
+                      </CatalogNavigationLink>
                     ) : (
                       effect.name
                     )}
@@ -379,18 +389,53 @@ export function CategorySections({
       {item.category === "location" && (
         <Section title="Location details">
           <WikilyLocationLink name={item.name} />
-          <Stats values={[["Level", d.level]]} />
+          {location?.overview && <p>{location.overview}</p>}
+          <Stats
+            values={[
+              ["Level", d.level],
+              ["Region", location?.region],
+              ["Dungeon entrances", location?.dungeonCount],
+              ["Rift entrances", location?.riftCount],
+              ["Minecart stations", location?.stationCount],
+            ]}
+          />
           {d.subAreas?.length ? <p>Subareas: {d.subAreas.join(", ")}</p> : null}
         </Section>
       )}
-      {item.category === "location" && d.loot?.length ? (
-        <LocationLoot entries={d.loot} catalog={catalog} returnTo={returnTo} />
+      {location && location.loot.length > 0 && (
+        <LocationLoot
+          entries={location.loot}
+          catalog={catalog}
+          returnTo={returnTo}
+        />
+      )}
+      {location && location.entrances.length > 0 && (
+        <Section title="Entrances">
+          {references(location.entrances, "")}
+        </Section>
+      )}
+      {location && location.places.length > 0 && (
+        <Section title="Subareas">{references(location.places, "")}</Section>
+      )}
+      {location && location.merchants.length > 0 && (
+        <Section title="Merchants">
+          {references(location.merchants, "")}
+        </Section>
+      )}
+      {location && location.stations.length > 0 && (
+        <Section title="Minecart stations">
+          {references(location.stations, "")}
+        </Section>
+      )}
+      {(location?.mobs ?? d.mobs)?.length ? (
+        <Section title="Mobs">
+          {references(location?.mobs ?? d.mobs!, "Mob")}
+        </Section>
       ) : null}
-      {d.mobs?.length ? (
-        <Section title="Mobs">{references(d.mobs, "Mob")}</Section>
-      ) : null}
-      {d.minibosses?.length ? (
-        <Section title="Minibosses">{references(d.minibosses, "Mob")}</Section>
+      {(location?.minibosses ?? d.minibosses)?.length ? (
+        <Section title="Minibosses">
+          {references(location?.minibosses ?? d.minibosses!, "Mob")}
+        </Section>
       ) : null}
       {d.arena?.length ? (
         <Section title="Arena encounters">{references(d.arena, "Mob")}</Section>

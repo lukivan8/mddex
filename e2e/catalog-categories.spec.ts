@@ -224,6 +224,10 @@ for (const mobile of [false, true])
     if (mobile) await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/collection");
     await expect(page.getByRole("article")).toHaveCount(6);
+    if (mobile)
+      await page
+        .getByRole("button", { name: "Open navigation menu", exact: true })
+        .click();
     await page.getByRole("link", { name: "Mobs", exact: true }).click();
     await expect(
       page.getByRole("group", { name: "Mob type" }).getByRole("button"),

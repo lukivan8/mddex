@@ -12,6 +12,8 @@ import {
   type CollectionFilters,
 } from "../features/collection/collection.types";
 export const Route = createFileRoute("/collection")({
+  staleTime: Infinity,
+  preloadStaleTime: Infinity,
   validateSearch: (search) => filtersSchema.parse(search),
   loader: async () => catalogIndex(await loadSessionCatalog()),
   head: () =>

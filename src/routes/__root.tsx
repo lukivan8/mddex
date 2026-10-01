@@ -1,3 +1,4 @@
+import { getContentSource } from "../features/catalog/catalog.loader";
 import {
   createRootRoute,
   HeadContent,
@@ -28,6 +29,11 @@ export const Route = createRootRoute({
         ...defaults.meta,
       ],
       links: [
+        {
+          rel: "preconnect",
+          href: new URL(getContentSource().latestUrl).origin,
+          crossOrigin: "anonymous",
+        },
         { rel: "stylesheet", href: css },
         { rel: "icon", href: "/favicon.ico", sizes: "any" },
         {

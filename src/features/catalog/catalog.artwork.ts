@@ -1,9 +1,15 @@
 import type { CatalogItem } from "./catalog.types";
 
+const warmed = new Set<string>();
+
 /** Warm the browser image cache without mounting images or changing discovery state. */
 export function preloadCatalogArtwork(items: Pick<CatalogItem, "image">[]) {
   const urls = [
-    ...new Set(items.flatMap((item) => (item.image ? [item.image] : []))),
+    ...new Set(
+      items.flatMap((item) =>
+        item.image && !warmed.has(item.image) ? [item.image] : [],
+      ),
+    ),
   ];
   const active = new Map<HTMLImageElement, ReturnType<typeof setTimeout>>();
   let next = 0;

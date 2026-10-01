@@ -184,7 +184,7 @@ test("top category bar filters and toggles off", async ({ page }) => {
   await expect(page.getByRole("progressbar")).toHaveCount(0);
 });
 
-test("expanded releases show only supported categories in order and retain artwork for locations and mobs", async ({
+test("expanded releases show only supported categories in order and warm displayed artwork", async ({
   page,
 }) => {
   const categories = [
@@ -235,9 +235,7 @@ test("expanded releases show only supported categories in order and retain artwo
   );
   await expect
     .poll(() => [...new Set(artwork)].sort())
-    .toEqual(
-      [...categories.map(([category]) => category), "location", "mob"].sort(),
-    );
+    .toEqual(categories.map(([category]) => category).sort());
   await page.reload();
   await expect(page.getByRole("article")).toHaveCount(7);
   await page.getByRole("searchbox").fill("location");

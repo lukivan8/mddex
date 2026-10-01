@@ -91,3 +91,28 @@ it("rejects invalid references, slot shapes, forbidden modifiers and decompressi
     await expect(decodeBuildLink(await tokenFor(payload))).rejects.toThrow();
   }
 });
+
+it("round trips powers on gear, artifacts and talismans without changing old builds", async () => {
+  const build = emptyBuild();
+  build.slots.melee = {
+    itemSlug: "hammer",
+    enchantments: [null],
+    effects: [null, null, null],
+    power: 154,
+  };
+  build.slots.artifact1 = {
+    itemSlug: "flute",
+    enchantments: [],
+    effects: [null, null, null],
+    power: 72,
+  };
+  build.slots.talisman1 = {
+    itemSlug: "amulet",
+    enchantments: [],
+    effects: [],
+    power: 1,
+  };
+  expect((await decodeBuildLink(await encodeBuildLink(build))).slots).toEqual(
+    build.slots,
+  );
+});

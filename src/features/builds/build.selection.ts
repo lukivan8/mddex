@@ -8,17 +8,6 @@ import {
 } from "./build.types";
 import { uniqueEffect, withUniqueEffects } from "./build.unique";
 
-/** Keep filled positions visible, with only two placeholders until all three are selected. */
-export function visibleEffectIndices(effects: readonly (string | null)[] = []) {
-  const indices = Array.from({ length: EFFECT_COUNT }, (_, index) => index);
-  const selected = indices.filter((index) => effects[index]);
-  const empty = indices.filter((index) => !effects[index]);
-  return [
-    ...selected,
-    ...empty.slice(0, Math.max(0, 2 - selected.length)),
-  ].sort((a, b) => a - b);
-}
-
 export function selectionTargets(target: BuildTarget): BuildTarget[] {
   if (target.kind === "effect") {
     return Array.from({ length: EFFECT_COUNT }, (_, offset) => ({

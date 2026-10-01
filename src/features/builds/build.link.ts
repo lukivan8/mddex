@@ -19,7 +19,12 @@ const payloadSchema = z.tuple([
   z
     .array(
       equippedSchema
-        .pick({ effectTiers: true, enchantmentTier: true, itemTier: true })
+        .pick({
+          effectTiers: true,
+          enchantmentTier: true,
+          itemTier: true,
+          power: true,
+        })
         .nullable(),
     )
     .length(BUILD_SLOTS.length)
@@ -87,13 +92,17 @@ export async function encodeBuildLink(build: Build): Promise<string> {
   const tiers = BUILD_SLOTS.map((slot) => {
     const gear = build.slots[slot];
     return gear &&
-      (gear.effectTiers || gear.enchantmentTier !== undefined || gear.itemTier)
+      (gear.effectTiers ||
+        gear.enchantmentTier !== undefined ||
+        gear.itemTier ||
+        gear.power !== undefined)
       ? {
           ...(gear.effectTiers ? { effectTiers: gear.effectTiers } : {}),
           ...(gear.enchantmentTier !== undefined
             ? { enchantmentTier: gear.enchantmentTier }
             : {}),
           ...(gear.itemTier ? { itemTier: gear.itemTier } : {}),
+          ...(gear.power !== undefined ? { power: gear.power } : {}),
         }
       : null;
   });

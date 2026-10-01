@@ -1064,9 +1064,8 @@ h1 {
   }
 }
 @media (max-width: 900px) {
-  .build-loading-share,
-  .build-loading-tabs span {
-    height: 44px;
+  .build-loading-tabs {
+    display: none;
   }
   .build-loading .picker-pane {
     display: none;
@@ -1644,4 +1643,163 @@ h1 {
   gap: 8px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.build-compatibility-warning {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 12px 0;
+  color: var(--warning);
+}
+
+/* HeroUI v3's composed mobile navbar: toggle plus a collapsible link list. */
+.community-nav-link {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.mobile-menu-toggle,
+.mobile-navigation {
+  display: none;
+}
+@media (max-width: 1000px) {
+  .header-inner {
+    gap: 28px;
+  }
+}
+@media (max-width: 760px) {
+  .app-header .header-inner {
+    height: 64px;
+    padding-block: 0;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+  .app-header .desktop-navigation,
+  .app-header .community-nav-link {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .mobile-navigation:not([hidden]) {
+    display: block;
+    padding-block: 8px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .mobile-navigation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .mobile-navigation .nav-link {
+    min-height: 44px;
+    height: auto;
+    padding: 12px;
+    border-bottom: 0;
+  }
+  .mobile-navigation .nav-link[aria-current="page"] {
+    background: var(--surface-secondary);
+    color: var(--accent);
+  }
+}
+
+.gear-art {
+  position: relative;
+}
+.gear-power {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  padding: 0 2px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 12px;
+  text-shadow:
+    -1px 0 #080f11,
+    1px 0 #080f11,
+    0 -1px #080f11,
+    0 1px #080f11;
+}
+.build-power-controls {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.build-power-controls summary {
+  cursor: pointer;
+  padding: 16px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.build-power-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.build-power-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.build-power-grid input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+.build-power-grid input:disabled {
+  opacity: 0.4;
+}
+.build-power-grid input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 520px) {
+  .build-power-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.build-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.build-name-field {
+  font-size: 22px;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
+}
+.build-warning-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--warning);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.build-warning-toggle:focus-visible {
+  outline: 2px solid var(--warning);
+  outline-offset: 2px;
+}
+.build-warning-tooltip {
+  max-width: min(480px, calc(100vw - 32px));
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  color: var(--warning);
+  font-size: 12px;
+}
+.build-compatibility-warning > button {
+  margin-top: 8px;
 }

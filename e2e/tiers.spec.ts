@@ -647,7 +647,9 @@ for (const mobile of [false, true]) {
     await fourth.click();
     if (mobile)
       await page.getByRole("button", { name: "Done", exact: true }).click();
-    await page.getByRole("radio", { name: "Summary", exact: true }).click();
+    if (!mobile)
+      if (!mobile)
+        await page.getByRole("radio", { name: "Summary", exact: true }).click();
     const summary = page.getByRole("region", {
       name: "Build summary",
       exact: true,
@@ -657,7 +659,8 @@ for (const mobile of [false, true]) {
     );
     await expect(summary.locator(".summary-number")).toHaveText(["40%"]);
     await page.reload();
-    await page.getByRole("radio", { name: "Summary", exact: true }).click();
+    if (!mobile)
+      await page.getByRole("radio", { name: "Summary", exact: true }).click();
     await expect(summary).toContainText(
       "Increases all healing received by 40%.",
     );
