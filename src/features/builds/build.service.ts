@@ -1,3 +1,4 @@
+import { randomId } from "../../lib/random-id";
 import type { CatalogItem } from "../catalog/catalog.types";
 import type { BuildCollections } from "./build.db";
 import {
@@ -16,10 +17,7 @@ import {
 import { isCompatible } from "./build.compatibility";
 import { uniqueEffect, withUniqueEffects } from "./build.unique";
 import { availableTiers, selectedTier } from "./build.tiers";
-export function emptyBuild(
-  name = "Untitled loadout",
-  id = crypto.randomUUID(),
-): Build {
+export function emptyBuild(name = "Untitled loadout", id = randomId()): Build {
   const now = new Date().toISOString();
   return {
     id,

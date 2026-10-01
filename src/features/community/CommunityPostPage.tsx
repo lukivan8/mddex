@@ -1,3 +1,4 @@
+import { randomId } from "../../lib/random-id";
 import { DiscordIcon } from "../../components/DiscordIcon";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -341,7 +342,7 @@ function PostForm({
       let publishKey: string =
         publishingAttempt.current?.fingerprint === fingerprint
           ? publishingAttempt.current.key
-          : crypto.randomUUID();
+          : randomId();
       if (!edit) {
         try {
           const previous = z

@@ -1,3 +1,4 @@
+import { randomId } from "../../lib/random-id";
 import type { AnalyticsEvent, AnalyticsLabel } from "./analytics.schema";
 
 const visitorKey = "mddex.analytics.visitor.v1";
@@ -28,8 +29,7 @@ function identity() {
   try {
     const storedVisitor = localStorage.getItem(visitorKey);
     seen = !!storedVisitor && uuid.test(storedVisitor);
-    visitorId =
-      (seen ? storedVisitor! : undefined) || visitorId || crypto.randomUUID();
+    visitorId = (seen ? storedVisitor! : undefined) || visitorId || randomId();
     localStorage.setItem(visitorKey, visitorId);
     const storedSession = localStorage.getItem(sessionKey);
     if (storedSession) {
@@ -48,11 +48,10 @@ function identity() {
   } catch {
     /* Storage-disabled browsers use an in-memory identity. */
   }
-  visitorId ||= crypto.randomUUID();
+  visitorId ||= randomId();
   const now = Date.now();
   const started = !session || now - session.lastActive >= inactivity;
-  if (started)
-    session = { id: crypto.randomUUID(), lastActive: now, returning: seen };
+  if (started) session = { id: randomId(), lastActive: now, returning: seen };
   session!.lastActive = now;
   fallbackVisitor = visitorId;
   fallbackSession = session;

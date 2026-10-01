@@ -1,3 +1,4 @@
+import { randomId } from "../../lib/random-id";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Input, Modal, TextField } from "@heroui/react";
 import { z } from "zod";
@@ -44,7 +45,7 @@ function confirmationRequest(email: string, buildId?: string, fresh = false) {
     /* Generate a fresh request. */
   }
   const next = {
-    requestId: crypto.randomUUID(),
+    requestId: randomId(),
     sessionToken: Array.from(
       crypto.getRandomValues(new Uint8Array(32)),
       (byte) => byte.toString(16).padStart(2, "0"),

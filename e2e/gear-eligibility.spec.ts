@@ -335,3 +335,38 @@ for (const mobile of [false, true]) {
     await expect(icon).toHaveCount(0);
   });
 }
+
+test("mobile builds can be created and saved without crypto.randomUUID", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", {
+      value: undefined,
+      configurable: true,
+    });
+  });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/build");
+  const name = page.getByRole("textbox", { name: "Loadout name", exact: true });
+  await expect(name).toHaveValue("Loadout 1");
+  await page.getByRole("button", { name: "New loadout", exact: true }).click();
+  await name.fill("Mobile compatible build");
+  await name.blur();
+  await page
+    .getByRole("button", { name: "Choose Melee weapon", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Equip Pool Hammer", exact: true })
+    .click();
+  await page.reload();
+  await expect(name).toHaveValue("Mobile compatible build");
+  await expect(
+    page.getByRole("button", { name: "Choose Melee weapon", exact: true }),
+  ).toContainText("Pool Hammer");
+  await expect(
+    page.getByRole("heading", { name: "Loadouts unavailable", exact: true }),
+  ).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

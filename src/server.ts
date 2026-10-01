@@ -1,3 +1,4 @@
+import { productionHttpsRedirect } from "./lib/https";
 import serverEntry, {
   createServerEntry,
 } from "@tanstack/react-start/server-entry";
@@ -10,8 +11,13 @@ import { communityApi } from "./features/community/community.server";
 
 export default createServerEntry({
   fetch(request, options) {
+    const redirect = productionHttpsRedirect(request);
+    if (redirect) return redirect;
     const path = new URL(request.url).pathname;
-    if (path === "/api/community-builds" || path.startsWith("/api/community-builds/"))
+    if (
+      path === "/api/community-builds" ||
+      path.startsWith("/api/community-builds/")
+    )
       return communityApi(request, env);
     if (path === "/sitemap.xml")
       return loadCatalog().then(

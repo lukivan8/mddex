@@ -1,3 +1,4 @@
+import { randomId } from "../../lib/random-id";
 import { DiscordIcon } from "../../components/DiscordIcon";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -302,7 +303,7 @@ export function CommunityBuildPage({ buildId }: { buildId: string }) {
       const now = new Date().toISOString();
       const copy = {
         ...structuredClone(post.build),
-        id: crypto.randomUUID(),
+        id: randomId(),
         name: post.name,
         createdAt: now,
         updatedAt: now,
