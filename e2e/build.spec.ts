@@ -1259,6 +1259,15 @@ test("unique equipment automatically locks its effect while the remaining effect
   await expect(locked).toBeEnabled();
   await expect(locked).toHaveCSS("cursor", "pointer");
   await expect(locked).not.toHaveCSS("border-top-color", "rgb(245, 181, 68)");
+  // Check hover before activation, which dismisses the tooltip.
+  await locked.hover();
+  await expect(page.getByRole("tooltip")).toHaveText(
+    "gear_effect 1 · Unique effect (locked)",
+  );
+  await page
+    .getByRole("heading", { name: "Choose Melee weapon", exact: true })
+    .hover();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
   await locked.focus();
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Tab");
@@ -1270,11 +1279,7 @@ test("unique equipment automatically locks its effect while the remaining effect
       exact: true,
     }),
   ).toBeVisible();
-  await locked.hover();
   await expect(locked).toHaveCSS("border-top-color", "rgb(245, 181, 68)");
-  await expect(page.getByRole("tooltip")).toHaveText(
-    "gear_effect 1 · Unique effect (locked)",
-  );
   await page
     .getByRole("button", {
       name: "Melee weapon effect 2: Empty effect",
