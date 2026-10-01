@@ -236,7 +236,11 @@ for (const mobile of [false, true]) {
     });
     await expect(input).toBeHidden();
     await page.getByText("Set item power", { exact: true }).click();
-    await expect(page.locator(".build-power-grid input")).toHaveCount(12);
+    await expect(page.locator(".build-power-grid input")).toHaveCount(9);
+    await expect(
+      page.getByRole("spinbutton", { name: /Talisman.*power/ }),
+    ).toHaveCount(0);
+    await expect(page.locator(".gear-power")).toHaveCount(0);
     await expect(input).toHaveAttribute("min", "1");
     await expect(input).toHaveAttribute("max", "154");
     await input.fill("154");
@@ -253,6 +257,13 @@ for (const mobile of [false, true]) {
     await expect(input).toBeHidden();
     await page.getByText("Set item power", { exact: true }).click();
     await expect(input).toHaveValue("154");
+    await input.fill("1");
+    await input.blur();
+    await expect(page.locator(".gear-power")).toHaveCount(0);
+    await page.reload();
+    await page.getByText("Set item power", { exact: true }).click();
+    await expect(input).toHaveValue("1");
+    await expect(page.locator(".gear-power")).toHaveCount(0);
   });
 }
 

@@ -5,6 +5,7 @@ import {
   ENCHANTMENT_COUNT,
   EFFECT_COUNT,
   supportsEffects,
+  supportsItemPower,
   isGearSlot,
   type Build,
   type BuildTarget,
@@ -97,7 +98,9 @@ export function compose(
     next.slots[target.slot] = item
       ? {
           itemSlug: item.slug,
-          ...(old?.power !== undefined ? { power: old.power } : {}),
+          ...(supportsItemPower(target.slot) && old?.power !== undefined
+            ? { power: old.power }
+            : {}),
           ...(itemTier ? { itemTier } : {}),
           enchantments: isGearSlot(target.slot)
             ? (old?.enchantments ?? Array(ENCHANTMENT_COUNT).fill(null))
@@ -220,6 +223,8 @@ export function composeItemPower(
   slot: BuildSlot,
   power: number,
 ): Build {
+  if (!supportsItemPower(slot))
+    throw new Error("Talismans do not have item power.");
   const valid = itemPowerSchema.parse(power);
   const next = structuredClone(build);
   const equipment = next.slots[slot];

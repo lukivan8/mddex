@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   BUILD_SLOTS,
   MAX_ITEM_POWER,
+  supportsItemPower,
   type Build,
   type BuildSlot,
 } from "../build.types";
@@ -71,7 +72,7 @@ export function BuildPowerInputs({
     <details className="build-power-controls">
       <summary>Set item power</summary>
       <div className="build-power-grid">
-        {BUILD_SLOTS.map((slot) => (
+        {BUILD_SLOTS.filter(supportsItemPower).map((slot) => (
           <SlotPowerInput
             key={slot}
             slot={slot}

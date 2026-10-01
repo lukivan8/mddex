@@ -34,3 +34,14 @@ it("rejects powers outside 1–154, fractional values and empty slots", () => {
   expect(() => composeItemPower(build, "ranged", 1)).toThrow("Choose an item");
   expect(equippedSchema.parse(equipment).power).toBeUndefined();
 });
+
+it("rejects item power for talismans", () => {
+  const build = emptyBuild();
+  for (const slot of ["talisman1", "talisman2", "talisman3"] as const) {
+    build.slots[slot] = { itemSlug: "talisman", enchantments: [], effects: [] };
+    expect(() => composeItemPower(build, slot, 154)).toThrow(
+      "Talismans do not have item power",
+    );
+    expect(build.slots[slot]?.power).toBeUndefined();
+  }
+});

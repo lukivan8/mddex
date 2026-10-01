@@ -58,3 +58,6 @@ export const isGearSlot = (slot: BuildSlot): slot is GearSlot =>
 
 export const supportsEffects = (slot: BuildSlot) =>
   !slot.startsWith("talisman");
+
+export const supportsItemPower = (slot: BuildSlot) =>
+  !slot.startsWith("talisman");

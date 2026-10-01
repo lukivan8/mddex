@@ -9,6 +9,7 @@ import type { ModifierTier } from "../build.types";
 import {
   EFFECT_COUNT,
   supportsEffects,
+  supportsItemPower,
   isGearSlot,
   type Build,
   type BuildSlot,
@@ -61,14 +62,17 @@ function GearSlotCard({
           ) : (
             <Plus size={22} />
           )}
-          {equipped && !catalogPending && (
-            <span
-              className="gear-power"
-              aria-label={`Power ${equipped.power ?? 1}`}
-            >
-              {equipped.power ?? 1}
-            </span>
-          )}
+          {equipped &&
+            !catalogPending &&
+            supportsItemPower(slot) &&
+            (equipped.power ?? 1) > 1 && (
+              <span
+                className="gear-power"
+                aria-label={`Power ${equipped.power ?? 1}`}
+              >
+                {equipped.power ?? 1}
+              </span>
+            )}
         </span>
         <span className="gear-copy">
           <span className="eyebrow">{slotRules[slot].label}</span>
