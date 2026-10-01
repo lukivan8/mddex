@@ -14,6 +14,17 @@ test("build metadata and useful content are present without JavaScript", async (
       exact: true,
     }),
   ).toBeVisible();
+  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", {
+      name: "How to make a Minecraft Dungeons 2 build",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Do I need an account to use the build maker?",
+    }),
+  ).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveCount(1);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
@@ -110,6 +121,68 @@ test("equipment directory exposes canonical item links without JavaScript", asyn
   expect(html).toContain('aria-label="All equipment pages"');
   expect(html).toContain('href="/catalog/melee-weapons/the-prospectors-pick"');
   expect(html).toContain('href="/catalog/armor/beekeeper-suit"');
+  expect(html).toContain('aria-label="More game references pages"');
+  expect(html).toContain('href="/catalog/status/strengthened"');
+});
+
+test("catalog target phrase and item facts are server-rendered with a route back to the maker", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto("/catalog/armor/alchemist-loafers");
+  await expect(page).toHaveTitle(
+    "Alchemist Loafers in Minecraft Dungeons 2 | MDDEX",
+  );
+  await expect(page.locator("h1")).toHaveText("Alchemist Loafers");
+  await expect(page.locator("#about-item")).toHaveText(
+    "Alchemist Loafers in Minecraft Dungeons 2",
+  );
+  await expect(page.locator(".detail-introduction")).toContainText(
+    "unique armor item",
+  );
+  await expect(page.locator(".detail-guide")).toContainText(
+    "Increases Soul capacity by 50%",
+  );
+  await expect(page.locator(".detail-guide a")).toHaveAttribute(
+    "href",
+    "/build",
+  );
+  await expect(page.locator(".detail-guide")).toContainText(
+    "Singer's Meadow Dungeons",
+  );
+  const schemas = await page
+    .locator('script[type="application/ld+json"]')
+    .allTextContents();
+  const breadcrumbs = schemas
+    .map((schema) => JSON.parse(schema))
+    .find((schema) => schema["@type"] === "BreadcrumbList");
+  expect(
+    breadcrumbs.itemListElement.map((item: { item: string }) => item.item),
+  ).toEqual([
+    "https://mddex.net/build",
+    "https://mddex.net/collection",
+    "https://mddex.net/catalog/armor/alchemist-loafers",
+  ]);
+  await context.close();
+});
+
+test("status pages expose their published mechanics and gear relationships without JavaScript", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto("/catalog/status/artificing");
+  await expect(page.locator(".detail-guide")).toContainText(
+    "Artifact damage and soul gathering are increased",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Gear that applies this status" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /Artifact Amplifier/ }),
+  ).toHaveAttribute("href", /\/catalog\/enchantments\/artifact-amplifier/);
+  await context.close();
 });
 
 test("mob index exposes canonical location links without JavaScript", async ({

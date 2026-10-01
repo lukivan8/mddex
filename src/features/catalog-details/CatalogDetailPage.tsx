@@ -224,7 +224,7 @@ export function CatalogDetailPage({
   onPowerChange: (power: number) => void;
 }) {
   const returnTo = returnPathAtPower(initialReturnTo, 1);
-  const seo = itemSeo(item, catalog, power);
+  const seo = itemSeo(item, catalog, power, sources);
   const data = item.game_data;
   const effects = applicableEffects(item);
   const questNames = questRewardNames(item);
@@ -304,6 +304,7 @@ export function CatalogDetailPage({
               : ""}
           </span>
           <h1>{item.name}</h1>
+          <p className="detail-introduction">{seo.introduction}</p>
         </div>
         <div className="detail-dossier">
           <aside>
@@ -374,6 +375,42 @@ export function CatalogDetailPage({
             )}
           </aside>
           <div>
+            {item.category === "status" && data.status && (
+              <>
+                {[
+                  {
+                    title: "Gear that applies this status",
+                    entries: data.status.gear,
+                  },
+                  {
+                    title: "Mobs that apply this status",
+                    entries: data.status.mobs,
+                  },
+                  { title: "Immune mobs", entries: data.status.immune },
+                ]
+                  .filter((group) => group.entries.length > 0)
+                  .map((group) => (
+                    <section key={group.title}>
+                      <h2>{group.title}</h2>
+                      {group.entries.map((reference) => {
+                        const target = catalog.find(
+                          (entry) => entry.slug === reference.catalog_slug,
+                        );
+                        return target ? (
+                          <ReferenceCard
+                            key={target.slug}
+                            item={target}
+                            label={group.title}
+                            returnTo={returnTo}
+                          />
+                        ) : (
+                          <p key={reference.name}>{reference.name}</p>
+                        );
+                      })}
+                    </section>
+                  ))}
+              </>
+            )}
             {melee && (
               <section>
                 <h2>
@@ -607,7 +644,22 @@ export function CatalogDetailPage({
         </div>
         <section className="detail-guide" aria-labelledby="about-item">
           <h2 id="about-item">{seo.heading}</h2>
-          <p>{seo.introduction}</p>
+          <p>
+            {item.category === "mob" || item.category === "location" ? (
+              <>
+                Use the listed encounters and drops to plan your equipment
+                search.{" "}
+              </>
+            ) : (
+              <>
+                Review {item.name}’s details before choosing equipment for your
+                loadout.{" "}
+              </>
+            )}
+            <Link to="/build">Open the Minecraft Dungeons 2 build maker</Link>{" "}
+            to plan weapons, armor, artifacts, talismans, and modifiers
+            together.
+          </p>
           <div>
             {seo.sections.map((section) => (
               <section key={section.heading}>

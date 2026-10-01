@@ -28,6 +28,13 @@ export interface CatalogItem {
   image: string | null;
   description: string | null;
   game_data: {
+    status?: {
+      alignment?: string;
+      gear: Reference[];
+      mobs: Reference[];
+      immune: Reference[];
+    };
+    cosmeticUnlock?: string;
     slug?: string;
     unique?: boolean | null;
     effects?:

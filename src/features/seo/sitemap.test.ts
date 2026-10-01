@@ -38,6 +38,9 @@ describe("catalogSitemap", () => {
     expect(xml).toContain(
       "<loc>https://mddex.net/catalog/mobs/copper-monstrosity</loc>",
     );
-    expect(xml.match(/<url>/g)).toHaveLength(5);
+    expect(xml).toContain(
+      "<loc>https://mddex.net/catalog/status/status-strength</loc>",
+    );
+    expect(xml.match(/<url>/g)).toHaveLength(6);
   });
 });

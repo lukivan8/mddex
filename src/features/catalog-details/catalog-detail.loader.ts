@@ -29,6 +29,28 @@ function pickFields(value: unknown, keys: string[]) {
     Object.entries(value).filter(([key]) => keys.includes(key)),
   );
 }
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+function statusReferences(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((value) => {
+    const entry = record(value);
+    const name = typeof entry.name === "string" ? entry.name : entry.title;
+    return typeof name === "string" && name.trim()
+      ? [
+          {
+            name,
+            ...(typeof entry.catalog_slug === "string"
+              ? { catalog_slug: entry.catalog_slug }
+              : {}),
+          },
+        ]
+      : [];
+  });
+}
 // Keep the SSR and router payload limited to information the detail page renders.
 function detailGameData(item: PublishedItem) {
   const data = Object.fromEntries(
@@ -36,6 +58,35 @@ function detailGameData(item: PublishedItem) {
       ([key]) => !unusedDetailFields.has(key),
     ),
   );
+  if (item.category === "status") {
+    const wiki = record(item.game_data?.wikily);
+    const alignment = data.alignment ?? wiki.alignment;
+    data.status = {
+      ...(typeof alignment === "string" ? { alignment } : {}),
+      gear: statusReferences(wiki.gear),
+      mobs: statusReferences(wiki.mobs),
+      immune: statusReferences(wiki.immune),
+    };
+  }
+  if (item.category === "cape" || item.category === "pet") {
+    const pages = record(item.game_data?.reference_context).pages;
+    if (Array.isArray(pages)) {
+      const cards = pages.flatMap((page) => {
+        const cards = record(page).cards;
+        return Array.isArray(cards) ? cards : [];
+      });
+      const card = cards
+        .map(record)
+        .find(
+          (card) =>
+            card.name === item.variation && typeof card.text === "string",
+        );
+      if (card && typeof card.text === "string") {
+        const unlock = card.text.replace(item.description ?? "", "").trim();
+        if (unlock) data.cosmeticUnlock = unlock;
+      }
+    }
+  }
   if (item.category === "location") {
     data.wikily = pickFields(data.wikily, [
       "lead",
@@ -134,6 +185,9 @@ export async function loadDetailPage(category: string, slug: string) {
     ...(item.game_data.arena ?? []),
     ...(item.game_data.minions ?? []),
     ...(item.game_data.levels?.flatMap((level) => level.effects ?? []) ?? []),
+    ...(item.game_data.status?.gear ?? []),
+    ...(item.game_data.status?.mobs ?? []),
+    ...(item.game_data.status?.immune ?? []),
     ...(item.game_data.fights?.flatMap((fight) => [
       { name: fight.place ?? "", catalog_slug: fight.catalog_slug },
       ...(fight.regions ?? []),

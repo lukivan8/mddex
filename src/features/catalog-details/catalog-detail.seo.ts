@@ -3,6 +3,7 @@ import {
   isChestTalisman,
   itemPath,
   type CatalogItem,
+  type ItemSource,
 } from "./catalog-detail.model";
 import {
   fullChargeDamage,
@@ -61,6 +62,7 @@ export function itemSeo(
   item: CatalogItem,
   catalog: readonly CatalogItem[],
   power = 1,
+  acquisition?: readonly ItemSource[],
 ) {
   const data = item.game_data;
   const category = labels[item.category] ?? "catalog entry";
@@ -69,22 +71,49 @@ export function itemSeo(
     ? familyName
     : undefined;
   const noun = singularTypes[item.type ?? ""] ?? familyNoun ?? category;
-  const shortName = item.name.replace(/^the\s+/i, "").replace(/['’]s\b/g, "");
-  const aliases = [
-    ...new Set([
-      shortName,
-      ...(noun === "pickaxe" ? [shortName.replace(/\bPick$/i, "Pickaxe")] : []),
-    ]),
-  ].filter((name) => name !== item.name);
   const identity = `${item.name} is ${data.unique ? "a unique" : /^[aeiou]/i.test(noun) ? "an" : "a"} ${noun} in Minecraft Dungeons 2 (MCD2).`;
   const sections: GuideSection[] = [];
+  if (item.category === "status" && item.description)
+    sections.push({
+      heading: `What does ${item.name} do?`,
+      text: item.description,
+    });
+  if (data.status?.alignment)
+    sections.push({
+      heading: `What kind of status effect is ${item.name}?`,
+      text: `The published alignment is ${data.status.alignment.toLowerCase()}.`,
+    });
+  if (data.status?.gear.length || data.status?.mobs.length)
+    sections.push({
+      heading: `What applies ${item.name}?`,
+      text: [
+        data.status.gear.length
+          ? `Listed gear includes ${list(data.status.gear.map((entry) => entry.name))}.`
+          : "",
+        data.status.mobs.length
+          ? `Listed mobs include ${list(data.status.mobs.map((entry) => entry.name))}.`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
+    });
+  if (data.status?.immune.length)
+    sections.push({
+      heading: `Which mobs are immune to ${item.name}?`,
+      text: `Published immunities include ${list(data.status.immune.map((entry) => entry.name))}.`,
+    });
+  if (data.cosmeticUnlock)
+    sections.push({
+      heading: `How do I unlock ${item.name}?`,
+      text: data.cosmeticUnlock,
+    });
   const effects = data.effects?.filter((effect) => effect.text) ?? [];
   if (effects.length)
     sections.push({
       heading: `What ${effects.some((effect) => effect.tier === "unique") ? "unique " : ""}effects does ${item.name} have?`,
       text: effects.map((effect) => `${effect.name}: ${effect.text}`).join(" "),
     });
-  const sources = dropSources(item, catalog);
+  const sources = acquisition ?? dropSources(item, catalog);
   if (isChestTalisman(item)) {
     sections.push({
       heading: `Where can ${item.name} drop?`,
@@ -92,16 +121,28 @@ export function itemSeo(
     });
   } else if (sources.length) {
     const areas = sources
-      .filter((source) => source.type === "area")
+      .filter((source) => ["area", "dungeon", "rift"].includes(source.type))
       .map((source) => source.name);
     const mobs = sources
       .filter((source) => source.type === "mob")
       .map((source) => source.name);
+    const merchants = sources
+      .filter((source) => source.type === "merchant")
+      .map((source) => source.name);
+    const conditions = [
+      ...new Set(
+        sources.flatMap((source) =>
+          source.description ? [source.description] : [],
+        ),
+      ),
+    ];
     sections.push({
       heading: `Where can ${item.name} drop?`,
       text: [
         areas.length ? `Listed drop locations include ${list(areas)}.` : "",
         mobs.length ? `Explicit mob drops are listed for ${list(mobs)}.` : "",
+        merchants.length ? `Listed merchants include ${list(merchants)}.` : "",
+        ...conditions.map((condition) => `${condition.replace(/[.!?]$/, "")}.`),
       ]
         .filter(Boolean)
         .join(" "),
@@ -269,16 +310,15 @@ export function itemSeo(
       heading: `What arena encounters are listed for ${item.name}?`,
       text: `Listed encounters include ${examples(data.arena.map((mob) => mob.name))}.`,
     });
-  const introduction = `${identity}${aliases.length ? ` Use this entry for searches such as ${list(aliases)}.` : ""}`;
+  const heading = `${item.name} in Minecraft Dungeons 2`;
   return {
-    heading: `${aliases[0] ?? item.name} in Minecraft Dungeons 2`,
-    introduction,
+    heading,
+    introduction: identity,
     sections: sections.filter((section) => section.text),
-    title: `${item.name} – Minecraft Dungeons 2 (MCD2) | MDDEX`,
+    title: `${heading}${item.category === "mob" || item.category === "status" ? ` (${category})` : ""} | MDDEX`,
     description: excerpt(
       `${identity} ${sections[0]?.text ?? `Explore its published ${category} details in the MDDEX catalog.`}`,
     ),
     canonical: `https://mddex.net${itemPath(item)}`,
-    aliases,
   };
 }

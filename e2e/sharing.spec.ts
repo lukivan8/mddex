@@ -3,6 +3,9 @@ import { emptyBuild } from "../src/features/builds/build.service";
 import { encodeBuildLink } from "../src/features/builds/build.link";
 const origin = "http://localhost:3100";
 const headers = { Origin: origin };
+// Sharing tests represent a separate visitor from the many browser contexts
+// created by the rest of the suite; keep their local identity rate bucket isolated.
+test.use({ extraHTTPHeaders: { "CF-Connecting-IP": "192.0.2.10" } });
 
 test("D1 identity credentials and immutable links resolve immediately", async ({
   request,

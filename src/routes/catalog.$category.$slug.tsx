@@ -33,8 +33,12 @@ export const Route = createFileRoute("/catalog/$category/$slug")({
   loader: ({ params }) => loadDetailPage(params.category, params.slug),
   head: ({ loaderData }) => {
     if (!loaderData) return {};
-    const { item, catalog } = loaderData;
-    const seo = itemSeo(item, catalog);
+    const { item, catalog, sources } = loaderData;
+    const seo = itemSeo(item, catalog, 1, sources);
+    const directory =
+      item.category === "mob" || item.category === "location"
+        ? { name: "Mobs and locations", path: "/mobs" }
+        : { name: "Equipment catalog", path: "/collection" };
     return {
       ...pageMetadata({
         title: seo.title,
@@ -56,6 +60,33 @@ export const Route = createFileRoute("/catalog/$category/$slug")({
               description: seo.introduction,
               ...(item.image ? { image: item.image } : {}),
             },
+          }).replace(/</g, "\\u003c"),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "MDDEX",
+                item: "https://mddex.net/build",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: directory.name,
+                item: `https://mddex.net${directory.path}`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: item.name,
+                item: seo.canonical,
+              },
+            ],
           }).replace(/</g, "\\u003c"),
         },
       ],

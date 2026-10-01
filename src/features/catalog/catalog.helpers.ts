@@ -8,6 +8,13 @@ export const CATALOG_CATEGORIES = [
   "enchantment",
   "gear_effect",
 ] as const;
+export const CATALOG_REFERENCE_CATEGORIES = ["status", "cape", "pet"] as const;
+export const CATALOG_DETAIL_CATEGORIES = [
+  ...CATALOG_CATEGORIES,
+  "mob",
+  "location",
+  ...CATALOG_REFERENCE_CATEGORIES,
+] as const;
 export const isCatalogItem = (item: Pick<CatalogItem, "category">) =>
   CATALOG_CATEGORIES.some((category) => category === item.category);
 export const hasCatalogArtwork = (item: Pick<CatalogItem, "category">) =>
@@ -25,6 +32,9 @@ const labels: Record<string, string> = {
   ranged_weapon: "Ranged Weapons",
   talisman: "Talismans",
   gear_effect: "Gear Effects",
+  status: "Status Effects",
+  cape: "Capes",
+  pet: "Pets",
 };
 export const humanize = (value: string) =>
   value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
