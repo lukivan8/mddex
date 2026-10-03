@@ -3,7 +3,7 @@ import {
   applicableEffects,
   questRewardNames,
 } from "./catalog-detail.enrichment";
-import { Accordion, Tooltip } from "@heroui/react";
+import { Accordion, Skeleton, Tooltip } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import {
@@ -218,10 +218,14 @@ export function CatalogDetailPage({
   returnTo: initialReturnTo,
   power,
   onPowerChange,
+  detailState,
+  onRetry,
 }: Awaited<ReturnType<typeof loadDetailPage>> & {
   returnTo: string;
   power: number;
   onPowerChange: (power: number) => void;
+  detailState?: "loading" | "failed";
+  onRetry?: () => void;
 }) {
   const returnTo = returnPathAtPower(initialReturnTo, 1);
   const seo = itemSeo(item, catalog, power, sources);
@@ -261,9 +265,10 @@ export function CatalogDetailPage({
   const ranged = data.ranged;
   const chargedDamage = fullChargeDamage(item, power);
   const comboDamage = fullComboDamage(item, power);
+  const path = itemPath(item);
   useEffect(() => {
-    trackPage(itemPath(item));
-  }, [item]);
+    trackPage(path);
+  }, [path]);
   return (
     <>
       <AppHeader active={item.category === "mob" ? "mobs" : "collection"} />
@@ -306,6 +311,14 @@ export function CatalogDetailPage({
           <h1>{item.name}</h1>
           <p className="detail-introduction">{seo.introduction}</p>
         </div>
+        {detailState === "failed" && (
+          <p role="status" className="detail-load-status">
+            Additional details couldn’t load.{" "}
+            <button type="button" onClick={onRetry}>
+              Try again
+            </button>
+          </p>
+        )}
         <div className="detail-dossier">
           <aside>
             <div className="detail-art">
@@ -639,6 +652,20 @@ export function CatalogDetailPage({
                   ) : null;
                 })}
               </section>
+            )}
+            {detailState === "loading" && (
+              <div
+                className="detail-skeleton"
+                role="status"
+                aria-label="Loading additional details"
+              >
+                <div aria-hidden="true">
+                  <Skeleton className="detail-skeleton-heading" />
+                  <Skeleton className="detail-skeleton-line" />
+                  <Skeleton className="detail-skeleton-line" />
+                  <Skeleton className="detail-skeleton-short" />
+                </div>
+              </div>
             )}
           </div>
         </div>

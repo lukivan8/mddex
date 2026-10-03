@@ -77,6 +77,22 @@
   border-right: 1px solid var(--border);
   padding-right: 24px;
 }
+.detail-skeleton {
+  margin-bottom: 28px;
+}
+.detail-skeleton-heading {
+  width: 160px;
+  height: 16px;
+  margin-bottom: 18px;
+}
+.detail-skeleton-line,
+.detail-skeleton-short {
+  height: 14px;
+  margin-bottom: 12px;
+}
+.detail-skeleton-short {
+  width: 65%;
+}
 .detail-art {
   display: grid;
   place-items: center;

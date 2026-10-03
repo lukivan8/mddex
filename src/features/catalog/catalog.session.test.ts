@@ -119,3 +119,25 @@ it("deduplicates server indexes and immutable detail shards, and retries failed 
   expect(details[1]).toEqual(details[0]);
   expect(fetcher).toHaveBeenCalledTimes(4);
 });
+
+it("promotes stored details to memory without discovery or shard requests", async () => {
+  vi.resetModules();
+  const factory = new IDBFactory();
+  const detailPath = "https://example.com/releases/v1/details/hammer.json";
+  const sharded = { ...item, detail_path: detailPath };
+  const cached = { ...sharded, description: "Saved details" };
+  const cache = createCatalogCache(factory);
+  await cache.writeDetail!(detailPath, cached);
+  vi.stubGlobal("window", { indexedDB: factory });
+  const fetcher = vi
+    .spyOn(globalThis, "fetch")
+    .mockRejectedValue(new Error("Offline"));
+  const { readSessionCatalogDetail, loadSessionCatalogDetail } =
+    await import("./catalog.session");
+  expect(await readSessionCatalogDetail(sharded)).toEqual(cached);
+  // Remove IndexedDB to prove subsequent reads use the promoted in-memory copy.
+  vi.stubGlobal("window", {});
+  expect(await readSessionCatalogDetail(sharded)).toEqual(cached);
+  expect(await loadSessionCatalogDetail(sharded)).toEqual(cached);
+  expect(fetcher).not.toHaveBeenCalled();
+});

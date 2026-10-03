@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Await, createFileRoute, useRouter } from "@tanstack/react-router";
 import { CatalogDetailPage } from "../features/catalog-details/CatalogDetailPage";
 import {
-  loadDetailPage,
+  loadDetailRoute,
   catalogReturnPath,
 } from "../features/catalog-details/catalog-detail.loader";
 import { itemSeo } from "../features/catalog-details/catalog-detail.seo";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/catalog/$category/$slug")({
       ),
     };
   },
-  loader: ({ params }) => loadDetailPage(params.category, params.slug),
+  loader: ({ params }) => loadDetailRoute(params.category, params.slug),
   head: ({ loaderData }) => {
     if (!loaderData) return {};
     const { item, catalog, sources } = loaderData;
@@ -98,24 +98,50 @@ function DetailRoute() {
   const data = Route.useLoaderData();
   const { returnTo, power } = Route.useSearch();
   const navigate = Route.useNavigate();
-  return (
-    <CatalogDetailPage
-      {...data}
-      power={power ?? 1}
-      onPowerChange={(value) => {
-        void navigate({
-          search: (previous) => ({
-            ...previous,
-            returnTo: returnPathAtPower(previous.returnTo ?? "/collection", 1),
-            power: powerParam(value),
-          }),
-          replace: true,
-          resetScroll: false,
-        });
-      }}
-      returnTo={catalogReturnPath(
-        returnTo ?? (data.item.category === "mob" ? "/mobs" : undefined),
-      )}
-    />
+  const router = useRouter();
+  function renderPage(
+    page: Pick<typeof data, "item" | "catalog" | "sources">,
+    detailState?: "loading" | "failed",
+  ) {
+    return (
+      <CatalogDetailPage
+        {...page}
+        detailState={detailState}
+        onRetry={() => {
+          void router.invalidate();
+        }}
+        power={power ?? 1}
+        onPowerChange={(value) => {
+          void navigate({
+            search: (previous) => ({
+              ...previous,
+              returnTo: returnPathAtPower(
+                previous.returnTo ?? "/collection",
+                1,
+              ),
+              power: powerParam(value),
+            }),
+            replace: true,
+            resetScroll: false,
+          });
+        }}
+        returnTo={catalogReturnPath(
+          returnTo ?? (page.item.category === "mob" ? "/mobs" : undefined),
+        )}
+      />
+    );
+  }
+  return data.enrichment ? (
+    <Await
+      key={data.item.slug}
+      promise={data.enrichment}
+      fallback={renderPage(data, "loading")}
+    >
+      {({ data: enriched, failed }) =>
+        renderPage(enriched, failed ? "failed" : undefined)
+      }
+    </Await>
+  ) : (
+    renderPage(data)
   );
 }

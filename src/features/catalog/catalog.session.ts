@@ -48,25 +48,64 @@ export function loadSessionCatalog() {
   }));
 }
 
-const details = new Map<string, Promise<CatalogItem>>();
+const details = new Map<
+  string,
+  { request: Promise<CatalogItem>; item?: CatalogItem }
+>();
+function trimDetails() {
+  // Bound the long-lived server isolate and browser session memory.
+  if (details.size > 128) details.delete(details.keys().next().value!);
+}
+
+/** Read a pinned release's details without waiting for the network. */
+export async function readSessionCatalogDetail(item: CatalogItem) {
+  if (!item.detail_path) return item;
+  const saved = details.get(item.detail_path)?.item;
+  if (saved) return saved;
+  if (typeof window === "undefined") return undefined;
+  try {
+    const cached = await getCatalogCache().readDetail?.(item.detail_path);
+    if (cached?.slug === item.slug && cached.category === item.category) {
+      if (!details.has(item.detail_path)) {
+        details.set(item.detail_path, {
+          request: Promise.resolve(cached),
+          item: cached,
+        });
+        trimDetails();
+      }
+      return cached;
+    }
+  } catch {
+    /* An uncached item can still open from the session index. */
+  }
+  return undefined;
+}
+
 export function loadSessionCatalogDetail(item: CatalogItem) {
   if (!item.detail_path) return Promise.resolve(item);
   const key = item.detail_path;
-  let request = details.get(key);
-  if (!request) {
+  let entry = details.get(key);
+  if (!entry) {
     let cache: CatalogCache | undefined;
     try {
       if (typeof window !== "undefined") cache = getCatalogCache();
     } catch {
       /* Memory-only browsing remains available. */
     }
-    request = loadCatalogDetail(item, cache).catch((error: unknown) => {
-      details.delete(key);
-      throw error;
-    });
-    details.set(key, request);
-    // Bound the long-lived server isolate and browser session memory.
-    if (details.size > 128) details.delete(details.keys().next().value!);
+    const created: { request: Promise<CatalogItem>; item?: CatalogItem } = {
+      request: loadCatalogDetail(item, cache)
+        .then((detail) => {
+          created.item = detail;
+          return detail;
+        })
+        .catch((error: unknown) => {
+          details.delete(key);
+          throw error;
+        }),
+    };
+    entry = created;
+    details.set(key, entry);
+    trimDetails();
   }
-  return request;
+  return entry.request;
 }

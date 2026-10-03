@@ -6,6 +6,7 @@ import { notFound } from "@tanstack/react-router";
 import {
   loadSessionCatalog,
   loadSessionCatalogDetail,
+  readSessionCatalogDetail,
 } from "../catalog/catalog.session";
 import type { CatalogItem as PublishedItem } from "../catalog/catalog.types";
 import {
@@ -149,13 +150,58 @@ export function normalizeDetailItem(item: PublishedItem): CatalogItem {
 }
 export async function loadDetailPage(category: string, slug: string) {
   const published = await loadSessionCatalog();
-  const catalog = published.map(normalizeDetailItem);
+  const position = detailPosition(published, category, slug);
+  const detail = await loadSessionCatalogDetail(published[position]);
+  return detailPageData(published, position, detail);
+}
+
+function detailPosition(
+  published: PublishedItem[],
+  category: string,
+  slug: string,
+) {
   const path = `/catalog/${category}/${slug}`;
-  const position = catalog.findIndex((entry) => itemPath(entry) === path);
-  if (position < 0) throw notFound();
-  const item = normalizeDetailItem(
-    await loadSessionCatalogDetail(published[position]),
+  const position = published.findIndex(
+    (entry) => itemPath(normalizeDetailItem(entry)) === path,
   );
+  if (position < 0) throw notFound();
+  return position;
+}
+
+// SSR retains the complete page for search engines. In-app navigation opens from
+// memory/IndexedDB, or the already-loaded index while the shard loads separately.
+export async function loadDetailRoute(category: string, slug: string) {
+  if (typeof window === "undefined")
+    return { ...(await loadDetailPage(category, slug)), enrichment: undefined };
+  const published = await loadSessionCatalog();
+  const position = detailPosition(published, category, slug);
+  const cached = await readSessionCatalogDetail(published[position]);
+  const initial = detailPageData(
+    published,
+    position,
+    cached ?? published[position],
+  );
+  return {
+    ...initial,
+    enrichment: cached
+      ? undefined
+      : loadSessionCatalogDetail(published[position]).then(
+          (detail) => ({
+            data: detailPageData(published, position, detail),
+            failed: false,
+          }),
+          () => ({ data: initial, failed: true }),
+        ),
+  };
+}
+
+function detailPageData(
+  published: PublishedItem[],
+  position: number,
+  detail: PublishedItem,
+) {
+  const catalog = published.map(normalizeDetailItem);
+  const item = normalizeDetailItem(detail);
   catalog[position] = item;
   const sources = dropSources(item, catalog);
   const setEquipment =
