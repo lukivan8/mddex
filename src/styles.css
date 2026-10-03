@@ -1114,9 +1114,6 @@ h1 {
     overflow-y: auto;
     flex: 1;
   }
-  .picker-results {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .enchantment-slot {
     width: 44px;
     height: 44px;
@@ -1159,6 +1156,33 @@ h1 {
   }
   .picker-results {
     grid-template-columns: 1fr;
+  }
+  .picker-result {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .picker-art,
+  .picker-art img {
+    width: 36px;
+    height: 36px;
+  }
+  .picker-result-copy {
+    display: contents;
+  }
+  .picker-result-name {
+    /* Desktop reserves inline space for the overlaid tiers and unique icon. */
+    padding-right: 0 !important;
+    min-height: 0 !important;
+  }
+  .picker-result-name svg {
+    position: absolute;
+    top: 22px;
+    left: 56px;
+  }
+  .picker-tiers,
+  .picker-unique-icon {
+    top: 16px;
   }
 }
 
@@ -1391,10 +1415,18 @@ h1 {
     width: 30px;
     height: 36px;
     min-width: 30px;
+    padding: 0;
+    grid-template-columns: minmax(0, 1fr);
   }
   .modifier-button.effect {
     width: 28px;
     min-width: 28px;
+    padding: 0;
+  }
+  .modifier-art,
+  .modifier-art img {
+    max-width: 100%;
+    max-height: 100%;
   }
   .modifier-button.enchantment {
     margin-right: 2px;
@@ -1453,6 +1485,76 @@ h1 {
   .artifact-slots .gear-art img {
     width: 28px;
     height: 28px;
+  }
+}
+
+/* Give names the full card width instead of squeezing them beside artwork. */
+@media (max-width: 520px) {
+  .build-board {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 8px;
+    align-items: start;
+  }
+  .build-board > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+  .build-board > section:has(> .trinket-slots) {
+    grid-column: span 1;
+  }
+  .build-board .trinket-slots {
+    display: flex;
+    flex-direction: column;
+  }
+  .build-board .gear-slot {
+    display: flex;
+    flex-direction: column;
+  }
+  .build-board .gear-select {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    align-content: start;
+    gap: 8px;
+    padding: 10px;
+    text-align: left;
+    flex: 1;
+  }
+  .build-board .gear-art,
+  .build-board .gear-art img {
+    width: 36px;
+    height: 36px;
+  }
+  .build-board .gear-art {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .build-board .gear-copy {
+    display: contents;
+  }
+  .build-board .gear-copy .eyebrow {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: 28px;
+  }
+  .build-board .gear-name {
+    grid-column: 1 / -1;
+    min-height: 0;
+    overflow-wrap: break-word;
+  }
+  .build-board .gear-modifiers {
+    margin-top: auto;
+  }
+}
+@media (max-width: 360px) {
+  .build-board .gear-slot.equipped .gear-copy .eyebrow {
+    display: none;
+  }
+  .build-board .gear-copy .eyebrow {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-right: 0;
   }
 }
 

@@ -43,7 +43,9 @@ function GearSlotCard({
     target?.kind === "item" &&
     selectionTargets(target).some((position) => position.slot === slot);
   return (
-    <div className={`gear-slot ${active ? "active" : ""}`}>
+    <div
+      className={`gear-slot ${equipped ? "equipped" : ""} ${active ? "active" : ""}`}
+    >
       <button
         type="button"
         disabled={readOnly}
