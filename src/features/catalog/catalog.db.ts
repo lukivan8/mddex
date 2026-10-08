@@ -2,7 +2,7 @@ import { z } from "zod";
 import { catalogSchema, catalogItemSchema } from "./catalog.schema";
 import type { CatalogItem } from "./catalog.types";
 
-export const CATALOG_DATABASE = "mddex-catalog-v1";
+export const CATALOG_DATABASE = "mddex-catalog-v2";
 const snapshotSchema = z.object({
   source: z.string().url(),
   version: z.string().min(1),

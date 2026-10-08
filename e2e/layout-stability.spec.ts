@@ -16,7 +16,6 @@ const catalogShapes = [
   ".category-card",
   ".toolbar",
   ".filter-row",
-  ".results-toolbar",
   ".item-grid",
   ".item-card",
 ];
@@ -52,8 +51,12 @@ for (const width of [1365, 390]) {
           }
         }).observe({ type: "layout-shift", buffered: true });
       });
+      let releaseCatalog!: () => void;
+      const catalogReady = new Promise<void>((resolve) => {
+        releaseCatalog = resolve;
+      });
       await page.route("**/latest.json", async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await catalogReady;
         await route.fulfill({
           json: {
             catalogVersion: "layout-test",
@@ -123,6 +126,7 @@ for (const width of [1365, 390]) {
         await page.evaluate(() => document.fonts.ready);
         buildSkeletonShapes = await measureBuild();
       }
+      releaseCatalog();
       await expect(
         path === "/build"
           ? page.getByRole("textbox", { name: "Loadout name" })

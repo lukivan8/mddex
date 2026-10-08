@@ -18,6 +18,14 @@ import { Route as MobsRouteImport } from './routes/mobs'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as CommunityBuildIdRouteImport } from './routes/community.$buildId'
 import { Route as CommunityNewRouteImport } from './routes/community.new'
+import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as ResourcesItemTrackerRouteImport } from './routes/resources.item-tracker'
+import { Route as ResourcesItemTrackerCardsRouteImport } from './routes/resources.item-tracker-cards'
+import { Route as ResourcesItemTrackerListRouteImport } from './routes/resources.item-tracker-list'
+import { Route as ResourcesItemTrackerRaritiesRouteImport } from './routes/resources.item-tracker-rarities'
+import { Route as ResourcesMeleeWeaponsRouteImport } from './routes/resources.melee-weapons'
+import { Route as ResourcesSoulStormRouteImport } from './routes/resources.soul-storm'
+import { Route as ResourcesSoulStormRoutesRouteImport } from './routes/resources.soul-storm-routes'
 import { Route as CatalogCategorySlugRouteImport } from './routes/catalog.$category.$slug'
 import { Route as CommunityBuildIdEditRouteImport } from './routes/community.$buildId_.edit'
 
@@ -66,6 +74,50 @@ const CommunityNewRoute = CommunityNewRouteImport.update({
   path: '/new',
   getParentRoute: () => CommunityRoute,
 } as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/resources/',
+  path: '/resources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesItemTrackerRoute = ResourcesItemTrackerRouteImport.update({
+  id: '/resources/item-tracker',
+  path: '/resources/item-tracker',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesItemTrackerCardsRoute =
+  ResourcesItemTrackerCardsRouteImport.update({
+    id: '/resources/item-tracker-cards',
+    path: '/resources/item-tracker-cards',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ResourcesItemTrackerListRoute =
+  ResourcesItemTrackerListRouteImport.update({
+    id: '/resources/item-tracker-list',
+    path: '/resources/item-tracker-list',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ResourcesItemTrackerRaritiesRoute =
+  ResourcesItemTrackerRaritiesRouteImport.update({
+    id: '/resources/item-tracker-rarities',
+    path: '/resources/item-tracker-rarities',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ResourcesMeleeWeaponsRoute = ResourcesMeleeWeaponsRouteImport.update({
+  id: '/resources/melee-weapons',
+  path: '/resources/melee-weapons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesSoulStormRoute = ResourcesSoulStormRouteImport.update({
+  id: '/resources/soul-storm',
+  path: '/resources/soul-storm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesSoulStormRoutesRoute =
+  ResourcesSoulStormRoutesRouteImport.update({
+    id: '/resources/soul-storm-routes',
+    path: '/resources/soul-storm-routes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CatalogCategorySlugRoute = CatalogCategorySlugRouteImport.update({
   id: '/catalog/$category/$slug',
   path: '/catalog/$category/$slug',
@@ -86,7 +138,15 @@ export interface FileRoutesByFullPath {
   '/mobs': typeof MobsRoute
   '/community/$buildId': typeof CommunityBuildIdRoute
   '/community/new': typeof CommunityNewRoute
+  '/resources/item-tracker': typeof ResourcesItemTrackerRoute
+  '/resources/item-tracker-cards': typeof ResourcesItemTrackerCardsRoute
+  '/resources/item-tracker-list': typeof ResourcesItemTrackerListRoute
+  '/resources/item-tracker-rarities': typeof ResourcesItemTrackerRaritiesRoute
+  '/resources/melee-weapons': typeof ResourcesMeleeWeaponsRoute
+  '/resources/soul-storm': typeof ResourcesSoulStormRoute
+  '/resources/soul-storm-routes': typeof ResourcesSoulStormRoutesRoute
   '/community/': typeof CommunityIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/catalog/$category/$slug': typeof CatalogCategorySlugRoute
   '/community/$buildId/edit': typeof CommunityBuildIdEditRoute
 }
@@ -98,7 +158,15 @@ export interface FileRoutesByTo {
   '/mobs': typeof MobsRoute
   '/community/$buildId': typeof CommunityBuildIdRoute
   '/community/new': typeof CommunityNewRoute
+  '/resources/item-tracker': typeof ResourcesItemTrackerRoute
+  '/resources/item-tracker-cards': typeof ResourcesItemTrackerCardsRoute
+  '/resources/item-tracker-list': typeof ResourcesItemTrackerListRoute
+  '/resources/item-tracker-rarities': typeof ResourcesItemTrackerRaritiesRoute
+  '/resources/melee-weapons': typeof ResourcesMeleeWeaponsRoute
+  '/resources/soul-storm': typeof ResourcesSoulStormRoute
+  '/resources/soul-storm-routes': typeof ResourcesSoulStormRoutesRoute
   '/community': typeof CommunityIndexRoute
+  '/resources': typeof ResourcesIndexRoute
   '/catalog/$category/$slug': typeof CatalogCategorySlugRoute
   '/community/$buildId/edit': typeof CommunityBuildIdEditRoute
 }
@@ -112,7 +180,15 @@ export interface FileRoutesById {
   '/mobs': typeof MobsRoute
   '/community/$buildId': typeof CommunityBuildIdRoute
   '/community/new': typeof CommunityNewRoute
+  '/resources/item-tracker': typeof ResourcesItemTrackerRoute
+  '/resources/item-tracker-cards': typeof ResourcesItemTrackerCardsRoute
+  '/resources/item-tracker-list': typeof ResourcesItemTrackerListRoute
+  '/resources/item-tracker-rarities': typeof ResourcesItemTrackerRaritiesRoute
+  '/resources/melee-weapons': typeof ResourcesMeleeWeaponsRoute
+  '/resources/soul-storm': typeof ResourcesSoulStormRoute
+  '/resources/soul-storm-routes': typeof ResourcesSoulStormRoutesRoute
   '/community/': typeof CommunityIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/catalog/$category/$slug': typeof CatalogCategorySlugRoute
   '/community/$buildId_/edit': typeof CommunityBuildIdEditRoute
 }
@@ -127,7 +203,15 @@ export interface FileRouteTypes {
     | '/mobs'
     | '/community/$buildId'
     | '/community/new'
+    | '/resources/item-tracker'
+    | '/resources/item-tracker-cards'
+    | '/resources/item-tracker-list'
+    | '/resources/item-tracker-rarities'
+    | '/resources/melee-weapons'
+    | '/resources/soul-storm'
+    | '/resources/soul-storm-routes'
     | '/community/'
+    | '/resources/'
     | '/catalog/$category/$slug'
     | '/community/$buildId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -139,7 +223,15 @@ export interface FileRouteTypes {
     | '/mobs'
     | '/community/$buildId'
     | '/community/new'
+    | '/resources/item-tracker'
+    | '/resources/item-tracker-cards'
+    | '/resources/item-tracker-list'
+    | '/resources/item-tracker-rarities'
+    | '/resources/melee-weapons'
+    | '/resources/soul-storm'
+    | '/resources/soul-storm-routes'
     | '/community'
+    | '/resources'
     | '/catalog/$category/$slug'
     | '/community/$buildId/edit'
   id:
@@ -152,7 +244,15 @@ export interface FileRouteTypes {
     | '/mobs'
     | '/community/$buildId'
     | '/community/new'
+    | '/resources/item-tracker'
+    | '/resources/item-tracker-cards'
+    | '/resources/item-tracker-list'
+    | '/resources/item-tracker-rarities'
+    | '/resources/melee-weapons'
+    | '/resources/soul-storm'
+    | '/resources/soul-storm-routes'
     | '/community/'
+    | '/resources/'
     | '/catalog/$category/$slug'
     | '/community/$buildId_/edit'
   fileRoutesById: FileRoutesById
@@ -164,6 +264,14 @@ export interface RootRouteChildren {
   CommunityRoute: typeof CommunityRouteWithChildren
   CompareRoute: typeof CompareRoute
   MobsRoute: typeof MobsRoute
+  ResourcesItemTrackerRoute: typeof ResourcesItemTrackerRoute
+  ResourcesItemTrackerCardsRoute: typeof ResourcesItemTrackerCardsRoute
+  ResourcesItemTrackerListRoute: typeof ResourcesItemTrackerListRoute
+  ResourcesItemTrackerRaritiesRoute: typeof ResourcesItemTrackerRaritiesRoute
+  ResourcesMeleeWeaponsRoute: typeof ResourcesMeleeWeaponsRoute
+  ResourcesSoulStormRoute: typeof ResourcesSoulStormRoute
+  ResourcesSoulStormRoutesRoute: typeof ResourcesSoulStormRoutesRoute
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
   CatalogCategorySlugRoute: typeof CatalogCategorySlugRoute
 }
 
@@ -232,6 +340,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityNewRouteImport
       parentRoute: typeof CommunityRoute
     }
+    '/resources/': {
+      id: '/resources/'
+      path: '/resources'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/item-tracker': {
+      id: '/resources/item-tracker'
+      path: '/resources/item-tracker'
+      fullPath: '/resources/item-tracker'
+      preLoaderRoute: typeof ResourcesItemTrackerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/item-tracker-cards': {
+      id: '/resources/item-tracker-cards'
+      path: '/resources/item-tracker-cards'
+      fullPath: '/resources/item-tracker-cards'
+      preLoaderRoute: typeof ResourcesItemTrackerCardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/item-tracker-list': {
+      id: '/resources/item-tracker-list'
+      path: '/resources/item-tracker-list'
+      fullPath: '/resources/item-tracker-list'
+      preLoaderRoute: typeof ResourcesItemTrackerListRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/item-tracker-rarities': {
+      id: '/resources/item-tracker-rarities'
+      path: '/resources/item-tracker-rarities'
+      fullPath: '/resources/item-tracker-rarities'
+      preLoaderRoute: typeof ResourcesItemTrackerRaritiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/melee-weapons': {
+      id: '/resources/melee-weapons'
+      path: '/resources/melee-weapons'
+      fullPath: '/resources/melee-weapons'
+      preLoaderRoute: typeof ResourcesMeleeWeaponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/soul-storm': {
+      id: '/resources/soul-storm'
+      path: '/resources/soul-storm'
+      fullPath: '/resources/soul-storm'
+      preLoaderRoute: typeof ResourcesSoulStormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/soul-storm-routes': {
+      id: '/resources/soul-storm-routes'
+      path: '/resources/soul-storm-routes'
+      fullPath: '/resources/soul-storm-routes'
+      preLoaderRoute: typeof ResourcesSoulStormRoutesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalog/$category/$slug': {
       id: '/catalog/$category/$slug'
       path: '/catalog/$category/$slug'
@@ -274,6 +438,14 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityRoute: CommunityRouteWithChildren,
   CompareRoute: CompareRoute,
   MobsRoute: MobsRoute,
+  ResourcesItemTrackerRoute: ResourcesItemTrackerRoute,
+  ResourcesItemTrackerCardsRoute: ResourcesItemTrackerCardsRoute,
+  ResourcesItemTrackerListRoute: ResourcesItemTrackerListRoute,
+  ResourcesItemTrackerRaritiesRoute: ResourcesItemTrackerRaritiesRoute,
+  ResourcesMeleeWeaponsRoute: ResourcesMeleeWeaponsRoute,
+  ResourcesSoulStormRoute: ResourcesSoulStormRoute,
+  ResourcesSoulStormRoutesRoute: ResourcesSoulStormRoutesRoute,
+  ResourcesIndexRoute: ResourcesIndexRoute,
   CatalogCategorySlugRoute: CatalogCategorySlugRoute,
 }
 export const routeTree = rootRouteImport

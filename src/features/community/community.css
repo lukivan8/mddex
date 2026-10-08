@@ -1,7 +1,3 @@
-.community-nav-link {
-  margin-left: auto;
-  white-space: nowrap;
-}
 .community-page {
   padding-block: 38px 64px;
   min-height: 70vh;
@@ -264,6 +260,30 @@ button.community-tag:hover {
   color: var(--foreground);
   margin-bottom: 24px;
 }
+.community-videos {
+  display: grid;
+  gap: 24px;
+  max-width: 720px;
+  margin-top: 30px;
+}
+.community-video iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 200px;
+  border: 1px solid var(--border);
+  background: #000;
+}
+.community-video a {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--accent);
+  font-size: 13px;
+}
+.community-video-hint {
+  font-size: 13px;
+  line-height: 1.6;
+}
 .community-description {
   max-width: 720px;
   padding-top: 30px;
@@ -281,6 +301,14 @@ button.community-tag:hover {
 }
 .community-prose p {
   margin: 14px 0;
+}
+.community-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.community-prose a:hover {
+  color: var(--foreground);
 }
 .community-prose ul,
 .community-prose ol {
@@ -488,15 +516,6 @@ button.community-tag:hover {
 .community-confirm-heading {
   margin-top: 32px;
 }
-.community-builder-return {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 0 0 22px;
-  margin-bottom: 22px;
-  border-bottom: 1px solid var(--border);
-}
 @media (max-width: 760px) {
   .community-page {
     padding-top: 28px;
@@ -511,9 +530,6 @@ button.community-tag:hover {
   }
   .community-grid {
     grid-template-columns: 1fr;
-  }
-  .community-builder-return {
-    flex-wrap: wrap;
   }
 }
 @media (max-width: 520px) {

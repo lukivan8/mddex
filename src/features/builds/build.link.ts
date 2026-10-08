@@ -7,6 +7,7 @@ import {
   EFFECT_COUNT,
   type Build,
   equippedSchema,
+  MAX_BUILD_VARIANTS,
 } from "./build.types";
 
 const MAX_BYTES = 32_768;
@@ -66,6 +67,28 @@ async function transform(bytes: Uint8Array, decompress: boolean) {
 }
 
 export async function encodeBuildLink(build: Build): Promise<string> {
+  if (build.variants?.length) {
+    const tokens = await Promise.all([
+      encodeBuildLink({ ...build, variants: undefined }),
+      ...build.variants.map((variant) =>
+        encodeBuildLink({
+          ...build,
+          ...variant,
+          variants: undefined,
+        }),
+      ),
+    ]);
+    const bytes = await transform(
+      new TextEncoder().encode(JSON.stringify(tokens)),
+      false,
+    );
+    const token = `2.${btoa(String.fromCharCode(...bytes))
+      .replaceAll("+", "-")
+      .replaceAll("/", "_")
+      .replace(/=+$/, "")}`;
+    if (token.length > 8192) throw new Error("Build link is too large.");
+    return token;
+  }
   const slugs: string[] = [];
   const reference = (slug?: string | null) => {
     if (!slug) return 0;
@@ -125,22 +148,45 @@ export async function encodeBuildLink(build: Build): Promise<string> {
 
 export async function decodeBuildLink(token: string): Promise<Build> {
   try {
-    if (token.length > 8192 || !/^1\.[A-Za-z0-9_-]+$/.test(token))
+    if (token.length > 8192 || !/^[12]\.[A-Za-z0-9_-]+$/.test(token))
       throw new Error();
     const raw = atob(token.slice(2).replaceAll("-", "+").replaceAll("_", "/"));
     const bytes = await transform(
       Uint8Array.from(raw, (character) => character.charCodeAt(0)),
       true,
     );
-    const [name, slugs, slots, tiers] = payloadSchema.parse(
-      JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)),
+    const payload: unknown = JSON.parse(
+      new TextDecoder("utf-8", { fatal: true }).decode(bytes),
     );
+    if (token.startsWith("2.")) {
+      const tokens = z
+        .array(
+          z
+            .string()
+            .max(8192)
+            .regex(/^1\.[A-Za-z0-9_-]+$/),
+        )
+        .min(2)
+        .max(MAX_BUILD_VARIANTS)
+        .parse(payload);
+      const [build, ...variants] = await Promise.all(
+        tokens.map(decodeBuildLink),
+      );
+      build.variants = variants.map(({ id, name, slots }) => ({
+        id,
+        name,
+        slots,
+      }));
+      return build;
+    }
+    const [name, slugs, slots, tiers] = payloadSchema.parse(payload);
     const resolve = (ref: number) => {
       if (ref === 0) return null;
       if (!slugs[ref - 1]) throw new Error();
       return slugs[ref - 1];
     };
     const build = emptyBuild(name);
+    build.name = name;
     BUILD_SLOTS.forEach((slot, index) => {
       const row = slots[index];
       const chosen = tiers?.[index];

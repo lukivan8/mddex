@@ -43,12 +43,6 @@ export function CollectionSkeleton() {
             <Skeleton className="filter-select skeleton-control" />
             <Skeleton className="filter-select skeleton-control" />
           </div>
-          <div className="results-toolbar">
-            <div className="results-actions">
-              <Skeleton className="skeleton-result-count" />
-              <Skeleton className="filter-select skeleton-control" />
-            </div>
-          </div>
         </div>
         <div className="item-grid">
           {Array.from({ length: 12 }, (_, i) => (

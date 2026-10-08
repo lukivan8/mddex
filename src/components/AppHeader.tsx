@@ -8,7 +8,7 @@ export function AppHeader({
   active,
   children,
 }: {
-  active: "collection" | "build" | "mobs" | "community";
+  active: "collection" | "build" | "mobs" | "community" | "resources";
   children?: ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -29,7 +29,13 @@ export function AppHeader({
     >
       <div className="shell header-inner">
         <Link to="/build" className="brand" aria-label="MDDEX builds">
-          <img src="/mddex-logo.png" alt="" />
+          <img
+            src="/mddex-logo.webp"
+            srcSet="/mddex-logo.webp 1x, /mddex-logo@2x.webp 2x"
+            width={48}
+            height={48}
+            alt=""
+          />
           <span>MDDEX</span>
         </Link>
         <nav className="desktop-navigation" aria-label="Main navigation">
@@ -55,6 +61,13 @@ export function AppHeader({
             aria-current={active === "mobs" ? "page" : undefined}
           >
             Mobs
+          </Link>
+          <Link
+            to="/resources"
+            className="nav-link"
+            aria-current={active === "resources" ? "page" : undefined}
+          >
+            Resources
           </Link>
         </nav>
         {children}
@@ -123,6 +136,16 @@ export function AppHeader({
               onClick={() => setMenuOpen(false)}
             >
               Mobs
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/resources"
+              className="nav-link"
+              aria-current={active === "resources" ? "page" : undefined}
+              onClick={() => setMenuOpen(false)}
+            >
+              Resources
             </Link>
           </li>
           <li>

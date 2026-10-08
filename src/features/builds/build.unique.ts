@@ -1,3 +1,4 @@
+import { referenceArtwork } from "../catalog/catalog.reference-artwork";
 import type { CatalogItem } from "../catalog/catalog.types";
 import {
   BUILD_SLOTS,
@@ -29,7 +30,7 @@ export function uniqueEffect(item?: CatalogItem): CatalogItem | undefined {
     type: "unique",
     variation: typeof effect.name === "string" ? effect.name : "Unique effect",
     description: typeof effect.text === "string" ? effect.text : null,
-    image: null,
+    image: referenceArtwork(item, effect),
     game_data: { fixed_tier: effect.tier },
   };
 }
@@ -38,7 +39,12 @@ export function uniqueEffectCatalog(items: CatalogItem[]) {
   const catalog = new Map(items.map((item) => [item.slug, item]));
   for (const item of items) {
     const effect = uniqueEffect(item);
-    if (effect && !catalog.has(effect.slug)) catalog.set(effect.slug, effect);
+    if (effect) {
+      const canonical = catalog.get(effect.slug);
+      if (!canonical) catalog.set(effect.slug, effect);
+      else if (!canonical.image && effect.image)
+        catalog.set(effect.slug, { ...canonical, image: effect.image });
+    }
   }
   return catalog;
 }

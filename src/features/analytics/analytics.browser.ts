@@ -1,5 +1,10 @@
 import { randomId } from "../../lib/random-id";
 import type { AnalyticsEvent, AnalyticsLabel } from "./analytics.schema";
+import {
+  createAnalyticsStore,
+  createMemoryAnalyticsStore,
+} from "./analytics.db";
+import { createAnalyticsQueue } from "./analytics.queue";
 
 const visitorKey = "mddex.analytics.visitor.v1";
 const sessionKey = "mddex.analytics.session.v1";
@@ -11,6 +16,42 @@ let lastPage = "";
 let fallbackVisitor: string | undefined;
 let fallbackSession: Session | undefined;
 const oncePerSession = new Set<string>();
+let queue: ReturnType<typeof createAnalyticsQueue> | undefined;
+
+export function startAnalytics() {
+  if (typeof window === "undefined" || queue) return;
+  let store;
+  try {
+    store = createAnalyticsStore(window.indexedDB);
+  } catch {
+    store = createMemoryAnalyticsStore();
+  }
+  queue = createAnalyticsQueue({
+    store,
+    allowed: analyticsAllowed,
+    online: () => navigator.onLine !== false,
+    upload: async (events) => {
+      const response = await fetch("/api/analytics", {
+        method: "POST",
+        credentials: "omit",
+        keepalive: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ events }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      return response.status === 204;
+    },
+  });
+  const flush = () => {
+    void queue!.flush();
+  };
+  window.addEventListener("online", flush);
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flush();
+  });
+  queue.start();
+}
 
 export function analyticsAllowed() {
   return (
@@ -74,7 +115,10 @@ function send(
   path: string,
   label?: AnalyticsLabel,
 ) {
-  const body = JSON.stringify({
+  startAnalytics();
+  void queue!.enqueue({
+    id: randomId(),
+    occurredAt: Date.now(),
     event,
     visitorId: data.visitorId,
     sessionId: data.sessionId,
@@ -82,14 +126,6 @@ function send(
     path,
     label,
   });
-  // JSON + same-origin requests prevent cross-site form submissions. keepalive survives navigation.
-  void fetch("/api/analytics", {
-    method: "POST",
-    credentials: "omit",
-    keepalive: true,
-    headers: { "Content-Type": "application/json" },
-    body,
-  }).catch(() => {});
 }
 
 export function trackEvent(

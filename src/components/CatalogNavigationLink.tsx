@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { defaultParseSearch, Link } from "@tanstack/react-router";
 import type { ComponentPropsWithRef } from "react";
 
 /** Preserve query filters while keeping catalog navigation in the current app. */
@@ -12,7 +12,7 @@ export function CatalogNavigationLink({
     <Link
       {...props}
       to={url.pathname}
-      search={() => Object.fromEntries(url.searchParams)}
+      search={() => defaultParseSearch(url.search)}
       hash={url.hash.slice(1)}
       preload="intent"
     />

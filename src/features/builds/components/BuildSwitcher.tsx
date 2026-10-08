@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Modal } from "@heroui/react";
-import { Plus, Check, Trash2 } from "lucide-react";
+import { Plus, Check, Copy, Trash2 } from "lucide-react";
 import { filledSlots } from "../build.selectors";
 import type { Build } from "../build.types";
 export function BuildSwitcher({
@@ -10,6 +10,7 @@ export function BuildSwitcher({
   activeId,
   onSwitch,
   onNew,
+  onDuplicate,
   onDelete,
 }: {
   open: boolean;
@@ -18,6 +19,7 @@ export function BuildSwitcher({
   activeId: string;
   onSwitch: (id: string) => void;
   onNew: () => void;
+  onDuplicate: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const [deleting, setDeleting] = useState<Build>();
@@ -34,7 +36,7 @@ export function BuildSwitcher({
         }
       }}
     >
-      <Modal.Container size="sm">
+      <Modal.Container size="md">
         <Modal.Dialog>
           <Modal.Header>
             <Modal.Heading>
@@ -59,6 +61,29 @@ export function BuildSwitcher({
                       <Button
                         isIconOnly
                         variant="ghost"
+                        isDisabled={busy}
+                        aria-label={`Duplicate ${build.name.trim() || "Untitled loadout"}`}
+                        onPress={async () => {
+                          setBusy(true);
+                          setError("");
+                          try {
+                            await onDuplicate(build.id);
+                            onClose();
+                          } catch {
+                            setError(
+                              "Could not duplicate this loadout. Check browser storage and try again.",
+                            );
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                      >
+                        <Copy size={16} />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        variant="ghost"
+                        isDisabled={busy}
                         aria-label={`Delete ${build.name.trim() || "Untitled loadout"}`}
                         onPress={() => {
                           setDeleting(build);
@@ -70,6 +95,7 @@ export function BuildSwitcher({
                       <Button
                         variant="ghost"
                         className="loadout-option"
+                        isDisabled={busy}
                         key={build.id}
                         onPress={() => {
                           onSwitch(build.id);
@@ -130,6 +156,7 @@ export function BuildSwitcher({
               </>
             ) : (
               <Button
+                isDisabled={busy}
                 onPress={() => {
                   onNew();
                   onClose();

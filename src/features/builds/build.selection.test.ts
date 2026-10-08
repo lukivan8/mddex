@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogItem } from "../catalog/catalog.types";
 import { compose, emptyBuild } from "./build.service";
-import { composeSelection } from "./build.selection";
+import { composeSelection, selectionTargets } from "./build.selection";
 import type { BuildTarget } from "./build.types";
+import { decodeBuildLink, encodeBuildLink } from "./build.link";
+import { composeItemPower } from "./build.service";
 
 const item = (slug: string, category: string): CatalogItem => ({
   slug,
@@ -12,10 +14,48 @@ const item = (slug: string, category: string): CatalogItem => ({
   image: null,
 });
 
+it("edits duplicate artifacts independently and preserves them in share links", async () => {
+  const artifact = item("conductive-quiver", "artifact");
+  let build = emptyBuild();
+  for (const slot of ["artifact1", "artifact2", "artifact3"] as const) {
+    const target = { kind: "item", slot } as const;
+    expect(selectionTargets(target)).toEqual([target]);
+    build = composeSelection(build, target, artifact);
+    build = composeSelection(
+      build,
+      { kind: "effect", slot, index: 0 },
+      item(`${slot}-effect`, "gear_effect"),
+    );
+    build = composeItemPower(build, slot, slot === "artifact1" ? 72 : 100);
+  }
+  const original = structuredClone(build);
+  // Re-selecting a copy must not toggle off any of the equipped copies.
+  build = composeSelection(
+    build,
+    { kind: "item", slot: "artifact2" },
+    artifact,
+  );
+  expect(build.slots).toEqual(original.slots);
+  expect((await decodeBuildLink(await encodeBuildLink(build))).slots).toEqual(
+    original.slots,
+  );
+  build = composeSelection(
+    build,
+    { kind: "item", slot: "artifact2" },
+    item("another-artifact", "artifact"),
+  );
+  expect(build.slots.artifact2?.itemSlug).toBe("another-artifact");
+  expect(build.slots.artifact1).toEqual(original.slots.artifact1);
+  expect(build.slots.artifact3).toEqual(original.slots.artifact3);
+  build = composeSelection(build, { kind: "item", slot: "artifact2" }, null);
+  expect(build.slots.artifact2).toBeNull();
+  expect(build.slots.artifact1).toEqual(original.slots.artifact1);
+  expect(build.slots.artifact3).toEqual(original.slots.artifact3);
+});
+
 describe("group selection", () => {
   it.each<BuildTarget>([
     { kind: "effect", slot: "melee", index: 1 },
-    { kind: "item", slot: "artifact2" },
     { kind: "item", slot: "talisman2" },
   ])(
     "fills empty positions and toggles without overwriting for %j",

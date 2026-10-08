@@ -2,8 +2,7 @@
 @import "@fontsource/ibm-plex-mono/latin-500.css";
 @import "@fontsource/ibm-plex-mono/latin-600.css";
 @import "tailwindcss";
-@import "@heroui/styles";
-@import "./features/community/community.css";
+@import "./heroui.css";
 @theme {
   --font-sans: "IBM Plex Mono", monospace;
   --font-mono: "IBM Plex Mono", monospace;
@@ -582,9 +581,44 @@ h1 {
   align-items: start;
 }
 .loadout-pane {
-  position: sticky;
-  top: 20px;
   min-width: 0;
+}
+@media (min-width: 901px) {
+  .build-workspace > .picker-pane {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    padding-right: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--accent) 55%, var(--border)) var(--surface);
+  }
+  @supports selector(::-webkit-scrollbar) {
+    .build-workspace > .picker-pane {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+    .build-workspace > .picker-pane::-webkit-scrollbar {
+      width: 12px;
+    }
+    .build-workspace > .picker-pane::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+    .build-workspace > .picker-pane::-webkit-scrollbar-thumb {
+      background: color-mix(in oklch, var(--accent) 55%, var(--border));
+      border: 3px solid var(--surface);
+      border-radius: 5px;
+      min-height: 40px;
+    }
+    .build-workspace > .picker-pane::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+    .build-workspace > .picker-pane::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+  }
 }
 .build-heading {
   display: flex;
@@ -1193,6 +1227,22 @@ h1 {
   gap: 12px;
   margin-bottom: 16px;
 }
+.build-view-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.build-view-actions > .build-share-control,
+.build-view-actions > button,
+.build-panel-switcher {
+  flex-shrink: 0;
+}
+.build-view-actions > .build-variants {
+  margin: 0;
+  min-width: 0;
+}
 @media (max-width: 900px) {
   .build-panel-switcher,
   #build-catalog-pane {
@@ -1223,10 +1273,12 @@ h1 {
 .coffee-button {
   display: inline-flex;
   flex-shrink: 0;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   border-radius: 8px;
-  background: #20282b;
-  color: var(--foreground);
-  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
   transition: opacity 150ms ease;
 }
 .coffee-button:hover {
@@ -1237,8 +1289,31 @@ h1 {
   outline-offset: 4px;
 }
 .footer .coffee-button img {
-  width: 181px;
+  display: block;
+  width: auto;
   height: 50px;
+}
+.coffee-dialog {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+.coffee-dialog-header {
+  padding: 16px 24px;
+}
+.coffee-widget {
+  display: block;
+  width: 100%;
+  height: min(620px, 65dvh);
+  border: 0;
+  background: white;
+}
+.coffee-page-link {
+  display: block;
+  padding: 12px 16px;
+  color: var(--accent);
+  text-align: center;
+  font-size: 12px;
 }
 
 .results-toolbar {
@@ -1300,9 +1375,11 @@ h1 {
   .category-grid {
     display: flex;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
     scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
     scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--accent) 55%, var(--border)) var(--surface);
   }
   .category-card {
     flex: 0 0 140px;
@@ -1677,7 +1754,7 @@ h1 {
   }
 }
 .build-share-control button,
-.build-view-controls > button {
+.build-view-actions > button {
   min-height: 36px;
 }
 
@@ -1938,4 +2015,130 @@ h1 {
 }
 .build-compatibility-warning > button {
   margin-top: 8px;
+}
+
+.community-nav-link {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.community-builder-return {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 0 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 760px) {
+  .community-builder-return {
+    flex-wrap: wrap;
+  }
+}
+
+.build-variants {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 1rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.build-variants > * { flex-shrink: 0; }
+.community-variant-name { font-size: 1.1rem; margin-bottom: 1rem; }
+
+@media (max-width: 900px) {
+  .build-view-actions {
+    align-items: flex-start;
+  }
+  .build-view-actions > .build-share-control button,
+  .build-view-actions > button {
+    min-height: 44px;
+  }
+  .build-variants {
+    padding: 0 2px 8px;
+    scroll-padding-inline: 2px;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--accent) 55%, var(--border)) transparent;
+  }
+  .build-variants .toggle-button {
+    scroll-snap-align: start;
+  }
+  @supports selector(::-webkit-scrollbar) {
+    .build-variants {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+    .build-variants::-webkit-scrollbar {
+      height: 4px;
+    }
+    .build-variants::-webkit-scrollbar-track {
+      background: var(--surface);
+      border-radius: 4px;
+    }
+    .build-variants::-webkit-scrollbar-thumb {
+      background: color-mix(in oklch, var(--accent) 55%, var(--border));
+      border-radius: 4px;
+    }
+    .build-variants::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+  }
+}
+
+.effect-filter-modal .modal__dialog { max-height: 85dvh; display: flex; flex-direction: column; }
+.effect-filter-modal .modal__body { overflow-y: auto; }
+@media (max-width: 900px) {
+  .effect-filter-modal .modal__dialog { max-height: 94dvh; }
+}
+.effect-filter-selected { margin-right: auto; font-size: 12px; }
+@media (max-width: 600px) {
+  .effect-filter-modal .modal__footer { flex-wrap: wrap; }
+  .results-toolbar { flex-wrap: wrap; gap: 12px; }
+}
+
+.effect-filter-trigger { min-height: 38px; flex-shrink: 0; }
+.toolbar:has(.effect-filter-trigger), .collection-skeleton .toolbar { margin-bottom: 24px; }
+.selected-effects { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 16px; }
+.selected-effects > .toggle-button-group { margin-left: 4px; flex-shrink: 0; }
+.selected-effect-icon.modifier-button { position: relative; width: 40px; height: 40px; flex-shrink: 0; }
+.selected-effect-icon.modifier-button .modifier-art,
+.selected-effect-icon.modifier-button .modifier-art img { width: 28px; height: 28px; }
+.selected-effect-remove { position: absolute; top: 2px; right: 2px; color: var(--muted); }
+@media (max-width: 760px) {
+  .effect-filter-trigger, .selected-effect-icon.modifier-button { min-height: 44px; }
+  .selected-effect-icon.modifier-button { width: 44px; height: 44px; }
+}
+
+/* Show more choices without changing the shared build picker. */
+.effect-filter-modal .picker-result {
+  display: flex;
+  align-items: center;
+  min-height: 76px;
+  padding: 10px;
+  gap: 10px;
+  height: 100%;
+}
+.effect-filter-modal .picker-art,
+.effect-filter-modal .picker-art img { width: 36px; height: 36px; }
+.effect-filter-modal .picker-result-copy { display: flex; gap: 4px; }
+.effect-filter-modal .picker-result-name svg { position: static; }
+.effect-filter-modal .picker-result .muted { display: none; }
+.effect-filter-modal .picker-description { font-size: 11px; }
+@media (min-width: 901px) {
+  .effect-filter-modal .modal__dialog { width: min(900px, calc(100vw - 80px)); max-width: 900px; }
+  .effect-filter-modal .picker-results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  @supports selector(::-webkit-scrollbar) {
+    .category-grid { scrollbar-width: auto; scrollbar-color: auto; }
+    .category-grid::-webkit-scrollbar { height: 4px; }
+    .category-grid::-webkit-scrollbar-track { background: var(--surface); border-radius: 4px; }
+    .category-grid::-webkit-scrollbar-thumb { background: color-mix(in oklch, var(--accent) 55%, var(--border)); border-radius: 4px; }
+    .category-grid::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  }
 }

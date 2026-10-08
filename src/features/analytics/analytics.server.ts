@@ -1,4 +1,8 @@
-import { analyticsSchema } from "./analytics.schema";
+import {
+  ANALYTICS_BODY_LIMIT,
+  analyticsBatchSchema,
+  analyticsSchema,
+} from "./analytics.schema";
 
 export async function collectAnalytics(
   request: Request,
@@ -29,7 +33,7 @@ export async function collectAnalytics(
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      if (size > 1024) {
+      if (size > ANALYTICS_BODY_LIMIT) {
         await reader.cancel();
         return reply(413);
       }
@@ -41,24 +45,35 @@ export async function collectAnalytics(
       bytes.set(chunk, offset);
       offset += chunk.byteLength;
     }
-    const result = analyticsSchema.safeParse(
-      JSON.parse(new TextDecoder().decode(bytes)),
-    );
-    if (!result.success) return reply(400);
-    const { event, visitorId, sessionId, returning, path, label } = result.data;
-    dataset.writeDataPoint({
-      indexes: [visitorId],
-      blobs: [
-        event,
-        visitorId,
-        sessionId,
-        path,
-        returning ? "returning" : "new",
-        "v2",
-        label ?? "",
-      ],
-      doubles: [1],
-    });
+    const body: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    const batch = analyticsBatchSchema.safeParse(body);
+    const legacy = batch.success ? undefined : analyticsSchema.safeParse(body);
+    if (!batch.success && !legacy?.success) return reply(400);
+    const events = batch.success ? batch.data.events : [legacy!.data!];
+    // Validate the entire batch before writing; old open tabs can still send v2.
+    const receivedAt = Date.now();
+    try {
+      for (const [index, entry] of events.entries()) {
+        const { event, visitorId, sessionId, returning, path, label } = entry;
+        const queued = batch.success ? batch.data.events[index] : undefined;
+        dataset.writeDataPoint({
+          indexes: [visitorId],
+          blobs: [
+            event,
+            visitorId,
+            sessionId,
+            path,
+            returning ? "returning" : "new",
+            queued ? "v3" : "v2",
+            label ?? "",
+            ...(queued ? [queued.id] : []),
+          ],
+          doubles: queued ? [1, Math.min(queued.occurredAt, receivedAt)] : [1],
+        });
+      }
+    } catch {
+      return reply(503);
+    }
     return reply(204);
   } catch {
     return reply(400);

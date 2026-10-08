@@ -134,3 +134,24 @@ it("retains published unique effects without a canonical catalog link in the boa
     "Grants Shadowcloaking.",
   );
 });
+
+it("resolves innate effect artwork and fills a canonical definition's missing icon", () => {
+  const image = "https://cdn.mddex.net/images/fire.png";
+  const item = {
+    ...weapon,
+    artwork: { "effects.0.icon": image },
+    game_data: {
+      ...weapon.game_data,
+      effects: [
+        {
+          name: "Fire",
+          catalog_slug: "fire",
+          tier: "unique",
+          icon: { artwork_key: "effects.0.icon" },
+        },
+      ],
+    },
+  };
+  expect(uniqueEffect(item)?.image).toBe(image);
+  expect(uniqueEffectCatalog([item, effect]).get("fire")?.image).toBe(image);
+});

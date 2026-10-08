@@ -63,3 +63,17 @@ export const analyticsSchema = z
     label: z.enum(analyticsLabels).optional(),
   })
   .strict();
+
+export const ANALYTICS_BATCH_SIZE = 100;
+export const ANALYTICS_BODY_LIMIT = 48 * 1024;
+export const ANALYTICS_RETENTION = 7 * 24 * 60 * 60 * 1000;
+export const queuedAnalyticsSchema = analyticsSchema.extend({
+  id: z.uuid(),
+  occurredAt: z.number().int().positive().max(8.64e15),
+});
+export type QueuedAnalyticsEvent = z.infer<typeof queuedAnalyticsSchema>;
+export const analyticsBatchSchema = z
+  .object({
+    events: z.array(queuedAnalyticsSchema).min(1).max(ANALYTICS_BATCH_SIZE),
+  })
+  .strict();

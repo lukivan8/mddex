@@ -1,0 +1,85 @@
+<section id="mddex-dau-report">
+  <h2>MDDEX daily active browsers</h2>
+  <div class="text-small text-muted" data-period></div>
+  <svg class="dau-plot" role="img"></svg>
+  <div class="text-small text-muted" data-note></div>
+</section>
+<style>
+  #mddex-dau-report .dau-plot {display:block;width:100%;height:340px;margin:12px 0}
+  #mddex-dau-report .dau-plot text {fill:var(--foreground);font-size:12px}
+  #mddex-dau-report .dau-grid {stroke:var(--border);stroke-width:1}
+  #mddex-dau-report .dau-line {fill:none;stroke:var(--viz-series-1);stroke-width:2.5}
+  #mddex-dau-report .dau-dot {fill:var(--viz-series-1)}
+  #mddex-dau-report .dau-partial {fill:var(--background);stroke:var(--viz-series-1);stroke-width:2.5}
+</style>
+<script>
+(() => {
+  const report = __DAU_DATA__;
+  const root = document.getElementById('mddex-dau-report');
+  const svg = root.querySelector('.dau-plot');
+  const dayNumber = date => Date.parse(date+'T00:00:00Z')/86400000;
+  const label = date => new Date(date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+  root.querySelector('[data-period]').textContent = `${label(report.release)}–${label(report.today)}, ${report.today.slice(0,4)} · Almaty (UTC+5)`;
+  root.querySelector('[data-note]').textContent = `○ Partial day · Sampled browser IDs · Gaps = unavailable · Updated ${report.updated}`;
+  svg.setAttribute('aria-label', 'Observed active browsers by Almaty calendar day. '+report.days.map(d=>`${d.date}: ${d.dau}`).join('; ')+'. Release day and today are partial. Sampling may undercount.');
+  const ns = 'http://www.w3.org/2000/svg';
+  function draw() {
+    const w=root.getBoundingClientRect().width,h=340;
+    if(w<1)return;
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.replaceChildren();
+    const el=(name,attrs,text)=>{
+      const node=document.createElementNS(ns,name);
+      for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);
+      if(text!==undefined)node.textContent=text;
+      svg.appendChild(node);return node;
+    };
+    const left=64,right=w-22,top=34,bottom=276;
+    const first=dayNumber(report.release),last=dayNumber(report.today);
+    const ceiling=Math.max(100,Math.ceil(Math.max(0,...report.days.map(d=>d.dau))*1.13/100)*100);
+    const x=date=>left+10+(dayNumber(date)-first)/Math.max(1,last-first)*(right-left-20);
+    const y=value=>bottom-10-value/ceiling*(bottom-top-20);
+    el('rect',{x:left,y:top,width:right-left,height:bottom-top,fill:'none',stroke:'var(--border)','data-chart-frame':''});
+    const step=Math.ceil(ceiling/5/100)*100;
+    for(let v=0;v<=ceiling;v+=step){
+      el('line',{x1:left,x2:right,y1:y(v),y2:y(v),class:'dau-grid'});
+      el('text',{x:left-10,y:y(v)+4,'text-anchor':'end'},v);
+    }
+    el('text',{x:18,y:(top+bottom)/2,transform:`rotate(-90 18 ${(top+bottom)/2})`,'text-anchor':'middle',class:'axis-title','data-axis':'y'},'Active browsers / day');
+    el('text',{x:(left+right)/2,y:330,'text-anchor':'middle',class:'axis-title','data-axis':'x'},'Date · Almaty (UTC+5)');
+    let previous=null;
+    const path=report.days.map(d=>{
+      const command=previous!==null && dayNumber(d.date)===previous+1?'L':'M';
+      previous=dayNumber(d.date);return `${command}${x(d.date)},${y(d.dau)}`;
+    }).join(' ');
+    el('path',{d:path,class:'dau-line'});
+    const maxTicks=w<470?3:Math.max(3,Math.floor((right-left)/75));
+    const ticks=new Set(Array.from({length:Math.min(maxTicks,last-first+1)},(_,i)=>Math.round(first+i*(last-first)/Math.max(1,Math.min(maxTicks,last-first+1)-1))));
+    for(const day of ticks){
+      const date=new Date(day*86400000).toISOString().slice(0,10);
+      el('text',{x:x(date),y:298,'text-anchor':day===first?'start':day===last?'end':'middle'},label(date));
+    }
+    const labelEvery=Math.max(1,Math.ceil(report.days.length/Math.max(2,Math.floor((right-left)/45))));
+    const valueLabels=[];
+    report.days.forEach((d,i)=>{
+      const partial=d.date===report.release || d.date===report.today;
+      const g=el('g',{'data-tooltip':`${label(d.date)}: ${d.dau} observed active browsers${partial?' (partial day)':''}; max sample interval ${d.sample}`});
+      const dot=document.createElementNS(ns,'circle');
+      for(const [key,value]of Object.entries({cx:x(d.date),cy:y(d.dau),r:4,class:partial?'dau-partial':'dau-dot'}))dot.setAttribute(key,value);
+      g.appendChild(dot);
+      const hit=document.createElementNS(ns,'circle');
+      for(const [key,value]of Object.entries({cx:x(d.date),cy:y(d.dau),r:window.matchMedia('(pointer:coarse)').matches?22:16,fill:'transparent','data-chart-hit':''}))hit.setAttribute(key,value);
+      g.appendChild(hit);
+      if(i%labelEvery===0 || i===report.days.length-1)valueLabels.push(el('text',{x:x(d.date),y:y(d.dau)-13,'text-anchor':i===0?'start':i===report.days.length-1?'end':'middle'},d.dau));
+    });
+    // Drop optional value labels that collide at narrow widths or with axis ticks.
+    const fixed=[...svg.querySelectorAll('text')].filter(n=>!valueLabels.includes(n));
+    const kept=fixed.map(n=>n.getBBox());
+    for(const n of valueLabels.reverse()){
+      const b=n.getBBox();
+      if(kept.some(a=>b.x<a.x+a.width+4 && b.x+b.width+4>a.x && b.y<a.y+a.height+4 && b.y+b.height+4>a.y))n.remove();
+      else kept.push(b);
+    }
+  }
+  draw();new ResizeObserver(draw).observe(root);
+})();
+</script>

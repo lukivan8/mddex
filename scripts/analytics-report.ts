@@ -1,3 +1,4 @@
+import { analyticsEventTime } from "./analytics.sql.ts";
 // Run with Node 22.12+; keep the read-only API token in the environment.
 const token = process.env.CLOUDFLARE_ANALYTICS_API_TOKEN;
 const accountId =
@@ -9,7 +10,7 @@ if (!token)
   );
 if (!Number.isInteger(days) || days < 1 || days > 90)
   throw new Error("Days must be an integer between 1 and 90.");
-const range = `timestamp >= NOW() - INTERVAL '${days}' DAY`;
+const range = `${analyticsEventTime} >= NOW() - INTERVAL '${days}' DAY`;
 const metrics: Record<string, string> = {
   "Site visitors (browsers)": "blob1 = 'page_view'",
   "Returning visitors (browsers)":

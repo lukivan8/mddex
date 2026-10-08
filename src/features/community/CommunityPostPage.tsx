@@ -498,7 +498,12 @@ function PostForm({
               >
                 <span className="community-local-build-name">
                   <strong>{edit.name}</strong>
-                  <span className="muted">Published equipment</span>
+                  <span className="muted">
+                    Published equipment
+                    {edit.build.variants?.length
+                      ? ` · ${edit.build.variants.length + 1} variants included`
+                      : ""}
+                  </span>
                 </span>
                 <EquipmentPreview build={edit.build} catalog={catalogMap} />
                 <span className="community-local-build-check">
@@ -516,6 +521,11 @@ function PostForm({
               >
                 <span className="community-local-build-name">
                   <strong>{build.name}</strong>
+                  {!!build.variants?.length && (
+                    <span className="muted">
+                      {build.variants.length + 1} variants included
+                    </span>
+                  )}
                 </span>
                 <EquipmentPreview build={build} catalog={catalogMap} />
                 <span className="community-local-build-check">
@@ -634,6 +644,10 @@ function PostForm({
             initialValue={description}
             onChange={setDescription}
           />
+          <small className="muted community-video-hint">
+            YouTube links in your description will appear in a player above the
+            description.
+          </small>
         </div>
         {!edit && (
           <label className="community-field">

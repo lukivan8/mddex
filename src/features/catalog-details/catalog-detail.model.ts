@@ -1,4 +1,5 @@
 import { acquisitionSources } from "./catalog-detail.enrichment";
+import { isSecretTalisman } from "../catalog/catalog.helpers";
 export interface ItemSource {
   description?: string;
   name: string;
@@ -28,6 +29,7 @@ export interface CatalogItem {
   image: string | null;
   description: string | null;
   game_data: {
+    talismanAcquisition?: { secret: boolean; location?: string };
     status?: {
       alignment?: string;
       gear: Reference[];
@@ -180,12 +182,26 @@ export function dropSources(
 export function isChestTalisman(item: CatalogItem): boolean {
   return (
     item.category === "talisman" &&
-    item.game_data.sources.some(
+    item.game_data.sources.some((source) => source.type === "chest")
+  );
+}
+
+export function talismanAcquisitionNotes(item: CatalogItem): string[] {
+  if (!isSecretTalisman(item)) return [];
+  const instructions = item.game_data.sources
+    .filter(
       (source) =>
         source.type === "chest" &&
-        source.name.trim().toLowerCase() === "talisman chest",
+        !/^(?:talisman )?chest$/i.test(source.name.trim()),
     )
-  );
+    .map((source) => source.name.trim());
+  return [
+    ...new Set(
+      [item.game_data.talismanAcquisition?.location, ...instructions].filter(
+        (note): note is string => Boolean(note),
+      ),
+    ),
+  ];
 }
 
 export function detailCategory(category: string) {

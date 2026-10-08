@@ -1,44 +1,47 @@
+import type { CatalogItem } from "../../catalog/catalog.types";
+import { EFFECT_GEAR_CATEGORIES } from "../collection.effects";
+import { EffectFilter, SelectedEffects } from "./EffectFilter";
 import type { CollectionFilters } from "../collection.types";
 import { categoryLabel, humanize } from "../../catalog/catalog.helpers";
 import { FilterToolbar } from "./FilterToolbar";
 export function CollectionToolbar({
   filters,
-  categories,
+  effects,
   types,
   typeTotals,
   onChange,
-  count,
-  total,
 }: {
   filters: CollectionFilters;
-  categories: string[];
+  effects: CatalogItem[];
   types: string[];
   typeTotals: Record<string, number>;
   onChange: (patch: CollectionFilters) => void;
-  count: number;
-  total: number;
 }) {
   return (
     <FilterToolbar
+      searchActions={
+        <EffectFilter
+          effects={effects}
+          filters={filters}
+          onChange={onChange}
+          disabled={
+            !!filters.category &&
+            !EFFECT_GEAR_CATEGORIES.includes(filters.category)
+          }
+        />
+      }
+      belowSearch={
+        <SelectedEffects
+          effects={effects}
+          filters={filters}
+          onChange={onChange}
+        />
+      }
       searchLabel="Search catalog"
       searchPlaceholder="Search items, types, categories…"
       searchValue={filters.q || ""}
       onSearch={(q) => onChange({ q })}
       filters={[
-        {
-          label: "Category",
-          value: filters.category || "all",
-          onChange: (category: string) =>
-            onChange({
-              category: category === "all" ? "" : category,
-              type: "",
-              appliesTo: "",
-            }),
-          options: [
-            { id: "all", name: "All categories" },
-            ...categories.map((id) => ({ id, name: categoryLabel(id) })),
-          ],
-        },
         filters.category === "enchantment"
           ? {
               label: "Applies to",
@@ -68,28 +71,11 @@ export function CollectionToolbar({
                 { id: "all", name: "All types" },
                 ...types.map((id) => ({
                   id,
-                  name: `${humanize(id)} (${typeTotals[id]})`,
+                  name: `${id === "secret_talismans" ? "Secret talismans" : humanize(id)} (${typeTotals[id]})`,
                 })),
               ],
             },
       ]}
-      sort={{
-        label: "Sort items",
-        value: filters.sort || "name",
-        onChange: (sort) =>
-          onChange({ sort: sort as CollectionFilters["sort"] }),
-        options: [
-          { id: "name", name: "Name A–Z" },
-          { id: "category", name: "Category" },
-        ],
-      }}
-      count={count}
-      total={total}
-      noun="items"
-      hasFilters={
-        !!(filters.q || filters.category || filters.type || filters.appliesTo)
-      }
-      onClear={() => onChange({ q: "", category: "", type: "", appliesTo: "" })}
     />
   );
 }

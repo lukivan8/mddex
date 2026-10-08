@@ -1,3 +1,4 @@
+import { analyticsEventTime } from "./analytics.sql.ts";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -14,7 +15,7 @@ const token = process.env.CLOUDFLARE_ANALYTICS_API_TOKEN || (() => {
   }
 })();
 const account = process.env.CLOUDFLARE_ACCOUNT_ID || "969c1ae807b3ae3d635b9c72c0818e54";
-const range = `timestamp >= NOW() - INTERVAL '${days}' DAY`;
+const range = `${analyticsEventTime} >= NOW() - INTERVAL '${days}' DAY`;
 async function query(sql: string) {
   const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/analytics_engine/sql`, {
     method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "text/plain" },
@@ -30,7 +31,7 @@ const [events, pages, choices, daily] = await Promise.all([
     FROM mddex_events WHERE ${range} AND blob1 = 'page_view' GROUP BY path ORDER BY views DESC LIMIT 30`),
   query(`SELECT blob1 AS event, blob7 AS choice, COUNT(DISTINCT blob2) AS browsers, SUM(_sample_interval) AS actions
     FROM mddex_events WHERE ${range} AND blob7 != '' GROUP BY event, choice ORDER BY actions DESC LIMIT 30`),
-  query(`SELECT intDiv(toUInt32(timestamp), 86400) * 86400 AS day, blob1 AS event,
+  query(`SELECT intDiv(toUInt32(${analyticsEventTime}), 86400) * 86400 AS day, blob1 AS event,
     SUM(_sample_interval) AS actions FROM mddex_events WHERE ${range}
     AND blob1 IN ('page_view','build_equip_attempt','build_equipped','build_shared')
     GROUP BY day, event ORDER BY day, event LIMIT 1000`),

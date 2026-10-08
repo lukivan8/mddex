@@ -44,11 +44,14 @@ export const tagsSchema = z
 export const communityDraftSchema = z.object({
   build: buildSchema
     .refine(
-      (build) => JSON.stringify(build).length <= 20_000,
+      (build) => JSON.stringify(build).length <= 36_000,
       "Build is too large",
     )
     .refine(
-      (build) => BUILD_SLOTS.some((slot) => build.slots[slot]),
+      (build) =>
+        [build, ...(build.variants ?? [])].some((variant) =>
+          BUILD_SLOTS.some((slot) => variant.slots[slot]),
+        ),
       "Equip at least one item before posting",
     ),
   name: z.string().trim().min(1).max(80),

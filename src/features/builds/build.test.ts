@@ -11,6 +11,7 @@ import {
 import {
   compose,
   createBuild,
+  duplicateBuild,
   emptyBuild,
   equip,
   renameBuild,
@@ -46,6 +47,64 @@ const storage = () => {
   };
 };
 describe("local builds", () => {
+  it("duplicates every slot setting, persists the copy, and edits it independently", async () => {
+    const local = storage();
+    let db = createBuildCollections(local);
+    await db.builds.preload();
+    const source = emptyBuild("Original", "original");
+    source.createdAt = source.updatedAt = "2020-01-01T00:00:00.000Z";
+    source.slots.melee = {
+      itemSlug: "Hammer",
+      power: 154,
+      enchantments: ["Fire"],
+      enchantmentTier: "III",
+      effects: ["Attack", null, "Defense"],
+      effectTiers: ["IV", null, "II"],
+    };
+    source.slots.talisman1 = {
+      itemSlug: "Charm",
+      itemTier: "II",
+      enchantments: [],
+      effects: [],
+    };
+    await db.builds.insert(source).isPersisted.promise;
+    const copy = duplicateBuild(db, source.id);
+    await copy.transaction.isPersisted.promise;
+    expect(copy.build.id).not.toBe(source.id);
+    expect(copy.build.name).toBe("Original (copy)");
+    expect(copy.build.createdAt).not.toBe(source.createdAt);
+    expect(copy.build.updatedAt).toBe(copy.build.createdAt);
+    expect(copy.build.slots).toEqual(source.slots);
+    expect(copy.build.slots.melee).not.toBe(source.slots.melee);
+    await db.builds.update(copy.build.id, (build) => {
+      build.slots.melee!.effects![0] = "Other";
+      build.slots.melee!.effectTiers![0] = "I";
+    }).isPersisted.promise;
+    await db.builds.cleanup();
+    db = createBuildCollections(local);
+    await db.builds.preload();
+    expect(db.builds.size).toBe(2);
+    expect(db.builds.get(source.id)).toMatchObject(source);
+    expect(db.builds.get(copy.build.id)?.slots.melee?.effects[0]).toBe("Other");
+    expect(() => duplicateBuild(db, "missing")).toThrow("no longer available");
+    await db.builds.cleanup();
+  });
+  it.each(["", " ", "A".repeat(80)])(
+    "keeps copy names within the limit for %j",
+    async (name) => {
+      const db = createBuildCollections(storage());
+      await db.builds.preload();
+      const source = { ...emptyBuild(), name };
+      await db.builds.insert(source).isPersisted.promise;
+      const copy = duplicateBuild(db, source.id);
+      await copy.transaction.isPersisted.promise;
+      expect(copy.build.name.length).toBeLessThanOrEqual(80);
+      expect(copy.build.name).toBe(
+        `${(name.trim() || "Untitled loadout").slice(0, 73)} (copy)`,
+      );
+      await db.builds.cleanup();
+    },
+  );
   it("creates exactly 12 empty positions without catalog metadata", () => {
     const b = emptyBuild();
     expect(Object.keys(b.slots)).toEqual([...BUILD_SLOTS]);

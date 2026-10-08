@@ -31,6 +31,7 @@ const PickerResult = memo(function PickerResult({
   gearCategory,
   builtInEffect,
   comparison,
+  filter = false,
 }: {
   item: CatalogItem;
   selected: boolean;
@@ -42,29 +43,35 @@ const PickerResult = memo(function PickerResult({
   gearCategory: string;
   builtInEffect?: CatalogItem;
   comparison: boolean;
+  filter?: boolean;
   onSelect: (item: CatalogItem, tier?: ModifierTier) => void;
 }) {
   const [hoveredTier, setHoveredTier] = useState<ModifierTier>();
   const [focusedTier, setFocusedTier] = useState<ModifierTier>();
   const tiers =
-    item.category === "gear_effect" ||
-    item.category === "enchantment" ||
-    item.category === "talisman"
+    !filter &&
+    (item.category === "gear_effect" ||
+      item.category === "enchantment" ||
+      item.category === "talisman")
       ? availableTiers(item, gearCategory)
       : [];
   const chosen = selectedTier(item, tier, gearCategory);
-  const description = locked
-    ? (innate?.description ?? item.description)
-    : tierDescription(item, hoveredTier ?? focusedTier ?? tier, gearCategory);
+  const description = filter
+    ? item.description
+    : locked
+      ? (innate?.description ?? item.description)
+      : tierDescription(item, hoveredTier ?? focusedTier ?? tier, gearCategory);
   return (
     <div className="picker-result-row">
       <Button
         variant="ghost"
         className={`picker-result ${selected ? "active" : ""} ${locked ? "unique-effect" : ""}`}
         aria-label={
-          comparison
-            ? `Select ${item.variation} for comparison`
-            : `${effect ? "Add effect" : "Equip"} ${item.variation}`
+          filter
+            ? item.variation
+            : comparison
+              ? `Select ${item.variation} for comparison`
+              : `${effect ? "Add effect" : "Equip"} ${item.variation}`
         }
         isDisabled={disabled}
         aria-pressed={selected}
@@ -85,7 +92,15 @@ const PickerResult = memo(function PickerResult({
             }
           >
             <strong>{item.variation}</strong>
-            {selected && <Check size={15} />}
+            <Check
+              size={15}
+              aria-hidden="true"
+              style={{
+                width: 15,
+                height: 15,
+                visibility: selected ? "visible" : "hidden",
+              }}
+            />
           </span>
           <span className="muted">{humanize(item.type)}</span>
           {locked && (
@@ -155,7 +170,9 @@ export type PickerProps = {
   multiple: boolean;
   onSelect: (item: CatalogItem, tier?: ModifierTier) => void;
   onClear: () => void;
-  mode?: "build" | "compare";
+  mode?: "build" | "compare" | "filter";
+  selectionLimit?: number;
+  showClear?: boolean;
 };
 export function CatalogPicker({
   catalog,
@@ -174,7 +191,10 @@ export function CatalogPicker({
   onSelect,
   onClear,
   mode = "build",
+  showClear = true,
+  selectionLimit,
 }: PickerProps) {
+  const limit = selectionLimit ?? (target.kind === "effect" ? EFFECT_COUNT : 3);
   const index = useMemo(() => buildSearchIndex(catalog), [catalog]);
   const uniqueEffects = useMemo(() => {
     const lookup = new Map(catalog.map((item) => [item.slug, item]));
@@ -185,36 +205,47 @@ export function CatalogPicker({
       const canonical = lookup.get(fixed.slug);
       effects.set(item.slug, {
         ...(canonical ?? fixed),
+        image: canonical?.image ?? fixed.image,
         description: fixed.description ?? canonical?.description,
       });
     }
     return effects;
   }, [catalog]);
   const available = useMemo(() => {
+    if (mode === "filter") {
+      const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      return catalog.filter(
+        (item) =>
+          (!type || item.type === type) &&
+          words.every((word) => (index.get(item.slug) ?? "").includes(word)),
+      );
+    }
     const items = pickerItems(catalog, target, query, index, type, equipment);
     if (target.kind !== "effect" || !lockedEffect) return items;
     const fixed =
       catalog.find((item) => item.slug === lockedEffect.slug) ?? lockedEffect;
     return [fixed, ...items.filter((item) => item.slug !== fixed.slug)];
-  }, [catalog, target, query, index, type, lockedEffect, equipment]);
+  }, [catalog, target, query, index, type, lockedEffect, equipment, mode]);
   const types = useMemo(
     () =>
       [
         ...new Set(
           catalog
-            .filter((i) => isCompatible(i, target, equipment))
+            .filter(
+              (i) => mode === "filter" || isCompatible(i, target, equipment),
+            )
             .map((i) => i.type),
         ),
       ].sort(),
-    [catalog, target, equipment],
+    [catalog, target, equipment, mode],
   );
   return (
     <div className="catalog-picker">
-      {multiple && (
+      {multiple && mode !== "filter" && (
         <p className="muted" role="status">
-          {selectedSlugs.length} / {target.kind === "effect" ? EFFECT_COUNT : 3}{" "}
-          selected. Click {target.kind === "effect" ? "an effect" : "an item"}{" "}
-          to select or deselect it.
+          {selectedSlugs.length} / {limit} selected. Click{" "}
+          {target.kind === "effect" ? "an effect" : "an item"} to select or
+          deselect it.
           {lockedSlugs.length > 0 && " Unique effects are locked."}
         </p>
       )}
@@ -265,24 +296,27 @@ export function CatalogPicker({
           </ToggleButtonGroup>
         </div>
       )}
-      <div className="picker-meta">
-        <span role="status">
-          {available.length} compatible{" "}
-          {available.length === 1 ? "item" : "items"}
-        </span>
-        {(multiple
-          ? selectedSlugs.some((slug) => !lockedSlugs.includes(slug))
-          : selected) && (
-          <Button variant="ghost" size="sm" onPress={onClear}>
-            <X size={13} />
-            {multiple
-              ? "Clear selection"
-              : mode === "compare"
-                ? "Clear weapon"
-                : "Clear selected slot"}
-          </Button>
-        )}
-      </div>
+      {mode !== "filter" && (
+        <div className="picker-meta">
+          <span role="status">
+            {available.length} compatible{" "}
+            {available.length === 1 ? "item" : "items"}
+          </span>
+          {showClear &&
+            (multiple
+              ? selectedSlugs.some((slug) => !lockedSlugs.includes(slug))
+              : selected) && (
+              <Button variant="ghost" size="sm" onPress={onClear}>
+                <X size={13} />
+                {multiple
+                  ? "Clear selection"
+                  : mode === "compare"
+                    ? "Clear weapon"
+                    : "Clear selected slot"}
+              </Button>
+            )}
+        </div>
+      )}
       <div className="picker-results">
         {available.map((item) => (
           <PickerResult
@@ -290,6 +324,7 @@ export function CatalogPicker({
             item={item}
             builtInEffect={uniqueEffects.get(item.slug)}
             comparison={mode === "compare"}
+            filter={mode === "filter"}
             effect={target.kind === "effect"}
             gearCategory={slotRules[target.slot].category}
             selected={
@@ -303,8 +338,7 @@ export function CatalogPicker({
             disabled={
               lockedSlugs.includes(item.slug) ||
               (multiple &&
-                selectedSlugs.length >=
-                  (target.kind === "effect" ? EFFECT_COUNT : 3) &&
+                selectedSlugs.length >= limit &&
                 !selectedSlugs.includes(item.slug))
             }
             onSelect={onSelect}

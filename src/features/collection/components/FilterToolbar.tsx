@@ -53,18 +53,22 @@ export function FilterToolbar({
   noun,
   hasFilters,
   onClear,
+  searchActions,
+  belowSearch,
 }: {
+  searchActions?: React.ReactNode;
+  belowSearch?: React.ReactNode;
   searchLabel: string;
   searchPlaceholder: string;
   searchValue: string;
   onSearch: (value: string) => void;
   filters: FilterControl[];
-  sort: FilterControl;
-  count: number;
-  total: number;
-  noun: string;
-  hasFilters: boolean;
-  onClear: () => void;
+  sort?: FilterControl;
+  count?: number;
+  total?: number;
+  noun?: string;
+  hasFilters?: boolean;
+  onClear?: () => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -100,26 +104,30 @@ export function FilterToolbar({
             <kbd aria-hidden="true">/</kbd>
           </SearchField.Group>
         </SearchField>
+        {searchActions}
         {filters.map((filter) => (
           <FilterSelect key={filter.label} {...filter} />
         ))}
       </div>
-      <div className="results-toolbar">
-        <div className="results-actions">
-          <span className="result-count" role="status">
-            {count}{" "}
-            <span className="muted">
-              of {total} {noun}
+      {belowSearch}
+      {sort && (
+        <div className="results-toolbar">
+          <div className="results-actions">
+            <span className="result-count" role="status">
+              {count}{" "}
+              <span className="muted">
+                of {total} {noun}
+              </span>
             </span>
-          </span>
-          {hasFilters && (
-            <Button size="sm" variant="ghost" onPress={onClear}>
-              Clear filters
-            </Button>
-          )}
-          <FilterSelect {...sort} />
+            {hasFilters && (
+              <Button size="sm" variant="ghost" onPress={onClear}>
+                Clear filters
+              </Button>
+            )}
+            <FilterSelect {...sort} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

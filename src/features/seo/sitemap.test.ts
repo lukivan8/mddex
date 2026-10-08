@@ -41,6 +41,14 @@ describe("catalogSitemap", () => {
     expect(xml).toContain(
       "<loc>https://mddex.net/catalog/status/status-strength</loc>",
     );
-    expect(xml.match(/<url>/g)).toHaveLength(6);
+    expect(xml).toContain("<loc>https://mddex.net/resources</loc>");
+    expect(xml).toContain("<loc>https://mddex.net/resources/soul-storm</loc>");
+    expect(xml).toContain(
+      "<loc>https://mddex.net/resources/melee-weapons</loc>",
+    );
+    expect(xml).toContain(
+      "<loc>https://mddex.net/resources/soul-storm-routes</loc>",
+    );
+    expect(xml.match(/<url>/g)).toHaveLength(14);
   });
 });

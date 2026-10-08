@@ -32,10 +32,9 @@ import { getBuildCollections, type BuildCollections } from "./build.db";
 import {
   createBuild,
   deleteBuild,
-  equip,
+  duplicateBuild,
   compose,
   composeItemPower,
-  renameBuild,
   setWorkspace,
 } from "./build.service";
 import { activeBuild } from "./build.selectors";
@@ -62,6 +61,14 @@ import { useRouterState } from "@tanstack/react-router";
 import { resolveSharedBuild } from "../sharing/sharing.browser";
 import { ShareBuildButton } from "./components/BuildSharing";
 import { BuildSummary } from "./components/BuildSummary";
+import { BuildVariants } from "./components/BuildVariants";
+import {
+  addBuildVariant,
+  removeBuildVariant,
+  selectBuildVariant,
+  updateBuildVariant,
+  variantNumeral,
+} from "./build.variants";
 import { BuildBoard } from "./components/BuildBoard";
 import { BuildSwitcher } from "./components/BuildSwitcher";
 import { CatalogPicker, type PickerProps } from "./components/CatalogPicker";
@@ -215,13 +222,14 @@ function BuildGuide() {
         </li>
         <li>
           <strong>Review your loadout.</strong> Set item power and switch to
-          Summary to review your equipment and effects together. Compare
-          alternative loadouts by saving them with different names.
+          Summary to review your equipment and effects together. Compare boss
+          fights and grinding setups with the variant tabs. Add a variant to
+          copy your current equipment, then give it a descriptive name.
         </li>
         <li>
           <strong>Save and share.</strong> Builds save in this browser. Use
           Share build to create a link that a friend can open and save as a
-          separate copy.
+          separate copy, including all of its variants.
         </li>
       </ol>
       <h3>Where can I find the equipment for my build?</h3>
@@ -270,7 +278,15 @@ function BuildLoadingLayout({ build }: { build: Build }) {
       <span className="sr-only">Loading equipment catalog…</span>
       <div aria-hidden="true">
         <div className="build-view-controls">
-          <Skeleton className="build-loading-share" />
+          <div className="build-view-actions">
+            <Skeleton className="build-loading-share" />
+            <BuildVariants
+              build={build}
+              disabled
+              onSelect={() => {}}
+              onAdd={() => {}}
+            />
+          </div>
           <div className="build-loading-tabs">
             <span>Catalog</span>
             <span>Summary</span>
@@ -361,10 +377,25 @@ function BuildWorkspace({
   const [panel, setPanel] = useState<"catalog" | "summary">("catalog");
   const catalogVisible = panel === "catalog";
   const [sharedBuild, setSharedBuild] = useState<Build>();
+  const rootBuild = sharedBuild ?? savedBuild;
+  const [variantSelection, setVariantSelection] = useState<{
+    buildId: string;
+    id?: string;
+  }>();
+  const variantId =
+    variantSelection?.buildId === rootBuild?.id &&
+    rootBuild?.variants?.some((entry) => entry.id === variantSelection?.id)
+      ? variantSelection?.id
+      : undefined;
+  const variantIndex = variantId
+    ? (rootBuild?.variants?.findIndex((entry) => entry.id === variantId) ??
+        -1) + 1
+    : 0;
   const build = useMemo(() => {
-    const current = sharedBuild ?? savedBuild;
-    return current ? withUniqueEffects(current, catalogMap) : undefined;
-  }, [sharedBuild, savedBuild, catalogMap]);
+    return rootBuild
+      ? withUniqueEffects(selectBuildVariant(rootBuild, variantId), catalogMap)
+      : undefined;
+  }, [rootBuild, variantId, catalogMap]);
   useEffect(() => {
     if (!build) return;
     const slugs = new Set(
@@ -514,34 +545,28 @@ function BuildWorkspace({
         : target,
     [target, build],
   );
+  const pickerTargetKey = `${effectiveTarget.kind}:${effectiveTarget.slot}:${effectiveTarget.kind === "item" ? "" : effectiveTarget.index}`;
   const groupTargets = selectionTargets(effectiveTarget);
   const multiple = groupTargets.length > 1;
   const saveSelection = useCallback(
     (item: CatalogItem | null, tier?: ModifierTier) => {
       if (!build) throw new Error("This loadout is no longer available.");
-      if (sharedBuild) {
-        setSharedBuild((current) =>
-          current
-            ? composeSelection(current, effectiveTarget, item, catalogMap, tier)
-            : current,
+      const edit = (current: Build) =>
+        updateBuildVariant(current, variantId, (selected) =>
+          composeSelection(selected, effectiveTarget, item, catalogMap, tier),
         );
+      if (sharedBuild) {
+        setSharedBuild((current) => (current ? edit(current) : current));
         return { isPersisted: { promise: Promise.resolve() } };
       }
       const current = db.builds.get(build.id);
       if (!current) throw new Error("This loadout is no longer available.");
-      const next = composeSelection(
-        current,
-        effectiveTarget,
-        item,
-        catalogMap,
-        tier,
-      );
+      const next = edit(current);
       return db.builds.update(build.id, (saved) => {
-        saved.slots = next.slots;
-        saved.updatedAt = next.updatedAt;
+        Object.assign(saved, next);
       });
     },
-    [build, sharedBuild, db, effectiveTarget, catalogMap],
+    [build, sharedBuild, db, effectiveTarget, catalogMap, variantId],
   );
   const onSelect = useCallback(
     (item: CatalogItem, tier?: ModifierTier) => {
@@ -559,22 +584,30 @@ function BuildWorkspace({
         <Skeleton className="skeleton-heading" />
       </div>
     );
-  const changeItemPower = (slot: BuildSlot, power: number) => {
+  const changeRoot = (edit: (current: Build) => Build) => {
     if (sharedBuild) {
-      setSharedBuild((current) =>
-        current ? composeItemPower(current, slot, power) : current,
-      );
-      return;
-    }
-    persist(() => {
-      const current = db.builds.get(build.id);
-      if (!current) throw new Error("This loadout is no longer available.");
-      const next = composeItemPower(current, slot, power);
-      return db.builds.update(build.id, (saved) => {
-        saved.slots = next.slots;
-        saved.updatedAt = next.updatedAt;
+      setSharedBuild((current) => (current ? edit(current) : current));
+    } else
+      persist(() => {
+        const current = db.builds.get(build.id);
+        if (!current) throw new Error("This loadout is no longer available.");
+        const next = edit(current);
+        return db.builds.update(build.id, (saved) => {
+          Object.assign(saved, next);
+        });
       });
-    });
+  };
+  const changeVariant = (edit: (selected: Build) => Build) =>
+    changeRoot((current) => updateBuildVariant(current, variantId, edit));
+  const chooseVariant = (id?: string) => {
+    setVariantSelection({ buildId: build.id, id });
+    setPickerOpen(false);
+    setTarget({ kind: "item", slot: "melee" });
+    setQuery("");
+    setType("");
+  };
+  const changeItemPower = (slot: BuildSlot, power: number) => {
+    changeVariant((selected) => composeItemPower(selected, slot, power));
   };
   const compatibilityIssues = incompatibleModifiers(build, catalogMap);
   const hideWarnings = preferences[0]?.hideCompatibilityWarnings ?? false;
@@ -591,40 +624,40 @@ function BuildWorkspace({
         ? `Choose ${slotRules[effectiveTarget.slot].label}`
         : `Choose ${effectiveTarget.kind === "effect" ? `up to ${EFFECT_COUNT} Effects` : "Enchantment"} for ${catalogMap.get(equipped!.itemSlug)?.variation ?? "unavailable gear"}`;
   const clear = (next: BuildTarget) => {
-    if (sharedBuild)
-      setSharedBuild((current) =>
-        current ? compose(current, next, null, catalogMap) : current,
-      );
-    else
-      persist(
-        () => equip(db, build.id, next, null, catalogMap),
-        "build_slot_cleared",
-      );
+    changeVariant((selected) => compose(selected, next, null, catalogMap));
     setAnnouncement("Slot cleared.");
   };
   const rename = (name: string) => {
-    if (sharedBuild)
-      setSharedBuild((current) =>
-        current
-          ? {
-              ...current,
-              name: name.slice(0, 80),
-              updatedAt: new Date().toISOString(),
-            }
-          : current,
-      );
-    else persist(() => renameBuild(db, build.id, name));
+    changeVariant((selected) => ({
+      ...selected,
+      name: name.slice(0, 80),
+      updatedAt: new Date().toISOString(),
+    }));
   };
   const saveLocally = async () => {
     if (!sharedBuild || savingShared) return;
     setSavingShared(true);
     setSaveError("");
     try {
+      const copy = {
+        ...withUniqueEffects(sharedBuild, catalogMap),
+        ...(sharedBuild.variants
+          ? {
+              variants: sharedBuild.variants.map((variant) => ({
+                ...variant,
+                slots: withUniqueEffects(
+                  { ...sharedBuild, ...variant },
+                  catalogMap,
+                ).slots,
+              })),
+            }
+          : {}),
+      };
       if (db.builds.has(sharedBuild.id)) {
         await db.builds.update(sharedBuild.id, (saved) => {
-          Object.assign(saved, build);
+          Object.assign(saved, copy);
         }).isPersisted.promise;
-      } else await db.builds.insert(build).isPersisted.promise;
+      } else await db.builds.insert(copy).isPersisted.promise;
       await setWorkspace(db, { activeId: sharedBuild.id }).isPersisted.promise;
       trackEvent("shared_build_saved");
       closeShared();
@@ -701,20 +734,43 @@ function BuildWorkspace({
         {announcement}
       </p>
       <div className="build-view-controls">
-        {sharedBuild ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            isDisabled={savingShared}
-            onPress={() => {
-              void saveLocally();
+        <div className="build-view-actions">
+          {sharedBuild ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              isDisabled={savingShared}
+              onPress={() => {
+                void saveLocally();
+              }}
+            >
+              {savingShared ? "Saving…" : "Save locally"}
+            </Button>
+          ) : (
+            <ShareBuildButton build={rootBuild!} />
+          )}
+
+          <BuildVariants
+            build={rootBuild!}
+            selectedId={variantId}
+            disabled={savingShared}
+            onSelect={chooseVariant}
+            onAdd={() => {
+              const added = addBuildVariant(rootBuild!, variantId);
+              changeRoot(() => added.build);
+              chooseVariant(added.variant.id);
+              setAnnouncement(
+                "Variant added. Name it for a boss fight or grinding.",
+              );
             }}
-          >
-            {savingShared ? "Saving…" : "Save locally"}
-          </Button>
-        ) : (
-          <ShareBuildButton build={build} />
-        )}
+            onRemove={() => {
+              if (variantId)
+                changeRoot((current) => removeBuildVariant(current, variantId));
+              chooseVariant();
+              setAnnouncement("Variant deleted.");
+            }}
+          />
+        </div>
 
         <ToggleButtonGroup
           className="build-panel-switcher"
@@ -743,18 +799,23 @@ function BuildWorkspace({
               <div className="build-name-row">
                 <TextField
                   className="build-name-field"
-                  style={{ width: `${(build.name.length || 16) + 1}ch` }}
+                  style={{ width: `${(build.name.length || 20) + 1}ch` }}
                   aria-label="Loadout name"
                   value={build.name}
                   isDisabled={savingShared}
                   onChange={rename}
                   onBlur={() => {
-                    if (!build.name.trim()) rename("Untitled loadout");
+                    if (!variantId && !build.name.trim())
+                      rename("Untitled loadout");
                   }}
                 >
                   <Input
                     maxLength={80}
-                    placeholder="Untitled loadout"
+                    placeholder={
+                      variantId
+                        ? `Variant ${variantNumeral(variantIndex)} name`
+                        : "Untitled loadout"
+                    }
                     className="build-name"
                   />
                 </TextField>
@@ -838,7 +899,7 @@ function BuildWorkspace({
             onClear={clear}
           />
           <BuildPowerInputs
-            key={build.id}
+            key={`${build.id}:${variantId ?? "base"}`}
             build={build}
             disabled={savingShared}
             onChange={changeItemPower}
@@ -847,8 +908,10 @@ function BuildWorkspace({
         {panel === "catalog" && !mobile && (
           <section
             id="build-catalog-pane"
+            key={pickerTargetKey}
             className="picker-pane"
             aria-label="Equipment picker"
+            tabIndex={0}
           >
             <span className="eyebrow">
               CATALOG /{" "}
@@ -865,6 +928,7 @@ function BuildWorkspace({
         <section
           className={`picker-pane summary-pane${panel === "catalog" ? " summary-pane--mobile-only" : ""}`}
           aria-label="Build summary"
+          tabIndex={mobile ? -1 : 0}
         >
           <BuildSummary build={build} catalog={catalogMap} />
         </section>
@@ -891,6 +955,16 @@ function BuildWorkspace({
             setType("");
           }
         }}
+        onDuplicate={async (id) => {
+          const { build: copied, transaction } = duplicateBuild(db, id);
+          await transaction.isPersisted.promise;
+          await setWorkspace(db, { activeId: copied.id }).isPersisted.promise;
+          closeShared();
+          setTarget({ kind: "item", slot: "melee" });
+          setQuery("");
+          setType("");
+          setAnnouncement("Loadout duplicated.");
+        }}
         onNew={newLoadout}
       />
       {mobile && (
@@ -901,7 +975,7 @@ function BuildWorkspace({
                 <Modal.Heading>{title}</Modal.Heading>
                 <Modal.CloseTrigger />
               </Modal.Header>
-              <Modal.Body>
+              <Modal.Body key={pickerTargetKey}>
                 {saveError && <p role="alert">{saveError}</p>}
                 <CatalogPicker {...pickerProps} />
               </Modal.Body>

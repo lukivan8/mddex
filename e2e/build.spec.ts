@@ -330,7 +330,7 @@ test("removed catalog references remain saved and clearable", async ({
       page.evaluate(
         () =>
           new Promise<string[]>((resolve, reject) => {
-            const request = indexedDB.open("mddex-catalog-v1", 1);
+            const request = indexedDB.open("mddex-catalog-v2", 1);
             request.onerror = () => reject(request.error);
             request.onsuccess = () => {
               const db = request.result;
@@ -509,7 +509,7 @@ test("effect and equipment groups supports toggling, limits, filtering and persi
     name: /^Melee weapon effect \d:/,
   });
   await expect(effects).toHaveCount(3);
-  for (const category of ["gear_effect", "artifact", "talisman"]) {
+  for (const category of ["gear_effect", "talisman"]) {
     await page
       .getByRole("button", {
         name:
@@ -569,7 +569,7 @@ test("effect and equipment groups supports toggling, limits, filtering and persi
     ).toHaveAttribute("aria-pressed", "true");
   }
   await page.reload();
-  for (const category of ["artifact", "talisman"]) {
+  for (const category of ["talisman"]) {
     await page
       .getByRole("button", {
         name: `Choose ${category === "artifact" ? "Artifact" : "Talisman"} 1`,
@@ -608,35 +608,35 @@ test("mobile keeps group selection open until Done and toggles catalog items", a
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/build");
   await page
-    .getByRole("button", { name: "Choose Artifact 1", exact: true })
+    .getByRole("button", { name: "Choose Talisman 1", exact: true })
     .click();
   const dialog = page.getByRole("dialog");
   for (const number of [1, 2, 3]) {
     await dialog
-      .getByRole("button", { name: `Equip artifact ${number}`, exact: true })
+      .getByRole("button", { name: `Equip talisman ${number}`, exact: true })
       .click();
     await expect(dialog).toBeVisible();
   }
   await dialog
     .getByRole("searchbox", { name: "Search compatible items" })
-    .fill("artifact 4");
+    .fill("talisman 4");
   await expect(
-    dialog.getByRole("button", { name: "Equip artifact 4", exact: true }),
+    dialog.getByRole("button", { name: "Equip talisman 4", exact: true }),
   ).toBeDisabled();
   await dialog
     .getByRole("searchbox", { name: "Search compatible items" })
     .fill("");
   await dialog
-    .getByRole("button", { name: "Equip artifact 2", exact: true })
+    .getByRole("button", { name: "Equip talisman 2", exact: true })
     .click();
   await dialog
-    .getByRole("button", { name: "Equip artifact 4", exact: true })
+    .getByRole("button", { name: "Equip talisman 4", exact: true })
     .click();
   await dialog.getByRole("button", { name: "Done", exact: true }).click();
   await expect(dialog).toHaveCount(0);
   await page.reload();
   await page
-    .getByRole("button", { name: "Choose Artifact 3", exact: true })
+    .getByRole("button", { name: "Choose Talisman 3", exact: true })
     .click();
   await expect(
     dialog.getByText("3 / 3 selected.", { exact: false }),
@@ -644,7 +644,7 @@ test("mobile keeps group selection open until Done and toggles catalog items", a
   for (const number of [1, 3, 4]) {
     await expect(
       dialog.getByRole("button", {
-        name: `Equip artifact ${number}`,
+        name: `Equip talisman ${number}`,
         exact: true,
       }),
     ).toHaveAttribute("aria-pressed", "true");
@@ -1406,3 +1406,92 @@ test("old shared unique builds acquire their locked effect and save it locally",
     }, build.name),
   ).toEqual(["gear_effect-1", "gear_effect-3", null]);
 });
+
+for (const mobile of [false, true]) {
+  test(`duplicate artifacts retain separate effects on ${mobile ? "mobile" : "desktop"}`, async ({
+    page,
+  }) => {
+    if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/build");
+    const picker = mobile
+      ? page.getByRole("dialog")
+      : page.getByRole("region", { name: "Equipment picker" });
+    for (const number of [1, 2, 3]) {
+      await page
+        .getByRole("button", { name: `Choose Artifact ${number}`, exact: true })
+        .click();
+      await picker
+        .getByRole("button", { name: "Equip artifact 1", exact: true })
+        .click();
+      if (mobile) await expect(picker).toHaveCount(0);
+      await expect(
+        page.getByRole("button", {
+          name: `Choose Artifact ${number}`,
+          exact: true,
+        }),
+      ).toContainText("artifact 1");
+      await page
+        .getByRole("button", {
+          name: `Artifact ${number} effect 1: Empty effect`,
+          exact: true,
+        })
+        .click();
+      await picker
+        .getByRole("button", {
+          name: `Add effect gear_effect ${number}`,
+          exact: true,
+        })
+        .click();
+      if (mobile)
+        await picker.getByRole("button", { name: "Done", exact: true }).click();
+    }
+    await page.reload();
+    for (const number of [1, 2, 3]) {
+      await expect(
+        page.getByRole("button", {
+          name: `Choose Artifact ${number}`,
+          exact: true,
+        }),
+      ).toContainText("artifact 1");
+      await expect(
+        page.getByRole("button", {
+          name: `Artifact ${number} effect 1: gear_effect ${number}`,
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+    await page
+      .getByRole("button", { name: "Choose Artifact 2", exact: true })
+      .click();
+    await picker
+      .getByRole("button", { name: "Equip artifact 1", exact: true })
+      .click();
+    if (mobile) await expect(picker).toHaveCount(0);
+    await expect(
+      page.getByRole("button", {
+        name: "Artifact 2 effect 1: gear_effect 2",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Clear Artifact 2", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Choose Artifact 2", exact: true }),
+    ).toContainText("Choose item");
+    for (const number of [1, 3]) {
+      await expect(
+        page.getByRole("button", {
+          name: `Choose Artifact ${number}`,
+          exact: true,
+        }),
+      ).toContainText("artifact 1");
+      await expect(
+        page.getByRole("button", {
+          name: `Artifact ${number} effect 1: gear_effect ${number}`,
+          exact: true,
+        }),
+      ).toBeVisible();
+    }
+  });
+}

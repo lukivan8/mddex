@@ -11,6 +11,7 @@ export const catalogItemSchema = z.object({
   type: z.string().min(1),
   variation: z.string().min(1),
   image: z.string().min(1).nullable(),
+  artwork: z.record(z.string(), z.string().min(1)).optional(),
   description: z.string().nullish(),
   detail_path: z.string().min(1).optional(),
   applicable_categories: z.array(equipmentCategorySchema).nullish(),

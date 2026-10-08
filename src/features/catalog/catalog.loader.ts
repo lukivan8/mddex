@@ -23,6 +23,17 @@ export function resolveImage(
   const url = new URL(path, baseUrl);
   return ["https:", "http:"].includes(url.protocol) ? url.href : null;
 }
+function resolveArtwork(artwork: CatalogItem["artwork"], baseUrl: string) {
+  return artwork
+    ? Object.fromEntries(
+        Object.entries(artwork).flatMap(([key, path]) => {
+          const url = resolveImage(path, baseUrl);
+          return url ? [[key, url]] : [];
+        }),
+      )
+    : undefined;
+}
+
 export async function loadCatalog(
   source = getContentSource(),
   signal?: AbortSignal,
@@ -83,6 +94,9 @@ export async function loadCatalog(
     image: hasCatalogArtwork(item)
       ? resolveImage(item.image, releaseUrl.href)
       : null,
+    ...(item.artwork
+      ? { artwork: resolveArtwork(item.artwork, releaseUrl.href) }
+      : {}),
   }));
   // Cache failures must not prevent using successfully fetched content.
   await cache
@@ -125,6 +139,9 @@ export async function loadCatalogDetail(
   const detail = {
     ...item,
     game_data: parsed.game_data,
+    ...(parsed.artwork
+      ? { artwork: resolveArtwork(parsed.artwork, new URL("../", url).href) }
+      : {}),
     description: parsed.description ?? item.description,
   };
   await cache?.writeDetail?.(url, detail).catch(() => undefined);

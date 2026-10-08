@@ -265,6 +265,62 @@ test("gallery navigation, centered read view, local copy and email edit gate", a
     "Frostbound ranger",
   );
 });
+test("creator notes open pasted video links in a new tab", async ({ page }) => {
+  await setup(page);
+  const url = "https://youtu.be/ickJOH4k8b4?si=8D0ylReYAfuGU-wc";
+  await page.route(`**/api/community-builds/${posted.id}`, (route) =>
+    route.fulfill({
+      json: {
+        ...posted,
+        description: [
+          {
+            type: "paragraph",
+            content: [[{ text: `See ${url} for more info.` }]],
+          },
+        ],
+      },
+    }),
+  );
+  await page.context().route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<h1>Video destination</h1>",
+    }),
+  );
+  await page.goto(`/community/${posted.id}`);
+  const link = page
+    .locator(".community-description")
+    .getByRole("link", { name: url });
+  await expect(link).toHaveAttribute("href", url);
+  await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  const player = page.getByTitle("Build video 1", { exact: true });
+  await expect(player).toHaveAttribute(
+    "src",
+    "https://www.youtube-nocookie.com/embed/ickJOH4k8b4",
+  );
+  await expect(player).toBeVisible();
+  expect(
+    await page
+      .locator(".community-videos")
+      .evaluate((element) =>
+        Boolean(
+          element.compareDocumentPosition(
+            document.querySelector(".community-description")!,
+          ) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ),
+      ),
+  ).toBe(true);
+  const popupPromise = page.waitForEvent("popup");
+  await link.click();
+  const popup = await popupPromise;
+  await expect(popup).toHaveURL(url);
+  await expect(
+    popup.getByRole("heading", { name: "Video destination" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(`/community/${posted.id}`);
+  await popup.close();
+});
+
 test("posting inherits a local build and supports custom tags and rich description", async ({
   page,
 }) => {

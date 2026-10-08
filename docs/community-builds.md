@@ -6,6 +6,22 @@ database. Local builder loadouts stay in browser storage. The gallery supports
 search, tag filtering, and pagination; each build has a centered read view and can
 be copied into the local builder.
 
+## Build variants
+
+A build can contain its base loadout (I) and up to seven additional variants.
+Each variant has a stable ID, its own name, and independent equipment, powers,
+and modifier tiers. The builder copies the selected equipment into a new variant
+and clears its name. Roman numeral controls select variants; the existing name
+field supplies descriptive names. Deleting an additional variant asks for
+confirmation in an app dialog; the base loadout is retained.
+
+Variants are optional in the existing browser records and D1 JSON snapshots, so
+older saves and posts need no migration. Community publishing and editing retain
+the full set, and public equipment and summaries follow the selected variant.
+Copying a community build or saving a shared build preserves every variant.
+Single-loadout links still use version 1; version 2 wraps a bounded list of
+version 1 loadouts. Older version 1 links remain supported.
+
 ## Database
 
 Apply `0002_community_builds.sql`, `0003_community_identity.sql`, and

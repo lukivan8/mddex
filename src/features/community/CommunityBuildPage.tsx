@@ -19,6 +19,8 @@ import {
   withUniqueEffects,
 } from "../builds/build.unique";
 import { ItemArtwork } from "../builds/components/ItemArtwork";
+import { BuildVariants } from "../builds/components/BuildVariants";
+import { selectBuildVariant, variantNumeral } from "../builds/build.variants";
 import { BuildSummary } from "../builds/components/BuildSummary";
 import { communityRequest, CommunityRequestError } from "./community.browser";
 import {
@@ -27,6 +29,7 @@ import {
 } from "./CommunityEmailConfirmation";
 import { communityBuildSchema, type CommunityBuild } from "./community.schema";
 import { DescriptionContent } from "./RichDescription";
+import { CommunityVideos } from "./CommunityVideos";
 
 const groups = [
   { label: "Weapons", slots: ["melee", "ranged"], className: "weapon-slots" },
@@ -240,6 +243,7 @@ export function CommunityEquipment({
   );
 }
 export function CommunityBuildPage({ buildId }: { buildId: string }) {
+  const [variantId, setVariantId] = useState<string>();
   const [post, setPost] = useState<CommunityBuild>();
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [error, setError] = useState("");
@@ -253,6 +257,7 @@ export function CommunityBuildPage({ buildId }: { buildId: string }) {
   useEffect(() => {
     let active = true;
     setPost(undefined);
+    setVariantId(undefined);
     setError("");
     void communityRequest(`/${buildId}`)
       .then((data) => {
@@ -344,6 +349,11 @@ export function CommunityBuildPage({ buildId }: { buildId: string }) {
         </div>
       </div>
     );
+  const selectedBuild = selectBuildVariant(post.build, variantId);
+  const selectedIndex = variantId
+    ? (post.build.variants?.findIndex((entry) => entry.id === variantId) ??
+        -1) + 1
+    : 0;
   return (
     <article className="community-detail">
       <Link to="/community" className="community-back">
@@ -391,14 +401,25 @@ export function CommunityBuildPage({ buildId }: { buildId: string }) {
           {error}
         </p>
       )}
-      <CommunityEquipment build={post.build} catalog={catalogMap} />
+      <BuildVariants
+        build={post.build}
+        selectedId={variantId}
+        onSelect={setVariantId}
+      />
+      {!!post.build.variants?.length && (
+        <h2 className="community-variant-name">
+          {selectedBuild.name || `Variant ${variantNumeral(selectedIndex)}`}
+        </h2>
+      )}
+      <CommunityEquipment build={selectedBuild} catalog={catalogMap} />
       <details className="community-summary">
         <summary>Effects & enchantments summary</summary>
         <BuildSummary
-          build={withUniqueEffects(post.build, catalogMap)}
+          build={withUniqueEffects(selectedBuild, catalogMap)}
           catalog={catalogMap}
         />
       </details>
+      <CommunityVideos description={post.description} />
       <section className="community-description">
         <span className="eyebrow">CREATOR’S NOTES</span>
         <DescriptionContent value={post.description} />

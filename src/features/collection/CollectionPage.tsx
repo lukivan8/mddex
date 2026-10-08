@@ -1,3 +1,4 @@
+import { EFFECT_GEAR_CATEGORIES, gearEffects } from "./collection.effects";
 import { AppFooter } from "../../components/AppFooter";
 import { trackEvent } from "../analytics/analytics.browser";
 import { analyticsLabels } from "../analytics/analytics.schema";
@@ -12,6 +13,7 @@ import {
   getCategories,
   getTypes,
   isCatalogItem,
+  matchesCatalogType,
 } from "../catalog/catalog.helpers";
 import type { CatalogItem } from "../catalog/catalog.types";
 import {
@@ -140,6 +142,22 @@ function CollectionContent({
     const lookup = new Map(definitions.map((item) => [item.slug, item]));
     return catalog.map((item) => getCatalogItemView(item, lookup));
   }, [catalog, definitions]);
+  const effects = useMemo(() => {
+    const lookup = new Map(definitions.map((item) => [item.slug, item]));
+    const available = new Map<string, CatalogItem>();
+    for (const item of catalog) {
+      for (const effect of gearEffects(item, lookup)) {
+        const previous = available.get(effect.slug);
+        available.set(effect.slug, {
+          ...effect,
+          image: effect.image ?? previous?.image ?? null,
+        });
+      }
+    }
+    return [...available.values()].sort((a, b) =>
+      a.variation.localeCompare(b.variation),
+    );
+  }, [catalog, definitions]);
   const categories = useMemo(() => getCategories(catalog), [catalog]);
   const categoryTotals = useMemo(
     () =>
@@ -160,7 +178,7 @@ function CollectionContent({
           type,
           catalog.filter(
             (item) =>
-              item.type === type &&
+              matchesCatalogType(item, type) &&
               (!filters.category || item.category === filters.category),
           ).length,
         ]),
@@ -173,6 +191,8 @@ function CollectionContent({
   );
   useEffect(() => preloadCatalogArtwork(visible.slice(0, 24)), [visible]);
   function changeFilters(patch: CollectionFilters) {
+    if (patch.category && !EFFECT_GEAR_CATEGORIES.includes(patch.category))
+      patch = { ...patch, effects: [] };
     if (patch.q && !filters.q) trackEvent("catalog_search_used", true);
     if (patch.category !== undefined && patch.category !== filters.category) {
       const label = analyticsLabels.find(
@@ -209,12 +229,10 @@ function CollectionContent({
       />
       <CollectionToolbar
         filters={filters}
-        categories={categories}
+        effects={effects}
         types={types}
         typeTotals={typeTotals}
         onChange={changeFilters}
-        count={visible.length}
-        total={catalog.length}
       />
       {visible.length ? (
         <ItemList items={visible} />
@@ -227,6 +245,8 @@ function CollectionContent({
             variant="secondary"
             onPress={() =>
               changeFilters({
+                effects: [],
+                effectMatch: "all",
                 q: "",
                 category: "",
                 type: "",

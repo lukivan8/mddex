@@ -2,7 +2,9 @@
 
 A local-first Minecraft Dungeons 2 build maker and equipment catalog built with TanStack Start, React, TypeScript, TanStack Router, TanStack DB, HeroUI v3, and Tailwind CSS v4. The Cloudflare Vite plugin builds the application for Workers. Anonymous identity and permanent build-link resolution use Cloudflare D1. Build editing and collection tracking remain local.
 
-## Fresh Mac setup · version 2.0.0
+New engineers and agents: start with [CONTRIBUTING.md](CONTRIBUTING.md), [the continuation handoff](docs/handoff.md), and [the architecture](docs/architecture.md). Claude loads `CLAUDE.md`; shared agent rules and repository skills live in `AGENTS.md` and `.agents/skills`. Run `npm run doctor` to check the local workspace. See [release instructions](docs/release.md) before pushing production.
+
+## Fresh Mac setup · version 2.1.0
 
 Install Apple's command line tools (`xcode-select --install`) and Node.js 22.22.3. If you use nvm, the checked-in `.nvmrc` selects the tested version. Authenticate GitHub with an account that can access the private repository, then:
 
@@ -18,7 +20,7 @@ npm run dev
 
 `setup` applies all checked-in D1 migrations to the local Cloudflare database. Run it again after pulling new migrations; it is safe to repeat. Local development uses simulated Cloudflare bindings and requires no Cloudflare login or production credentials. The default public catalog works without an environment file. Optional overrides are documented in `.env.example`.
 
-To resume this exact snapshot, use `git checkout -b work-from-v2 v2.0.0` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
+To resume this exact snapshot, use `git checkout -b work-from-v2-1 v2.1.0` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
 
 Email verification needs your own Resend key in ignored `.dev.vars`; see [community setup](docs/community-builds.md). Production deployment and analytics reporting require your authorized Cloudflare account. Never commit `.env.local`, `.dev.vars`, or API tokens.
 
@@ -34,9 +36,11 @@ npm run build
 npm run preview
 ```
 
-Browser tests launch an isolated dev server on port 3100 and intercept catalog requests with a small test fixture; they do not repeatedly fetch the rate-limited R2 development origin. The real 64-entry catalog was also visually verified in desktop and mobile browsers.
+Browser tests launch an isolated dev server on port 3100 and intercept catalog requests with a small test fixture; they do not repeatedly fetch the rate-limited R2 development origin. Real CDN delivery is a separate integration check; fixture runs do not establish current catalog completeness or delivery performance.
 
 `npm run build` produces `dist/client` and `dist/server` with a generated Workers configuration. `npm run preview` serves the production output in the Cloudflare runtime locally. Production runs at **https://mddex.net** on the `mddex` Cloudflare Worker. For a manual deployment with your authorized Cloudflare account, run `npm run deploy`.
+
+HeroUI CSS is assembled in `src/heroui.css` from the shared theme, utilities, and individual component styles. When adding a HeroUI component, add its CSS and any internal component dependencies there, preserving the library's import order. Community and resource styles load through their route heads, and image-viewer styles load with the viewer component.
 
 ## Release and deployment
 
@@ -52,7 +56,7 @@ The supplied public development content origin works without configuration. Copy
 VITE_CONTENT_BASE_URL=https://cdn.mddex.net
 ```
 
-The base URL is the **public content root containing `latest.json`**, not a release directory. Each browser session pins one validated release. IndexedDB persists catalog snapshots in `mddex-catalog-v1`, keyed by content source, with the release version, resolved release directory and index URL. A saved snapshot renders immediately while `latest.json` revalidates in the background; a complete new snapshot is staged for the next full page load. Failed refreshes leave cached browsing available. Cold sessions fetch the optional `catalogIndex` pointer, falling back to `catalog.json` for older publishers. Selected detail shards use IndexedDB and a bounded in-memory request cache. Server isolates share index requests for 60 seconds and retain up to 128 immutable detail requests. Router links preserve in-memory data, filters and return paths, and preload destinations on intent. Relative artwork paths resolve against the release directory; absolute or root-relative image URLs also support shared CDN artwork. User loadouts remain in their existing storage.
+The base URL is the **public content root containing `latest.json`**, not a release directory. Each browser session pins one validated release. IndexedDB persists catalog snapshots in `mddex-catalog-v2`, keyed by content source, with the release version, resolved release directory and index URL. A saved snapshot renders immediately while `latest.json` revalidates in the background; a complete new snapshot is staged for the next full page load. Failed refreshes leave cached browsing available. Cold sessions fetch the optional `catalogIndex` pointer, falling back to `catalog.json` for older publishers. Selected detail shards use IndexedDB and a bounded in-memory request cache. Server isolates share index requests for 60 seconds and retain up to 128 immutable detail requests. Router links preserve in-memory data, filters and return paths, and preload destinations on intent. Relative artwork paths resolve against the release directory; absolute or root-relative image URLs also support shared CDN artwork. User loadouts remain in their existing storage.
 
 The manifest path is authoritative; the loader does not construct paths from the version string or fetch the manifest's unused file inventory. Release assets retain normal CDN caching.
 
@@ -70,7 +74,7 @@ The default content origin is `https://cdn.mddex.net`, with browser CORS and com
 
 ## Scope and limitations
 
-Once the catalog is loaded, browsing requires no network. Short-link preparation and first-time resolution require the server; self-contained links remain local. A fresh page load still needs the app and catalog to be reachable; this slice does not install a service worker or provide a fully offline launch. Artwork availability and catalog correctness depend on the published content. Community build publishing and email verification use server storage; see [community builds](docs/community-builds.md). The local build editor is described below.
+Once the catalog is loaded, core browsing uses local definitions; uncached detail enrichment and artwork still need the CDN. Short-link preparation and first-time resolution require the server; self-contained links remain local. A fresh page load still needs the app and catalog to be reachable; this slice does not install a service worker or provide a fully offline launch. Artwork availability and catalog correctness depend on the published content. Community build publishing and email verification use server storage; see [community builds](docs/community-builds.md). The local build editor is described below.
 
 ## Local build editor
 
@@ -102,7 +106,7 @@ Cloudflare Web Analytics measures traffic and Core Web Vitals. Workers Analytics
 
 Build and Catalog have server-rendered titles, descriptions, canonical URLs, Open Graph and Twitter metadata, plus a visible Build introduction above the workspace and a usage guide below it. The Build title and H1 target “Minecraft Dungeons 2 Build Maker.” WebSite and WebApplication JSON-LD describe the free tool without invented ratings. Shared query links use `noindex, follow` and canonicalize to `/build`; API responses use `X-Robots-Tag: noindex, nofollow`. Catalog filter URLs canonicalize to `/collection`. `/` permanently redirects to `/build`.
 
-`public/robots.txt` points to `https://mddex.net/sitemap.xml`. The Worker generates that sitemap from the current published catalog, including equipment, mob, location, status, cape, and pet detail pages alongside the main pages. The 1200×630 social preview, favicon, and app icons use the existing MDDEX branding. Regenerate the favicon and app icons with `npm run assets:generate` (requires Playwright Chromium). The social preview is a checked-in image at `public/og-image.png` and is preserved by that script. The manifest describes a normal browser app; it does not promise offline installation. Metadata lives in `src/features/seo/metadata.ts`; update the production origin there and in `public/robots.txt` if the domain changes.
+`public/robots.txt` points to `https://mddex.net/sitemap.xml`. The Worker generates that sitemap from the current published catalog, including equipment, mob, location, status, cape, and pet detail pages alongside the main pages. The 1200×630 social preview, favicon, and app icons use the existing MDDEX branding. Regenerate the favicon, app icons, and small WebP UI assets with `npm run assets:generate` (requires Playwright Chromium). To regenerate only the logo and cost-icon WebP variants, run `node scripts/generate-ui-assets.mjs`; this preserves the source PNGs and adds transparent padding to keep icon proportions intact. The social preview is a checked-in image at `public/og-image.png` and is preserved by these scripts. The manifest describes a normal browser app; it does not promise offline installation. Metadata lives in `src/features/seo/metadata.ts`; update the production origin there and in `public/robots.txt` if the domain changes.
 
 Catalog titles use the full “[item] in Minecraft Dungeons 2” target heading, with disambiguation for mobs and status effects. Detail pages include breadcrumb JSON-LD and a contextual link to the build maker. Status pages retain published gear, mob, and immunity relationships; cosmetic pages retain matching unlock information. Footer acquisition guides use the same resolved drop sources as the item dossier.
 

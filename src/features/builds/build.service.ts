@@ -33,6 +33,20 @@ export function createBuild(db: BuildCollections, name?: string) {
   const build = emptyBuild(name);
   return { build, transaction: db.builds.insert(build) };
 }
+export function duplicateBuild(db: BuildCollections, id: string) {
+  const source = db.builds.get(id);
+  if (!source) throw new Error("This loadout is no longer available.");
+  const suffix = " (copy)";
+  const name =
+    (source.name.trim() || "Untitled loadout").slice(0, 80 - suffix.length) +
+    suffix;
+  const build = {
+    ...emptyBuild(name),
+    slots: structuredClone(source.slots),
+    ...(source.variants ? { variants: structuredClone(source.variants) } : {}),
+  };
+  return { build, transaction: db.builds.insert(build) };
+}
 export function setWorkspace(
   db: BuildCollections,
   patch: { activeId?: string; hideCompatibilityWarnings?: boolean },

@@ -16,10 +16,11 @@ export function BuildCost({
       <div className={`build-cost-points${overLimit ? " over-limit" : ""}`}>
         <span className="build-cost-icon">
           <img
-            src="/cost-icons/enchantment-points.png"
+            src="/cost-icons/enchantment-points.webp"
+            srcSet="/cost-icons/enchantment-points.webp 1x, /cost-icons/enchantment-points@2x.webp 2x"
             alt="Enchantment points"
-            width={52}
-            height={52}
+            width={40}
+            height={40}
           />
         </span>
         <strong>
@@ -34,10 +35,11 @@ export function BuildCost({
       <div className="build-cost-shards">
         <span className="build-cost-icon">
           <img
-            src="/cost-icons/echo-shard.png"
+            src="/cost-icons/echo-shard.webp"
+            srcSet="/cost-icons/echo-shard.webp 1x, /cost-icons/echo-shard@2x.webp 2x"
             alt="Shards"
-            width={52}
-            height={52}
+            width={40}
+            height={40}
           />
         </span>
         <strong>{shards}</strong>

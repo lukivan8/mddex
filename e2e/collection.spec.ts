@@ -86,9 +86,9 @@ test("mobile catalog filters and artwork fallback", async ({ page }) => {
   await expect(page.getByRole("article")).toHaveCount(4);
   await expect(page.locator(".art-placeholder")).toHaveCount(4);
   await page
-    .getByRole("button", { name: "All categories Category", exact: true })
+    .getByRole("group", { name: "Catalog categories" })
+    .getByRole("button", { name: /Armor/ })
     .click();
-  await page.getByRole("option", { name: "Armor", exact: true }).click();
   await page
     .getByRole("button", { name: "All types Type", exact: true })
     .click();

@@ -1,6 +1,6 @@
 {
   "name": "mddex",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Local-first Minecraft Dungeons 2 build maker and equipment catalog",
   "main": "index.js",
   "scripts": {
@@ -16,11 +16,13 @@
     "deploy": "npm run ci:build && wrangler deploy",
     "analytics:report": "node --experimental-strip-types scripts/analytics-report.ts",
     "analytics:dashboard": "node --experimental-strip-types scripts/analytics-dashboard.ts",
-    "assets:generate": "node scripts/generate-brand-assets.mjs",
+    "analytics:dau": "node --experimental-strip-types scripts/analytics-dau.ts",
+    "assets:generate": "node scripts/generate-brand-assets.mjs && node scripts/generate-ui-assets.mjs",
     "cf:types": "wrangler types src/worker-configuration.d.ts",
     "db:migrate:local": "wrangler d1 migrations apply mddex-builds --local",
     "db:migrate:remote": "wrangler d1 migrations apply mddex-builds --remote",
-    "setup": "npm run db:migrate:local"
+    "setup": "npm run db:migrate:local",
+    "doctor": "node scripts/doctor.mjs"
   },
   "keywords": [],
   "author": "",
@@ -52,6 +54,7 @@
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.12.0",
     "prettier": "^3.9.9",
+    "sharp": "^0.35.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.1",
     "vite": "^8.3.1",

@@ -21,5 +21,6 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - run: npm run doctor
+      - run: npm run test:e2e -- --workers=1
       - run: npm run build

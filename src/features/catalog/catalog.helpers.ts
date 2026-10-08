@@ -40,10 +40,43 @@ export const humanize = (value: string) =>
   value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 export const categoryLabel = (value: string) =>
   labels[value] || humanize(value);
+export function isSecretTalisman(item: {
+  category: string;
+  game_data?: Record<string, unknown> | null;
+}) {
+  if (item.category !== "talisman") return false;
+  const data = item.game_data;
+  const acquisition = data?.talismanAcquisition as
+    { secret?: boolean } | undefined;
+  if (typeof acquisition?.secret === "boolean") return acquisition.secret;
+  const wiki = data?.wikily as { kind?: string } | undefined;
+  if (typeof wiki?.kind === "string")
+    return wiki.kind.toLowerCase() === "secret talisman";
+  return (
+    Array.isArray(data?.sources) &&
+    data.sources.some(
+      (source) =>
+        source && typeof source === "object" && source.type === "chest",
+    )
+  );
+}
 export const getCategories = (items: CatalogItem[]) =>
   CATALOG_CATEGORIES.filter((category) =>
     items.some((item) => item.category === category),
   );
+export function matchesCatalogType(
+  item: {
+    category: string;
+    type: string;
+    game_data?: Record<string, unknown> | null;
+    secretTalisman?: boolean;
+  },
+  type: string,
+) {
+  return type === "secret_talismans"
+    ? item.secretTalisman === true || isSecretTalisman(item)
+    : item.type === type;
+}
 export const getTypes = (items: CatalogItem[], category?: string) =>
   [
     ...new Set(
@@ -51,14 +84,16 @@ export const getTypes = (items: CatalogItem[], category?: string) =>
         .filter(
           (i) => isCatalogItem(i) && (!category || i.category === category),
         )
-        .map((i) => i.type),
+        .flatMap((i) =>
+          isSecretTalisman(i) ? [i.type, "secret_talismans"] : [i.type],
+        ),
     ),
   ].sort();
 export function buildSearchIndex(items: CatalogItem[]) {
   return new Map(
     items.map((i) => [
       i.slug,
-      `${i.variation} ${i.slug} ${categoryLabel(i.category)} ${i.category} ${i.type} ${enchantmentApplicability(i) ?? ""} ${i.description ?? ""} ${uniqueEffectNames(i)}`.toLowerCase(),
+      `${i.variation} ${i.slug} ${categoryLabel(i.category)} ${i.category} ${i.type} ${isSecretTalisman(i) ? "secret talisman" : ""} ${enchantmentApplicability(i) ?? ""} ${i.description ?? ""} ${uniqueEffectNames(i)}`.toLowerCase(),
     ]),
   );
 }

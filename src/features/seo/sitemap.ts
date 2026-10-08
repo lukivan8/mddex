@@ -4,7 +4,19 @@ import { normalizeDetailItem } from "../catalog-details/catalog-detail.loader";
 import { itemPath } from "../catalog-details/catalog-detail.model";
 import { SITE_URL } from "./metadata";
 
-const mainPaths = ["/build", "/collection", "/mobs"];
+const mainPaths = [
+  "/build",
+  "/collection",
+  "/mobs",
+  "/resources",
+  "/resources/item-tracker",
+  "/resources/item-tracker-cards",
+  "/resources/item-tracker-list",
+  "/resources/item-tracker-rarities",
+  "/resources/soul-storm",
+  "/resources/melee-weapons",
+  "/resources/soul-storm-routes",
+];
 
 function escapeXml(value: string) {
   return value

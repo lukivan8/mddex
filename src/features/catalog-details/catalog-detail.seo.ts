@@ -1,6 +1,7 @@
 import {
   dropSources,
   isChestTalisman,
+  talismanAcquisitionNotes,
   itemPath,
   type CatalogItem,
   type ItemSource,
@@ -12,6 +13,7 @@ import {
 } from "./weapon-compare.model";
 import { scaleDamage } from "../catalog/power";
 import { formatAttackDamage, knownHitCount } from "./melee-attack";
+import { isSecretTalisman } from "../catalog/catalog.helpers";
 const labels: Record<string, string> = {
   melee_weapon: "melee weapon",
   ranged_weapon: "ranged weapon",
@@ -65,7 +67,9 @@ export function itemSeo(
   acquisition?: readonly ItemSource[],
 ) {
   const data = item.game_data;
-  const category = labels[item.category] ?? "catalog entry";
+  const category = isSecretTalisman(item)
+    ? "secret talisman"
+    : (labels[item.category] ?? "catalog entry");
   const familyName = (data.base?.name ?? item.name).toLowerCase();
   const familyNoun = Object.values(singularTypes).includes(familyName)
     ? familyName
@@ -117,7 +121,7 @@ export function itemSeo(
   if (isChestTalisman(item)) {
     sections.push({
       heading: `Where can ${item.name} drop?`,
-      text: "Found in chests",
+      text: talismanAcquisitionNotes(item).join(" ") || "Found in chests",
     });
   } else if (sources.length) {
     const areas = sources

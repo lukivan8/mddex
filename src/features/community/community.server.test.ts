@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
 import { communityApi, tokenHash, type CommunityEnv } from "./community.server";
+import { addBuildVariant } from "../builds/build.variants";
 import { emptyBuild } from "../builds/build.service";
 
 const origin = "https://mddex.net";
@@ -757,4 +758,32 @@ describe("community publishing and email editing", () => {
       (await communityApi(request("/auth/request", "POST", data), env)).status,
     ).toBe(200);
   });
+});
+
+it("publishes, reads and edits all variants, including equipment only in a variant", async () => {
+  const cookie = await confirmed();
+  const data = draft();
+  const added = addBuildVariant(data.build);
+  data.build = added.build;
+  data.build.slots = emptyBuild().slots;
+  data.build.variants![0].name = "Boss fights";
+  const response = await communityApi(request("", "POST", data, cookie), env);
+  expect(response.status).toBe(201);
+  const { id } = (await response.json()) as { id: string };
+  const published = (await (
+    await communityApi(request(`/${id}`), env)
+  ).json()) as { build: typeof data.build };
+  expect(published.build.variants).toEqual(data.build.variants);
+  data.build.variants![0].name = "Grinding";
+  expect(
+    (await communityApi(request(`/${id}`, "PUT", data, cookie), env)).status,
+  ).toBe(200);
+  const edited = (await (
+    await communityApi(request(`/${id}`), env)
+  ).json()) as { build: typeof data.build };
+  expect(edited.build.variants?.[0].name).toBe("Grinding");
+  expect(edited.build.slots.ranged).toBeNull();
+  expect(edited.build.variants?.[0].slots.ranged?.itemSlug).toBe(
+    "winter-touch",
+  );
 });

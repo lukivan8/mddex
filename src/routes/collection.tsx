@@ -41,6 +41,11 @@ function CollectionRoute() {
         const next = { ...previous, ...patch };
         return {
           q: next.q || undefined,
+          effects: next.effects?.length ? next.effects : undefined,
+          effectMatch:
+            next.effects?.length && next.effectMatch === "any"
+              ? "any"
+              : undefined,
           category: next.category || undefined,
           type: next.type || undefined,
           appliesTo:

@@ -36,9 +36,25 @@ export const equippedSchema = z.object({
   enchantmentTier: modifierTierSchema.nullable().optional(),
   itemTier: modifierTierSchema.optional(),
 });
+export const MAX_BUILD_VARIANTS = 8;
+export const buildVariantSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().max(80),
+  slots: z.record(z.enum(BUILD_SLOTS), equippedSchema.nullable()),
+});
 export const buildSchema = z.object({
   id: z.string().min(1),
   name: z.string().max(80),
+  variants: z
+    .array(buildVariantSchema)
+    .max(MAX_BUILD_VARIANTS - 1)
+    .refine(
+      (entries) =>
+        entries.every((entry) => entry.id !== "base") &&
+        new Set(entries.map((entry) => entry.id)).size === entries.length,
+      "Variant IDs must be unique",
+    )
+    .optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
   slots: z.record(z.enum(BUILD_SLOTS), equippedSchema.nullable()),

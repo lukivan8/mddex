@@ -1,12 +1,45 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Button } from "@heroui/react";
 import { Bold, Italic, Heading2, List, ListOrdered } from "lucide-react";
 import type { Description } from "./community.schema";
 
+function linkedText(text: string): ReactNode[] {
+  const content: ReactNode[] = [];
+  let cursor = 0;
+  for (const match of text.matchAll(/\b(?:https?:\/\/|www\.)[^\s<>"']+/gi)) {
+    let url = match[0].replace(/[.,!?;:]+$/, "");
+    // Keep balanced parentheses in URLs, but leave surrounding prose outside.
+    while (url.endsWith(")") && url.split(")").length > url.split("(").length) {
+      url = url.slice(0, -1);
+    }
+    const href = /^www\./i.test(url) ? `https://${url}` : url;
+    try {
+      const parsed = new URL(href);
+      if (!parsed.hostname) continue;
+    } catch {
+      continue;
+    }
+    content.push(text.slice(cursor, match.index));
+    content.push(
+      <a
+        key={match.index}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {url}
+      </a>,
+    );
+    cursor = match.index + url.length;
+  }
+  content.push(text.slice(cursor));
+  return content;
+}
+
 export function DescriptionContent({ value }: { value: Description }) {
   const line = (parts: Description[number]["content"][number]) =>
     parts.map((part, index) => {
-      let text = <span>{part.text}</span>;
+      let text = <span>{linkedText(part.text)}</span>;
       if (part.bold) text = <strong>{text}</strong>;
       if (part.italic) text = <em>{text}</em>;
       return <span key={index}>{text}</span>;

@@ -49,6 +49,26 @@ describe("persistent catalog cache", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
+  it("resolves and retains artwork mappings across cache reloads", async () => {
+    const item = {
+      ...items[0],
+      artwork: { "effects.0.icon": "../../images/effect.png" },
+    };
+    const cache = createCatalogCache(memoryStorage());
+    const fetcher = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(pointer())
+      .mockResolvedValueOnce(new Response(JSON.stringify([item])));
+    const loaded = await loadCatalog(source, undefined, cache);
+    expect(loaded[0].artwork?.["effects.0.icon"]).toBe(
+      "https://example.com/images/effect.png",
+    );
+    fetcher.mockResolvedValueOnce(pointer());
+    expect((await loadCatalog(source, undefined, cache))[0].artwork).toEqual(
+      loaded[0].artwork,
+    );
+  });
+
   it("persists definitions and version together and skips the catalog after reopening", async () => {
     const storage = memoryStorage();
     const fetcher = vi

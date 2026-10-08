@@ -9,6 +9,7 @@ import {
   readSessionCatalogDetail,
 } from "../catalog/catalog.session";
 import type { CatalogItem as PublishedItem } from "../catalog/catalog.types";
+import { isSecretTalisman } from "../catalog/catalog.helpers";
 import {
   dropSources,
   itemPath,
@@ -67,6 +68,25 @@ function detailGameData(item: PublishedItem) {
       gear: statusReferences(wiki.gear),
       mobs: statusReferences(wiki.mobs),
       immune: statusReferences(wiki.immune),
+    };
+  }
+  if (isSecretTalisman(item)) {
+    const wiki = record(item.game_data?.wikily);
+    const pages = record(item.game_data?.reference_context).pages;
+    const secretPage = Array.isArray(pages)
+      ? pages.map(record).find((page) => page.kind === "secret-talismans")
+      : undefined;
+    const cards = secretPage?.cards;
+    const card = Array.isArray(cards)
+      ? cards.map(record).find((card) => card.name === item.variation)
+      : undefined;
+    const location =
+      card?.text ?? record(data.acquisition).source_text ?? wiki.where;
+    data.talismanAcquisition = {
+      secret: true,
+      ...(typeof location === "string" && location.trim()
+        ? { location: location.trim() }
+        : {}),
     };
   }
   if (item.category === "cape" || item.category === "pet") {
@@ -296,7 +316,14 @@ export function catalogReturnPath(value?: string) {
     return "/collection";
   const url = new URL(value, "https://mddex.net");
   return url.origin === "https://mddex.net" &&
-    ["/collection", "/mobs"].includes(url.pathname)
+    [
+      "/collection",
+      "/mobs",
+      "/resources/item-tracker",
+      "/resources/item-tracker-cards",
+      "/resources/item-tracker-list",
+      "/resources/item-tracker-rarities",
+    ].includes(url.pathname)
     ? `${url.pathname}${url.search}${url.hash}`
     : "/collection";
 }

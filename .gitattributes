@@ -1,0 +1,2 @@
+# Keep the imported source snapshot byte-for-byte, including quoted header whitespace and CRLF.
+docs/sources/melee-chart-snapshot.csv -text whitespace=-blank-at-eol,cr-at-eol

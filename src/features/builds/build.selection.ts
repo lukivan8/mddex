@@ -15,11 +15,11 @@ export function selectionTargets(target: BuildTarget): BuildTarget[] {
       index: (target.index + offset) % EFFECT_COUNT,
     }));
   }
-  const group = target.slot.startsWith("artifact")
-    ? (["artifact1", "artifact2", "artifact3"] as const)
-    : target.slot.startsWith("talisman")
-      ? (["talisman1", "talisman2", "talisman3"] as const)
-      : null;
+  // Artifact copies have their own effects and power, so edit only the
+  // requested slot even when another slot contains the same artifact.
+  const group = target.slot.startsWith("talisman")
+    ? (["talisman1", "talisman2", "talisman3"] as const)
+    : null;
   if (!group) return [target];
   const start = group.findIndex((slot) => slot === target.slot);
   return Array.from({ length: group.length }, (_, offset) => ({

@@ -1,4 +1,5 @@
 import { productionHttpsRedirect } from "./lib/https";
+import { missingAssetResponse } from "./lib/stale-assets";
 import serverEntry, {
   createServerEntry,
 } from "@tanstack/react-start/server-entry";
@@ -13,6 +14,8 @@ export default createServerEntry({
   fetch(request, options) {
     const redirect = productionHttpsRedirect(request);
     if (redirect) return redirect;
+    const missingAsset = missingAssetResponse(request);
+    if (missingAsset) return missingAsset;
     const path = new URL(request.url).pathname;
     if (
       path === "/api/community-builds" ||

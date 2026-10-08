@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { detailCategory } from "../../catalog-details/catalog-detail.model";
-import { memo, useState } from "react";
+import { memo, useState, type ReactNode } from "react";
 import { PackageOpen, Skull } from "lucide-react";
 import { Tooltip } from "@heroui/react";
 import { ItemArtwork } from "../../builds/components/ItemArtwork";
@@ -10,11 +10,23 @@ export const ItemCard = memo(
   function ItemCard({
     item,
     returnTo,
+    topControls,
+    cycleControl,
   }: {
     item: CatalogItemView;
     returnTo: string;
+    topControls?: ReactNode;
+    cycleControl?: { onPress: () => void; disabled: boolean };
   }) {
     const [failed, setFailed] = useState(false);
+    const destination = {
+      to: "/catalog/$category/$slug" as const,
+      params: {
+        category: detailCategory(item.category),
+        slug: item.detailSlug ?? item.slug,
+      },
+      search: { returnTo, power: undefined },
+    };
     const content = (
       <>
         <div
@@ -23,7 +35,9 @@ export const ItemCard = memo(
           <span>
             {item.category === "mob"
               ? humanize(item.kind ?? "other")
-              : (item.applicability ?? humanize(item.type))}
+              : item.secretTalisman
+                ? "Secret talisman"
+                : (item.applicability ?? humanize(item.type))}
           </span>
         </div>
         <span className="item-art">
@@ -46,7 +60,15 @@ export const ItemCard = memo(
             </span>
           )}
         </span>
-        <h3 className="item-name">{item.displayName}</h3>
+        <h3 className="item-name">
+          {cycleControl ? (
+            <Link {...destination} className="tracker-item-name-link">
+              {item.displayName}
+            </Link>
+          ) : (
+            item.displayName
+          )}
+        </h3>
         {item.category !== "mob" && (
           <span className="item-bottom">
             <span>{categoryLabel(item.category)}</span>
@@ -56,17 +78,23 @@ export const ItemCard = memo(
     );
     return (
       <article className="item-card" aria-label={item.displayName}>
-        <Link
-          className="item-content"
-          to="/catalog/$category/$slug"
-          params={{
-            category: detailCategory(item.category),
-            slug: item.detailSlug ?? item.slug,
-          }}
-          search={{ returnTo, power: undefined }}
-        >
-          {content}
-        </Link>
+        {topControls}
+        {cycleControl ? (
+          <>
+            <button
+              type="button"
+              className="tracker-card-cycle"
+              aria-label={`Cycle ${item.displayName} collection rarity`}
+              disabled={cycleControl.disabled}
+              onClick={cycleControl.onPress}
+            />
+            <div className="item-content">{content}</div>
+          </>
+        ) : (
+          <Link className="item-content" {...destination}>
+            {content}
+          </Link>
+        )}
         {item.uniqueEffect && (
           <Tooltip delay={150}>
             <Tooltip.Trigger<"button">
@@ -94,6 +122,8 @@ export const ItemCard = memo(
   },
   (previous, next) =>
     previous.returnTo === next.returnTo &&
+    previous.topControls === next.topControls &&
+    previous.cycleControl === next.cycleControl &&
     (Object.keys(previous.item) as (keyof CatalogItemView)[]).every(
       (key) => previous.item[key] === next.item[key],
     ),

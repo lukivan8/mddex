@@ -4,7 +4,8 @@ import {
   questRewardNames,
 } from "./catalog-detail.enrichment";
 import { Accordion, Skeleton, Tooltip } from "@heroui/react";
-import { Link } from "@tanstack/react-router";
+import { defaultParseSearch, Link } from "@tanstack/react-router";
+import { filtersSchema } from "../collection/collection.types";
 import { useEffect } from "react";
 import {
   ArrowLeft,
@@ -18,13 +19,18 @@ import {
 import { AppHeader } from "../../components/AppHeader";
 import { AppFooter } from "../../components/AppFooter";
 import { ItemArtwork } from "../builds/components/ItemArtwork";
-import { categoryLabel, humanize } from "../catalog/catalog.helpers";
+import {
+  categoryLabel,
+  humanize,
+  isSecretTalisman,
+} from "../catalog/catalog.helpers";
 import { PowerInput } from "../catalog/PowerInput";
 import { returnPathAtPower, scaleDamage } from "../catalog/power";
 import { formatAttackDamage, knownHitCount } from "./melee-attack";
 import {
   itemPath,
   isChestTalisman,
+  talismanAcquisitionNotes,
   type CatalogItem,
   type ItemSource,
   type Reference,
@@ -82,7 +88,9 @@ function ApplicableEffects({
   entries,
   catalog,
   returnTo,
+  selectedEffects,
 }: {
+  selectedEffects: string[];
   entries: Reference[];
   catalog: CatalogItem[];
   returnTo: string;
@@ -106,7 +114,7 @@ function ApplicableEffects({
                 <CatalogNavigationLink
                   {...props}
                   role={target ? "link" : "button"}
-                  className="detail-effect-icon"
+                  className={`detail-effect-icon ${selectedEffects.includes(target?.slug ?? entry.catalog_slug ?? "") ? "filter-match" : ""}`}
                   aria-label={name}
                   tabIndex={0}
                   href={
@@ -228,11 +236,16 @@ export function CatalogDetailPage({
   onRetry?: () => void;
 }) {
   const returnTo = returnPathAtPower(initialReturnTo, 1);
+  const selectedEffects =
+    filtersSchema.parse(
+      defaultParseSearch(new URL(returnTo, "https://mddex.net").search),
+    ).effects ?? [];
   const seo = itemSeo(item, catalog, power, sources);
   const data = item.game_data;
   const effects = applicableEffects(item);
   const questNames = questRewardNames(item);
   const foundInChests = isChestTalisman(item);
+  const acquisitionNotes = talismanAcquisitionNotes(item);
   const isQuestReward =
     questNames.length > 0 ||
     (!foundInChests &&
@@ -276,7 +289,11 @@ export function CatalogDetailPage({
         <div className="detail-toolbar">
           <CatalogNavigationLink className="detail-back" href={returnTo}>
             <ArrowLeft size={15} />
-            {returnTo.startsWith("/mobs") ? "Back to mobs" : "Back to catalog"}
+            {returnTo.startsWith("/mobs")
+              ? "Back to mobs"
+              : returnTo.startsWith("/resources/item-tracker")
+                ? "Back to tracker"
+                : "Back to catalog"}
           </CatalogNavigationLink>
           {(item.category === "melee_weapon" ||
             item.category === "ranged_weapon") && (
@@ -304,6 +321,7 @@ export function CatalogDetailPage({
         <div className="detail-title">
           <span className="eyebrow">
             {categoryLabel(item.category)}
+            {isSecretTalisman(item) ? " / Secret talisman" : ""}
             {item.type && item.type !== "other" && item.type !== item.category
               ? ` / ${humanize(item.type)}`
               : ""}
@@ -333,7 +351,7 @@ export function CatalogDetailPage({
               );
               return (
                 <CatalogNavigationLink
-                  className="detail-effect"
+                  className={`detail-effect ${selectedEffects.includes(target?.slug ?? effect.catalog_slug ?? "") ? "filter-match" : ""}`}
                   key={effect.name}
                   href={
                     target
@@ -596,6 +614,7 @@ export function CatalogDetailPage({
                 <h2>Applicable effects</h2>
                 <ApplicableEffects
                   entries={effects}
+                  selectedEffects={selectedEffects}
                   catalog={catalog}
                   returnTo={returnTo}
                 />
@@ -603,6 +622,7 @@ export function CatalogDetailPage({
             )}
             {(sources.length > 0 ||
               foundInChests ||
+              acquisitionNotes.length > 0 ||
               isQuestReward ||
               item.category === "enchantment") && (
               <section>
@@ -610,15 +630,17 @@ export function CatalogDetailPage({
                   <MapPin size={17} />
                   Where to find it
                 </h2>
-                {foundInChests ? (
+                {acquisitionNotes.map((note) => (
+                  <p key={note}>{note}</p>
+                ))}
+                {foundInChests && acquisitionNotes.length === 0 && (
                   <p>Found in chests</p>
-                ) : (
-                  <Sources
-                    sources={sources}
-                    catalog={catalog}
-                    returnTo={returnTo}
-                  />
                 )}
+                <Sources
+                  sources={sources}
+                  catalog={catalog}
+                  returnTo={returnTo}
+                />
                 {item.category === "enchantment" && sources.length === 0 && (
                   <p className="muted">No specific location</p>
                 )}
