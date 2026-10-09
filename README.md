@@ -4,7 +4,7 @@ A local-first Minecraft Dungeons 2 build maker and equipment catalog built with 
 
 New engineers and agents: start with [CONTRIBUTING.md](CONTRIBUTING.md), [the continuation handoff](docs/handoff.md), and [the architecture](docs/architecture.md). Claude loads `CLAUDE.md`; shared agent rules and repository skills live in `AGENTS.md` and `.agents/skills`. Run `npm run doctor` to check the local workspace. See [release instructions](docs/release.md) before pushing production.
 
-## Fresh Mac setup · version 2.1.2
+## Fresh Mac setup · version 2.1.3
 
 Install Apple's command line tools (`xcode-select --install`) and Node.js 22.22.3. If you use nvm, the checked-in `.nvmrc` selects the tested version. Authenticate GitHub with an account that can access the private repository, then:
 
@@ -20,7 +20,7 @@ npm run dev
 
 `setup` applies all checked-in D1 migrations to the local Cloudflare database. Run it again after pulling new migrations; it is safe to repeat. Local development uses simulated Cloudflare bindings and requires no Cloudflare login or production credentials. The default public catalog works without an environment file. Optional overrides are documented in `.env.example`.
 
-To resume this exact snapshot, use `git checkout -b work-from-v2-1-2 v2.1.2` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
+To resume this exact snapshot, use `git checkout -b work-from-v2-1-3 v2.1.3` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
 
 Email verification needs your own Resend key in ignored `.dev.vars`; see [community setup](docs/community-builds.md). Production deployment and analytics reporting require your authorized Cloudflare account. Never commit `.env.local`, `.dev.vars`, or API tokens.
 

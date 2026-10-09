@@ -61,6 +61,15 @@ function detailGameData(item: PublishedItem) {
       ([key]) => !unusedDetailFields.has(key),
     ),
   );
+  if (data.drop_chances) {
+    data.drop_chances = pickFields(data.drop_chances, [
+      "schema_version",
+      "item_catalog_slug",
+      "variant",
+      "sources",
+      "source_conflicts",
+    ]);
+  }
   if (item.category === "status") {
     const wiki = record(item.game_data?.wikily);
     const alignment = data.alignment ?? wiki.alignment;
@@ -155,11 +164,13 @@ export function normalizeDetailItem(item: PublishedItem): CatalogItem {
     type: item.type,
     name: item.variation,
     image: item.image,
-    ...(item.category === "location" && item.artwork
+    ...(item.artwork
       ? {
           artwork: Object.fromEntries(
-            Object.entries(item.artwork).filter(([key]) =>
-              key.startsWith("instances."),
+            Object.entries(item.artwork).filter(
+              ([key]) =>
+                key.startsWith("references.") ||
+                (item.category === "location" && key.startsWith("instances.")),
             ),
           ),
         }
@@ -315,6 +326,7 @@ function detailPageData(
     }
   }
   const enrichment = new Set([
+    "drop_chances",
     "wikily",
     "rollable_effects",
     "enchantment_options",

@@ -1,9 +1,16 @@
 import { acquisitionSources } from "./catalog-detail.enrichment";
 import { isSecretTalisman } from "../catalog/catalog.helpers";
+import { sourceDropChance } from "./drop-chance";
 export interface ItemSource {
   description?: string;
   image?: string;
   source_url?: string;
+  dropChance?: {
+    text: string;
+    sourceUrl?: string;
+    baseItem?: string;
+    uniqueRolls?: string[];
+  };
   name: string;
   type: string;
   catalog_slug?: string;
@@ -180,7 +187,20 @@ export function dropSources(
       ...(description ? { description } : {}),
     });
   }
-  return [...unique.values()];
+  const sources = [...unique.values()].map((source) => {
+    const dropChance = sourceDropChance(item, source);
+    return dropChance ? { ...source, dropChance } : source;
+  });
+  const baseItem =
+    sources.find((source) => source.dropChance?.baseItem)?.dropChance
+      ?.baseItem ?? item.game_data.base?.name;
+  return sources.map((source) => {
+    const repeated = baseItem && `Unique rarity variant of ${baseItem}`;
+    const description = repeated
+      ? source.description?.replace(repeated, "").trim() || undefined
+      : source.description;
+    return { ...source, description };
+  });
 }
 
 export function isChestTalisman(item: CatalogItem): boolean {

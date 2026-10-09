@@ -82,7 +82,9 @@ export function questRewardNames(item: CatalogItem): string[] {
 }
 export function acquisitionSources(item: CatalogItem): ItemSource[] {
   const data = item.game_data as RecordData;
-  return rows(record(data.acquisition).sources).flatMap((entry) => {
+  const acquisition = record(data.acquisition);
+  const sourceText = text(acquisition.source_text)?.replace(/\s+/g, " ").trim();
+  return rows(acquisition.sources).flatMap((entry) => {
     const name = text(entry.name),
       type = text(entry.type);
     if (
@@ -91,8 +93,13 @@ export function acquisitionSources(item: CatalogItem): ItemSource[] {
       !["area", "mob", "dungeon", "rift", "merchant"].includes(type)
     )
       return [];
+    const condition = text(entry.condition);
+    const image = referenceArtwork(item, entry);
     const notes = [
-      text(entry.condition)?.replace(
+      (condition?.replace(/\s+/g, " ").trim() === sourceText
+        ? undefined
+        : condition
+      )?.replace(
         /^When (.+) drops with (?:the )?Unique rarity\.?$/i,
         "Unique rarity variant of $1",
       ),
@@ -108,6 +115,7 @@ export function acquisitionSources(item: CatalogItem): ItemSource[] {
         name,
         type,
         catalog_slug: text(entry.catalog_slug),
+        ...(image ? { image } : {}),
         ...(type === "dungeon" || type === "rift"
           ? { source_url: text(entry.href) ?? text(entry.source_url) }
           : {}),

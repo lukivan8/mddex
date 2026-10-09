@@ -205,6 +205,11 @@ function Sources({
             <div>
               <h3>{source.name}</h3>
               {source.type === "mob" && <small>Mob drop</small>}
+              {source.dropChance && (
+                <p className="detail-reference-note">
+                  {source.dropChance.text}
+                </p>
+              )}
               {source.description && (
                 <p className="detail-reference-note">{source.description}</p>
               )}
@@ -253,6 +258,11 @@ export function CatalogDetailPage({
   const seo = itemSeo(item, catalog, power, sources);
   const data = item.game_data;
   const effects = applicableEffects(item);
+  const uniqueRolls = [
+    ...new Set(
+      sources.flatMap((source) => source.dropChance?.uniqueRolls ?? []),
+    ),
+  ];
   const questNames = questRewardNames(item);
   const foundInChests = isChestTalisman(item);
   const acquisitionNotes = talismanAcquisitionNotes(item);
@@ -651,6 +661,16 @@ export function CatalogDetailPage({
                   catalog={catalog}
                   returnTo={returnTo}
                 />
+                {sources.some((source) => source.dropChance) && (
+                  <>
+                    {uniqueRolls.length > 0 && (
+                      <p className="detail-reference-note">
+                        Unique chance when the base item drops:{" "}
+                        {uniqueRolls.join("; ")}.
+                      </p>
+                    )}
+                  </>
+                )}
                 {item.category === "enchantment" && sources.length === 0 && (
                   <p className="muted">No specific location</p>
                 )}

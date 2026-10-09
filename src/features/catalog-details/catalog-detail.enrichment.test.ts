@@ -254,3 +254,64 @@ it("preserves dungeon and rift icons through detail projection and entrance merg
   expect(entrances[3]).not.toHaveProperty("image");
   expect(location.artwork).not.toHaveProperty("loot.0.icon");
 });
+
+it("omits copied acquisition prose while retaining source-specific conditions", () => {
+  const prose = "Found in the loot of Plains. Sold by the Town Merchant.";
+  const gear = item("totem", "artifact", {
+    acquisition: {
+      source_text: prose,
+      sources: [
+        { type: "area", name: "Plains", catalog_slug: "plains" },
+        { type: "merchant", name: "Town Merchant", condition: prose },
+        { type: "mob", name: "Witch", condition: "During a storm" },
+      ],
+    },
+  });
+  const sources = dropSources(gear, []);
+  expect(sources.map((source) => source.name)).toEqual([
+    "Plains",
+    "Town Merchant",
+    "Witch",
+  ]);
+  expect(
+    sources.find((source) => source.type === "merchant")?.description,
+  ).toBeUndefined();
+  expect(sources.find((source) => source.type === "mob")?.description).toBe(
+    "During a storm",
+  );
+});
+
+it("retains catalog reference artwork for the merchant acquisition source", () => {
+  const gear = normalizeDetailItem({
+    slug: "armor-sorcerer-hat",
+    category: "armor",
+    type: "head",
+    variation: "Sorcerer Hat",
+    image: null,
+    artwork: {
+      "references.town-merchant.icon":
+        "https://cdn.mddex.net/images/merchant.png",
+      "loot.0.icon": "https://cdn.mddex.net/images/unrelated.png",
+    },
+    game_data: {
+      acquisition: {
+        sources: [
+          {
+            type: "merchant",
+            name: "Town Merchant",
+            icon: { artwork_key: "references.town-merchant.icon" },
+          },
+          {
+            type: "merchant",
+            name: "Unknown Merchant",
+            icon: { artwork_key: "missing" },
+          },
+        ],
+      },
+    },
+  });
+  const sources = dropSources(gear, []);
+  expect(sources[0].image).toBe("https://cdn.mddex.net/images/merchant.png");
+  expect(sources[1]).not.toHaveProperty("image");
+  expect(gear.artwork).not.toHaveProperty("loot.0.icon");
+});

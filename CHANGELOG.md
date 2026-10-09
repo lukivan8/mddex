@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.3 — 2026-10-09
+
+- Show average published drop rates below matching acquisition locations, omitting unsupported or conflicting catalog odds. Unique items identify the base drop and explain source-specific unique chances once below the locations.
+- Remove repeated acquisition prose and unique-variant notes, and use published Town Merchant reference artwork.
+- Keep the requested drop-rate footer hidden and preserve source-specific acquisition conditions.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (253 unit tests), `CI=true npm run test:e2e -- --workers=1` (141/141 tests), `npm run build`, and `git diff --check` pass. Production preview confirms live catalog drop-rate averages, the shared unique-chance explanation, Town Merchant artwork loading, and the removed footer. No dependencies or D1 migrations change.
+
 ## 2.1.2 — 2026-10-09
 
 - Show published dungeon/rift artwork in item details' “Where to find it” rows as well as location entrance cards.
