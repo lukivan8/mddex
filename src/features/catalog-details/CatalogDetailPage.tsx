@@ -185,7 +185,17 @@ function Sources({
         );
         const body = (
           <>
-            {source.type === "mob" && !target?.image ? (
+            {source.image ? (
+              <ItemArtwork
+                item={{
+                  slug: source.name,
+                  category: "location",
+                  type: source.type,
+                  variation: source.name,
+                  image: source.image,
+                }}
+              />
+            ) : source.type === "mob" && !target?.image ? (
               <Skull size={28} />
             ) : target ? (
               <Artwork item={target} />

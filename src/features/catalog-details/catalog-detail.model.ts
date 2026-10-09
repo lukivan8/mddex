@@ -2,6 +2,8 @@ import { acquisitionSources } from "./catalog-detail.enrichment";
 import { isSecretTalisman } from "../catalog/catalog.helpers";
 export interface ItemSource {
   description?: string;
+  image?: string;
+  source_url?: string;
   name: string;
   type: string;
   catalog_slug?: string;

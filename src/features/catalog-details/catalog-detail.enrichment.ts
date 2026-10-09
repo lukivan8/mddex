@@ -108,6 +108,9 @@ export function acquisitionSources(item: CatalogItem): ItemSource[] {
         name,
         type,
         catalog_slug: text(entry.catalog_slug),
+        ...(type === "dungeon" || type === "rift"
+          ? { source_url: text(entry.href) ?? text(entry.source_url) }
+          : {}),
         description: [...new Set(notes)].join(" ") || undefined,
       },
     ];

@@ -315,3 +315,145 @@ test("item-to-item navigation displays the next item while its shard is pending"
   await expect(page.locator("h1")).toHaveText("Second Hammer");
   await expect(page.getByText("Second full details").first()).toBeVisible();
 });
+
+test("item acquisition rows lazily render dungeon and rift artwork from one pinned location shard", async ({
+  page,
+}) => {
+  const gear = {
+    slug: "artifact-source-test",
+    category: "artifact",
+    type: "utility",
+    variation: "Source Test",
+    image: null,
+    detail_path: "details/gear.json",
+    game_data: { slug: "source-test" },
+  };
+  const location = {
+    slug: "location-woods",
+    category: "location",
+    type: "location",
+    variation: "Woods",
+    image: null,
+    detail_path: "details/woods.json",
+    game_data: { slug: "woods" },
+  };
+  const dungeon = "https://wikily.gg/minecraft-dungeons-2/dungeons/woods";
+  const rift = "https://wikily.gg/minecraft-dungeons-2/rifts/woods";
+  let releaseLocation!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    releaseLocation = resolve;
+  });
+  const requests: string[] = [];
+  await page.route("**/latest.json", (route) =>
+    route.fulfill({
+      json: {
+        catalogVersion: "source-artwork",
+        manifest: "releases/source-artwork/manifest.json",
+        catalogIndex: "releases/source-artwork/catalog-index.json",
+      },
+    }),
+  );
+  await page.route("**/releases/source-artwork/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    requests.push(path);
+    if (path.endsWith("/catalog-index.json"))
+      return route.fulfill({ json: [gear, location] });
+    if (path.endsWith("/gear.json"))
+      return route.fulfill({
+        json: {
+          ...gear,
+          game_data: {
+            ...gear.game_data,
+            acquisition: {
+              sources: [
+                {
+                  type: "dungeon",
+                  name: "Woods Dungeons",
+                  href: dungeon,
+                  condition: "Boss drop",
+                },
+                { type: "rift", name: "Woods Rifts", href: rift },
+                { type: "dungeon", name: "Unknown Dungeons" },
+              ],
+            },
+          },
+        },
+      });
+    if (path.endsWith("/woods.json")) {
+      await gate;
+      return route.fulfill({
+        json: {
+          ...location,
+          artwork: {
+            dungeon: "../../images/source-dungeon.png",
+            rift: "../../images/source-rift.png",
+          },
+          game_data: {
+            ...location.game_data,
+            location_context: {
+              instances: [
+                { source_url: dungeon, icon: { artwork_key: "dungeon" } },
+                { source_url: rift, icon: { artwork_key: "rift" } },
+              ],
+            },
+          },
+        },
+      });
+    }
+    return route.abort();
+  });
+  await page.route("**/images/source-*.png", (route) =>
+    route.fulfill({
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1sAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    }),
+  );
+  await page.goto("/collection?category=artifact");
+  await expect
+    .poll(() => requests)
+    .toEqual(["/releases/source-artwork/catalog-index.json"]);
+  await page
+    .getByRole("article", { name: "Source Test", exact: true })
+    .locator("a.item-content")
+    .click();
+  await expect(page.locator("h1")).toHaveText("Source Test");
+  await expect
+    .poll(() => requests)
+    .toContain("/releases/source-artwork/details/woods.json");
+  releaseLocation();
+  for (const [name, file] of [
+    ["Woods Dungeons", "dungeon"],
+    ["Woods Rifts", "rift"],
+  ]) {
+    const row = page.locator(".detail-source").filter({ hasText: name });
+    await expect(row.getByRole("img", { name, exact: true })).toHaveAttribute(
+      "src",
+      `https://cdn.mddex.net/images/source-${file}.png`,
+    );
+  }
+  await expect(
+    page.locator(".detail-source").filter({ hasText: "Woods Dungeons" }),
+  ).toContainText("Boss drop");
+  await expect(
+    page.locator(".detail-source").filter({ hasText: "Unknown Dungeons" }),
+  ).toBeVisible();
+  expect(requests.filter((path) => path.endsWith("/woods.json"))).toHaveLength(
+    1,
+  );
+  await page.goto("/collection?category=artifact");
+  await page
+    .getByRole("article", { name: "Source Test", exact: true })
+    .locator("a.item-content")
+    .click();
+  await expect(
+    page
+      .locator(".detail-source")
+      .getByRole("img", { name: "Woods Dungeons", exact: true }),
+  ).toBeVisible();
+  expect(requests.filter((path) => path.endsWith("/woods.json"))).toHaveLength(
+    1,
+  );
+});

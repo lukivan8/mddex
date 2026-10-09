@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.2 — 2026-10-09
+
+- Show published dungeon/rift artwork in item details' “Where to find it” rows as well as location entrance cards.
+- Resolve acquisition source URLs against matching instances in the pinned location shards, load each referenced location once, and reuse the existing detail cache. Keep in-app core content immediate, builder loading index-only, and missing/failed artwork sources usable.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (245 unit tests), and `npm run build` pass. Production preview renders all three dungeon source images on Witch Brew from the live catalog. The new lazy-acquisition browser test passes after correcting its initial catalog-loading wait; the initial scoped run passed 13/14 with that test setup failure, and its isolated rerun passed 1/1. No dependencies or D1 migrations change.
+
+The final `CI=true npm run test:e2e -- --workers=1` run passes **139/139 tests** (4.5 minutes).
+
 ## 2.1.1 — 2026-10-09
 
 - Display published dungeon and rift artwork on location entrance cards. Preserve instance icon references through detail projection and resolve them against the pinned catalog's CDN artwork.

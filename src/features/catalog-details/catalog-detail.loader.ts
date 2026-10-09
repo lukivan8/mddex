@@ -9,6 +9,7 @@ import {
   readSessionCatalogDetail,
 } from "../catalog/catalog.session";
 import type { CatalogItem as PublishedItem } from "../catalog/catalog.types";
+import { resolveSourceArtwork, sourceArtworkLocation } from "./source-artwork";
 import { isSecretTalisman } from "../catalog/catalog.helpers";
 import {
   dropSources,
@@ -181,7 +182,19 @@ export async function loadDetailPage(category: string, slug: string) {
   const published = await loadSessionCatalog();
   const position = detailPosition(published, category, slug);
   const detail = await loadSessionCatalogDetail(published[position]);
-  return detailPageData(published, position, detail);
+  return enrichedDetailPageData(published, position, detail);
+}
+
+async function enrichedDetailPageData(
+  published: PublishedItem[],
+  position: number,
+  detail: PublishedItem,
+) {
+  const data = detailPageData(published, position, detail);
+  return {
+    ...data,
+    sources: await resolveSourceArtwork(data.sources, published),
+  };
 }
 
 function detailPosition(
@@ -212,15 +225,26 @@ export async function loadDetailRoute(category: string, slug: string) {
   );
   return {
     ...initial,
-    enrichment: cached
-      ? undefined
-      : loadSessionCatalogDetail(published[position]).then(
-          (detail) => ({
-            data: detailPageData(published, position, detail),
-            failed: false,
-          }),
-          () => ({ data: initial, failed: true }),
-        ),
+    enrichment:
+      cached &&
+      !initial.sources.some((source) =>
+        sourceArtworkLocation(source, published),
+      )
+        ? undefined
+        : (cached
+            ? Promise.resolve(cached)
+            : loadSessionCatalogDetail(published[position])
+          )
+            .then((detail) =>
+              enrichedDetailPageData(published, position, detail),
+            )
+            .then(
+              (data) => ({
+                data,
+                failed: false,
+              }),
+              () => ({ data: initial, failed: true }),
+            ),
   };
 }
 
