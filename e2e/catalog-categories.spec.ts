@@ -132,9 +132,26 @@ const items = [
     type: "location",
     variation: "Howling Woods",
     image: null,
+    artwork: {
+      "instances.dungeons.howling-woods.icon": "../../images/dungeon.png",
+      "instances.rifts.howling-woods.icon": "../../images/rift.png",
+    },
     game_data: {
       slug: "howling-woods",
       level: 6,
+      location_context: {
+        instances: [
+          {
+            name: "Howling Woods Dungeons",
+            icon: { artwork_key: "instances.dungeons.howling-woods.icon" },
+          },
+          {
+            name: "Howling Woods Rifts",
+            icon: { artwork_key: "instances.rifts.howling-woods.icon" },
+          },
+          { name: "Entrance without artwork" },
+        ],
+      },
       mobs: [{ name: "Witch", catalog_slug: "mob-witch" }],
       loot: [
         { name: "Witch Brew", catalog_slug: "artifact-witch-brew" },
@@ -288,6 +305,15 @@ for (const mobile of [false, true])
 test("location links to mob stats and loot without inferring drops", async ({
   page,
 }) => {
+  await page.route("**/images/*.png", (route) =>
+    route.fulfill({
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1sAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    }),
+  );
   await page.goto("/collection?category=artifact");
   await page
     .getByRole("article", { name: "Witch Brew", exact: true })
@@ -320,4 +346,21 @@ test("location links to mob stats and loot without inferring drops", async ({
   );
   expect(lootGroups).toContain("Armor");
   expect(lootGroups).toContain("Artifacts");
+  for (const [name, file] of [
+    ["Howling Woods Dungeons", "dungeon"],
+    ["Howling Woods Rifts", "rift"],
+  ]) {
+    const image = page.getByRole("img", { name, exact: true });
+    await expect(image).toBeVisible();
+    await expect(image).toHaveAttribute(
+      "src",
+      new RegExp(`/images/${file}\\.png$`),
+    );
+    await expect
+      .poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth))
+      .toBe(1);
+  }
+  await expect(
+    page.getByRole("heading", { name: "Entrance without artwork" }),
+  ).toBeVisible();
 });

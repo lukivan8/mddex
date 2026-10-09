@@ -1,8 +1,8 @@
 import type { CatalogItem } from "./catalog.types";
 
-/** Effect icon references point into the containing item's resolved CDN artwork. */
+/** Icon references point into the containing item's resolved CDN artwork. */
 export function referenceArtwork(
-  item: CatalogItem,
+  item: Pick<CatalogItem, "artwork">,
   reference: Record<string, unknown>,
 ): string | null {
   const icon = reference.icon;

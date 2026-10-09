@@ -208,3 +208,49 @@ it("omits unused published guides from detail payloads while preserving visible 
     "Level 1: Find the exit",
   );
 });
+
+it("preserves dungeon and rift icons through detail projection and entrance merging", () => {
+  const location = normalizeDetailItem({
+    slug: "plains",
+    category: "location",
+    type: "location",
+    variation: "Plains",
+    image: null,
+    artwork: {
+      "instances.dungeons.plains.icon":
+        "https://cdn.mddex.net/images/dungeon.png",
+      "instances.rifts.plains.icon": "https://cdn.mddex.net/images/rift.png",
+      "loot.0.icon": "https://cdn.mddex.net/images/unused.png",
+    },
+    game_data: {
+      wikily: {
+        entries: [{ title: "Plains Dungeons", subtitle: "9 entrances" }],
+      },
+      location_context: {
+        instances: [
+          {
+            name: "Plains Dungeons",
+            icon: { artwork_key: "instances.dungeons.plains.icon" },
+            lead: "Dungeon overview",
+          },
+          {
+            name: "Plains Rifts",
+            icon: { artwork_key: "instances.rifts.plains.icon" },
+          },
+          { name: "Missing icon", icon: { artwork_key: "missing" } },
+          { name: "No icon" },
+        ],
+      },
+    },
+  });
+  const entrances = locationMetadata(location, []).entrances;
+  expect(entrances[0]).toMatchObject({
+    name: "Plains Dungeons",
+    description: "9 entrances Dungeon overview",
+    image: "https://cdn.mddex.net/images/dungeon.png",
+  });
+  expect(entrances[1].image).toBe("https://cdn.mddex.net/images/rift.png");
+  expect(entrances[2]).not.toHaveProperty("image");
+  expect(entrances[3]).not.toHaveProperty("image");
+  expect(location.artwork).not.toHaveProperty("loot.0.icon");
+});

@@ -3,6 +3,7 @@ import type {
   ItemSource,
   Reference,
 } from "./catalog-detail.model";
+import { referenceArtwork } from "../catalog/catalog.reference-artwork";
 
 type RecordData = Record<string, unknown>;
 function record(value: unknown): RecordData {
@@ -126,7 +127,14 @@ export function locationMetadata(item: CatalogItem, catalog: CatalogItem[]) {
     const notes = [text(instance.lead), ...levels].filter(
       (note): note is string => Boolean(note),
     );
-    return [{ name, description: notes.join(" ") || undefined }];
+    const image = referenceArtwork(item, instance);
+    return [
+      {
+        name,
+        description: notes.join(" ") || undefined,
+        ...(image ? { image } : {}),
+      },
+    ];
   });
   const cards = details.flatMap((detail) => rows(detail.cards));
   const linkedCards: Reference[] = cards.flatMap((card) => {

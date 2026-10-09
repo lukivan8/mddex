@@ -8,6 +8,7 @@ export interface ItemSource {
 }
 export interface Reference {
   description?: string;
+  image?: string;
   name: string;
   catalog_slug?: string;
 }
@@ -27,6 +28,7 @@ export interface CatalogItem {
   type?: string;
   name: string;
   image: string | null;
+  artwork?: Record<string, string>;
   description: string | null;
   game_data: {
     talismanAcquisition?: { secret: boolean; location?: string };

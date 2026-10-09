@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.1 — 2026-10-09
+
+- Display published dungeon and rift artwork on location entrance cards. Preserve instance icon references through detail projection and resolve them against the pinned catalog's CDN artwork.
+- Keep entrance descriptions and entries without artwork intact, with the existing fallback for failed images.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (242 unit tests), and `npm run build` pass. Production preview renders both dungeon and rift images from the live catalog on the Frozen Highlands detail page. No dependency or D1 migration changes.
+
+`CI=true npm run test:e2e -- --workers=1` passes 137/138 tests; the mobile compatible-picker test times out during a page reload. Its isolated rerun, `CI=true npm run test:e2e -- e2e/build.spec.ts --grep 'mobile uses the same compatible picker inside a sheet' --workers=1`, passes 1/1. Dungeon/rift artwork coverage passes in both the earlier scoped category run (9/9) and the full suite.
+
 ## 2.1.0 — 2026-10-08
 
 - Add independent build variants, loadout duplication, variant sharing/community snapshots, and improved desktop/mobile picker behavior.

@@ -61,6 +61,17 @@ export function RelatedEntries({
               className="detail-reference"
               key={entry.catalog_slug ?? entry.name}
             >
+              {entry.image && (
+                <ItemArtwork
+                  item={{
+                    slug: entry.name,
+                    category: "location",
+                    type: "",
+                    variation: entry.name,
+                    image: entry.image,
+                  }}
+                />
+              )}
               <div>
                 {label && <small>{label}</small>}
                 <h3>{entry.name}</h3>

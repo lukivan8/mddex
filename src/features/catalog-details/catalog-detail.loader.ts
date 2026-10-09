@@ -132,7 +132,7 @@ function detailGameData(item: PublishedItem) {
       const context = data.location_context as Record<string, unknown>;
       if (Array.isArray(context.instances))
         context.instances = context.instances.map((instance) =>
-          pickFields(instance, ["name", "lead", "levels"]),
+          pickFields(instance, ["name", "lead", "levels", "icon"]),
         );
     }
   } else {
@@ -154,6 +154,15 @@ export function normalizeDetailItem(item: PublishedItem): CatalogItem {
     type: item.type,
     name: item.variation,
     image: item.image,
+    ...(item.category === "location" && item.artwork
+      ? {
+          artwork: Object.fromEntries(
+            Object.entries(item.artwork).filter(([key]) =>
+              key.startsWith("instances."),
+            ),
+          ),
+        }
+      : {}),
     description: item.description ?? null,
     game_data: {
       ...data,
