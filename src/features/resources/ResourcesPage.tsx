@@ -8,6 +8,7 @@ import {
   CloudLightning,
   Map,
   Swords,
+  GitBranch,
   ListChecks,
   Route as RouteIcon,
 } from "lucide-react";
@@ -25,7 +26,9 @@ function ResourceCard({ resource }: { resource: Resource }) {
         ? CloudLightning
         : resource.path === "/resources/soul-storm-routes"
           ? RouteIcon
-          : Swords;
+          : resource.path === "/resources/quests"
+            ? GitBranch
+            : Swords;
   const Arrow = external ? ArrowUpRight : ArrowRight;
   const content = (
     <>

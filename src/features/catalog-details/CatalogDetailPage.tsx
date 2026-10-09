@@ -1,7 +1,7 @@
 import { CatalogNavigationLink } from "../../components/CatalogNavigationLink";
 import {
   applicableEffects,
-  questRewardNames,
+  questRewardTargets,
 } from "./catalog-detail.enrichment";
 import { Accordion, Skeleton, Tooltip } from "@heroui/react";
 import { defaultParseSearch, Link } from "@tanstack/react-router";
@@ -263,11 +263,11 @@ export function CatalogDetailPage({
       sources.flatMap((source) => source.dropChance?.uniqueRolls ?? []),
     ),
   ];
-  const questNames = questRewardNames(item);
+  const rewardQuests = questRewardTargets(item);
   const foundInChests = isChestTalisman(item);
   const acquisitionNotes = talismanAcquisitionNotes(item);
   const isQuestReward =
-    questNames.length > 0 ||
+    rewardQuests.length > 0 ||
     (!foundInChests &&
       !(
         item.category === "talisman" &&
@@ -678,10 +678,25 @@ export function CatalogDetailPage({
                   <div className="detail-quest-reward">
                     <Gift size={16} />
                     <span>
-                      Quest reward
-                      {questNames.length > 0
-                        ? `: ${questNames.join(", ")}`
-                        : ""}
+                      {rewardQuests.length > 0 ? (
+                        <>
+                          Quest reward:{" "}
+                          {rewardQuests.map((quest, i) => (
+                            <span key={quest.name}>
+                              {i > 0 ? ", " : ""}
+                              <Link
+                                to="/resources/quests"
+                                search={{ quest: quest.quest }}
+                                hash={quest.quest ? "quest-details" : undefined}
+                              >
+                                {quest.name}
+                              </Link>
+                            </span>
+                          ))}
+                        </>
+                      ) : (
+                        <Link to="/resources/quests">Quest reward</Link>
+                      )}
                     </span>
                   </div>
                 )}

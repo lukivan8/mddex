@@ -18,7 +18,8 @@ export type Resource = {
         | "/resources/item-tracker-rarities"
         | "/resources/soul-storm"
         | "/resources/melee-weapons"
-        | "/resources/soul-storm-routes";
+        | "/resources/soul-storm-routes"
+        | "/resources/quests";
     }
   | { url: string }
 );
@@ -91,7 +92,31 @@ export const itemTrackerResource = {
   },
 } as const satisfies Resource;
 
+export const questsResource = {
+  path: "/resources/quests",
+  title: "Quest graph",
+  category: "References",
+  description:
+    "Explore quest prerequisites and branching paths, with objectives, rewards, and unlocks for every quest.",
+  credit: {
+    name: "Wikily and Metabot",
+    links: [
+      {
+        label: "Wikily quests",
+        url: "https://wikily.gg/minecraft-dungeons-2/quests",
+      },
+      {
+        label: "Metabot quests",
+        url: "https://metabot.gg/en/minecraft-dungeons-2/quests",
+      },
+    ],
+    contribution:
+      "documenting the quest relationships and walkthroughs in the published catalog",
+  },
+} as const satisfies Resource;
+
 export const resources = [
+  questsResource,
   itemTrackerResource,
   soulStormResource,
   wikilyMapResource,

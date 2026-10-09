@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "nodes": [
+    {
+      "source_key": "quests:escape",
+      "name": "Escape from Squid Coast",
+      "type": "Core Quest",
+      "order": 1,
+      "giver": "Active from the start",
+      "objectives": [
+        { "title": "Rescue the villagers", "subtitle": "4 villagers" }
+      ],
+      "native": { "private_to_projection": "unneeded payload" }
+    },
+    {
+      "source_key": "quests:merchant",
+      "source_url": "https://wikily.gg/minecraft-dungeons-2/quests/the-lost-merchant",
+      "name": "The Lost Merchant",
+      "type": "Core Quest",
+      "order": 2,
+      "giver": "Cartographer",
+      "area": "Brave Haven",
+      "recommended_level": 2,
+      "locations": [
+        { "title": "Brave Haven", "catalog_slug": "location-brave-haven" }
+      ],
+      "start_location": { "name": "Honeycomb Fields" },
+      "objectives": [
+        { "title": "Find the merchant", "subtitle": "Follow the path" }
+      ],
+      "unlocks": "New Quests, New Area and Brave Haven Content.",
+      "rewards": {
+        "first_completion": [
+          { "title": "1 drop from a list of 2" },
+          { "title": "Mystic Robe", "catalog_slug": "armor-mystic-robe" },
+          {
+            "title": "Emerald Hammer",
+            "catalog_slug": "melee_weapon-emerald-hammer"
+          }
+        ],
+        "repeat_completion": []
+      },
+      "supplemental_evidence": {
+        "source_url": "https://metabot.gg/en/minecraft-dungeons-2/quests/the-lost-merchant",
+        "objectives": [{ "text": "Speak to the merchant", "count": 1 }]
+      },
+      "source_conflicts": [
+        {
+          "field": "objective_count",
+          "caveat": "Keep the source objective lists separate."
+        }
+      ]
+    },
+    {
+      "source_key": "quests:fishing",
+      "name": "Gone Fishing",
+      "type": "Side Quest",
+      "area": "Frozen Highlands",
+      "giver": "Fisher",
+      "repeatable": true
+    },
+    {
+      "source_key": "quests:finale",
+      "name": "The Final Souldown",
+      "type": "Core Quest",
+      "order": 3,
+      "unlock_conditions": {
+        "combination": "source_unspecified",
+        "additional_conditions": "Speak to the Cartographer."
+      }
+    }
+  ],
+  "edges": [
+    { "from": "quests:escape", "to": "quests:merchant" },
+    { "from": "quests:escape", "to": "quests:fishing" },
+    { "from": "quests:merchant", "to": "quests:finale" },
+    { "from": "quests:fishing", "to": "quests:finale" }
+  ]
+}

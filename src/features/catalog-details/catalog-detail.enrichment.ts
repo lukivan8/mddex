@@ -80,6 +80,26 @@ export function questRewardNames(item: CatalogItem): string[] {
   }
   return [...new Set(names)];
 }
+
+export function questRewardTargets(item: CatalogItem) {
+  const data = item.game_data as RecordData;
+  const evidence = [
+    ...rows(data.quest_context),
+    ...rows(data.sources),
+    ...rows(record(data.acquisition).sources),
+  ];
+  return questRewardNames(item).map((name) => {
+    const matches = evidence.filter((entry) => entry.name === name);
+    const key = matches
+      .map((entry) => text(entry.source_key))
+      .find((value) => value?.startsWith("quests:"));
+    const hrefSlug = matches
+      .map((entry) => text(entry.href))
+      .map((href) => href?.match(/\/quests\/([a-z0-9-]+)(?:[/?#]|$)/)?.[1])
+      .find(Boolean);
+    return { name, quest: key?.slice("quests:".length) || hrefSlug };
+  });
+}
 export function acquisitionSources(item: CatalogItem): ItemSource[] {
   const data = item.game_data as RecordData;
   const acquisition = record(data.acquisition);

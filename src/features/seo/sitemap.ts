@@ -9,6 +9,7 @@ const mainPaths = [
   "/collection",
   "/mobs",
   "/resources",
+  "/resources/quests",
   "/resources/item-tracker",
   "/resources/item-tracker-cards",
   "/resources/item-tracker-list",

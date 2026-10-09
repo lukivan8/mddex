@@ -151,7 +151,7 @@ function detailGameData(item: PublishedItem) {
   }
   if (Array.isArray(data.quest_context))
     data.quest_context = data.quest_context.map((quest) =>
-      pickFields(quest, ["name", "rewards"]),
+      pickFields(quest, ["source_key", "name", "rewards"]),
     );
   return data;
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.2.0 — 2026-10-09
+
+- Add a catalog-backed quest resource with searchable prerequisites, a pan/zoom Metro graph, minimap, and a vertical layout on mobile.
+- Switch between graph and quest details with a floating control. Show numbered objectives in a panel contained within the details block, visual reward pools with catalog artwork, quest type icons, levels, repeatability, and lore-styled completion journals.
+- Link item quest rewards directly to the matching quest details and hide the redundant Deep Dark dungeons acquisition entry.
+- Load one pinned location shard for the complete quest graph; preserve local builds and tracker data. No dependencies or D1 migrations change.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (265 unit tests), `npm run build`, and `git diff --check` pass. `CI=true npm run test:e2e -- --workers=1` passes 143/144 tests; the analytics queue test encounters a navigation-context race. Its isolated rerun, `CI=true npm run test:e2e -- e2e/analytics.spec.ts --grep 'queues several real UI events' --workers=1`, passes 1/1. Quest desktop/mobile and retry browser coverage passes in the full suite.
+
+Production preview verifies complete direct Axe HTML and its quest link, all 42 catalog quests, mobile vertical Metro, reward pool grouping/artwork, contained objectives, and plain-text 404s for missing assets. No dependencies or D1 migrations change.
+
 ## 2.1.3 — 2026-10-09
 
 - Show average published drop rates below matching acquisition locations, omitting unsupported or conflicting catalog odds. Unique items identify the base drop and explain source-specific unique chances once below the locations.

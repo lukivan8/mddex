@@ -176,6 +176,7 @@ export function dropSources(
     .map((mob) => ({ name: mob.name, type: "mob", catalog_slug: mob.slug }));
   const unique = new Map<string, ItemSource>();
   for (const source of [...listed, ...acquisitionSources(item), ...mobDrops]) {
+    if (/^(?:the )?deep dark dungeons$/i.test(source.name.trim())) continue;
     const key = source.catalog_slug ?? `${source.type}:${source.name}`;
     const old = unique.get(key);
     const description = [

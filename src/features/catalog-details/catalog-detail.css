@@ -264,6 +264,11 @@
   margin-top: 14px;
   font-size: 12px;
 }
+.detail-quest-reward a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .detail-source {
   display: flex;
   align-items: center;

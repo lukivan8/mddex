@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import {
   applicableEffects,
   questRewardNames,
+  questRewardTargets,
   locationMetadata,
 } from "./catalog-detail.enrichment";
 import { dropSources } from "./catalog-detail.model";
@@ -314,4 +315,50 @@ it("retains catalog reference artwork for the merchant acquisition source", () =
   expect(sources[0].image).toBe("https://cdn.mddex.net/images/merchant.png");
   expect(sources[1]).not.toHaveProperty("image");
   expect(gear.artwork).not.toHaveProperty("loot.0.icon");
+});
+
+it("links reward quests using published identities without guessing from names", () => {
+  const gear = item("axe", "melee_weapon", {
+    acquisition: {
+      sources: [
+        {
+          type: "quest",
+          name: "First quest",
+          href: "https://wikily.gg/minecraft-dungeons-2/quests/published-first",
+        },
+        {
+          type: "quest",
+          name: "Second quest",
+          href: "https://wikily.gg/minecraft-dungeons-2/quests/published-second",
+        },
+        { type: "quest", name: "Unknown quest" },
+      ],
+    },
+    quest_context: [
+      { name: "First quest", source_key: "quests:canonical-first" },
+    ],
+  });
+  expect(questRewardTargets(gear)).toEqual([
+    { name: "First quest", quest: "canonical-first" },
+    { name: "Second quest", quest: "published-second" },
+    { name: "Unknown quest", quest: undefined },
+  ]);
+});
+
+it("hides the Deep Dark dungeons entry while retaining other locations and dungeons", () => {
+  const gear = item("axe", "melee_weapon", {
+    sources: [
+      {
+        type: "area",
+        name: "The Deep Dark",
+        catalog_slug: "location-the-deep-dark",
+      },
+      { type: "area", name: "Deep Dark dungeons" },
+      { type: "area", name: "Howling Woods Dungeons" },
+    ],
+  });
+  expect(dropSources(gear, []).map((source) => source.name)).toEqual([
+    "The Deep Dark",
+    "Howling Woods Dungeons",
+  ]);
 });
