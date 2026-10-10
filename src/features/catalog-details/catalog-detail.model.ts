@@ -7,6 +7,8 @@ export interface ItemSource {
   source_url?: string;
   dropChance?: {
     text: string;
+    averageProbability?: number;
+    basePoolProbability?: number;
     sourceUrl?: string;
     baseItem?: string;
     uniqueRolls?: string[];

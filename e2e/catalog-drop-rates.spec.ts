@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { emptyBuild } from "../src/features/builds/build.service";
+import { encodeBuildLink } from "../src/features/builds/build.link";
 const items = [false, true].map((unique) => {
   const slug = unique ? "armor-head-alchemist-hat" : "armor-sorcerer-hat";
   return {
@@ -143,3 +145,225 @@ for (const unique of [false, true]) {
     ).toBe(true);
   });
 }
+
+test("artifact pool shares appear in catalog and planner and select the better location", async ({
+  page,
+}) => {
+  const artifact = {
+    slug: "artifact-banner",
+    category: "artifact",
+    type: "artifact",
+    variation: "Battle Banner",
+    image: null,
+    game_data: {
+      slug: "battle-banner",
+      sources: [
+        {
+          type: "area",
+          name: "Singer's Meadow",
+          catalog_slug: "location-singers-meadow",
+        },
+        {
+          type: "area",
+          name: "Humbler Huskland",
+          catalog_slug: "location-humbler-huskland",
+        },
+      ],
+      acquisition: { sources: [{ type: "dungeon", name: "Unknown Dungeon" }] },
+      drop_chances: {
+        schema_version: 1,
+        item_catalog_slug: "artifact-banner",
+        variant: "artifact",
+        sources: [
+          { catalog_slug: "location-singers-meadow", probability: 0.042 },
+          { catalog_slug: "location-humbler-huskland", probability: 0.026 },
+        ].map(({ catalog_slug, probability }) => ({
+          type: "area",
+          catalog_slug,
+          pool_share: { probability },
+          outcomes: [
+            "regular_enemy",
+            "wooden_chest",
+            "fancy_chest",
+            "miniboss",
+          ].map((drop_source) => ({
+            drop_source,
+            rarity: "any",
+            probability,
+            denominator:
+              "One item selected from this area pool, conditional on this source using the area pool; not one kill or chest opening.",
+            conditions: { difficulty: null, threat_level: null },
+          })),
+        })),
+      },
+    },
+  };
+  await page.route("**/latest.json", (route) =>
+    route.fulfill({
+      json: {
+        catalogVersion: "artifact-rates",
+        manifest: "releases/artifact-rates/manifest.json",
+      },
+    }),
+  );
+  await page.route("**/catalog.json", (route) =>
+    route.fulfill({
+      json: [
+        artifact,
+        {
+          slug: "boss-test-talisman",
+          category: "talisman",
+          type: "talisman",
+          variation: "Meadow Amulet",
+          image: null,
+          game_data: {
+            sources: [
+              {
+                type: "area",
+                name: "Singer's Meadow",
+                catalog_slug: "location-singers-meadow",
+              },
+              {
+                type: "area",
+                name: "Humbler Huskland",
+                catalog_slug: "location-humbler-huskland",
+              },
+            ],
+          },
+        },
+        {
+          slug: "mob-sculk-monstrosity",
+          category: "mob",
+          type: "boss",
+          variation: "Sculk Monstrosity",
+          image: null,
+          game_data: { slug: "sculk-monstrosity" },
+        },
+      ],
+    }),
+  );
+  await page.goto("/collection?category=artifact");
+  await page
+    .getByRole("article", { name: "Battle Banner", exact: true })
+    .locator("a.item-content")
+    .click();
+  await expect(
+    page.locator(".detail-source").filter({ hasText: "Singer's Meadow" }),
+  ).toContainText("≈4.2% pool share");
+  await expect(
+    page.locator(".detail-source").filter({ hasText: "Humbler Huskland" }),
+  ).toContainText("≈2.6% pool share");
+  await expect(
+    page.locator(".detail-source").filter({ hasText: "Unknown Dungeon" }),
+  ).not.toContainText("%");
+  const build = emptyBuild("Artifact rates");
+  build.slots.artifact1 = {
+    itemSlug: "artifact-banner",
+    enchantments: [],
+    effects: [],
+  };
+  build.slots.talisman1 = {
+    itemSlug: "boss-test-talisman",
+    enchantments: [],
+    effects: [],
+  };
+  await page.getByRole("link", { name: "Resources", exact: true }).click();
+  await page.getByRole("link", { name: /Farming planner/ }).click();
+  await expect(page.getByRole("button", { name: "Saved build" })).toBeVisible();
+  await page
+    .getByRole("textbox", { name: "Or paste a build link" })
+    .fill(`https://mddex.net/build#build=${await encodeBuildLink(build)}`);
+  await page.getByRole("button", { name: "Use build", exact: true }).click();
+  await expect(page.locator(".planner-stop")).toHaveCount(1);
+  await expect(page.locator(".planner-stop")).toContainText("Singer's Meadow");
+  await expect(page.locator(".planner-stop .planner-chance")).toHaveText(
+    "≈4.2% pool share",
+  );
+  await expect(page.locator(".planner-boss")).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const farmBosses = page.getByRole("checkbox", {
+    name: "Farm bosses",
+    exact: true,
+  });
+  await farmBosses.check();
+  const stops = page.locator(".planner-stop");
+  await expect(stops).toHaveCount(2);
+  await expect(stops.nth(0)).toHaveAttribute("data-boss-farm", "true");
+  await expect(stops.nth(0)).toContainText("Farm boss: Sculk Monstrosity");
+  await expect(stops.nth(0)).toContainText("Battle Banner");
+  await expect(stops.nth(0)).not.toContainText("Meadow Amulet");
+  await expect(stops.nth(0).locator(".planner-chance")).toHaveCount(0);
+  await expect(stops.nth(1)).toContainText("Meadow Amulet");
+  await expect(stops.nth(1).locator(".planner-boss")).toHaveCount(0);
+  await expect(
+    stops.nth(0).getByRole("link", { name: "Sculk Monstrosity" }),
+  ).toHaveAttribute("href", /catalog/);
+  await expect(
+    page.getByRole("heading", { name: /Primary plan/ }),
+  ).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "/tmp/mddex-planner-bosses-mobile.png",
+    fullPage: true,
+  });
+  await farmBosses.uncheck();
+  await expect(page.locator(".planner-boss")).toHaveCount(0);
+  await expect(stops).toHaveCount(1);
+  await expect(stops.first()).toContainText("Battle Banner");
+  await expect(stops.first()).toContainText("Meadow Amulet");
+});
+
+test("planner unique estimate doubles from a 5% roll to 10% on recommended bosses", async ({
+  page,
+}) => {
+  const unique = structuredClone(items[1]);
+  unique.game_data.sources[0] = {
+    type: "area",
+    name: "Howling Woods",
+    catalog_slug: "location-howling-woods",
+  };
+  unique.game_data.drop_chances.sources[0].name = "Howling Woods";
+  unique.game_data.drop_chances.sources[0].catalog_slug =
+    "location-howling-woods";
+  await page.route("**/latest.json", (route) =>
+    route.fulfill({
+      json: {
+        catalogVersion: "unique-estimates",
+        manifest: "releases/unique-estimates/manifest.json",
+      },
+    }),
+  );
+  await page.route("**/catalog.json", (route) =>
+    route.fulfill({ json: [unique] }),
+  );
+  const build = emptyBuild("Unique hunting");
+  build.slots.head = { itemSlug: unique.slug, enchantments: [], effects: [] };
+  await page.goto("/resources/planner");
+  await expect(page.getByRole("button", { name: "Saved build" })).toBeVisible();
+  await page
+    .getByRole("textbox", { name: "Or paste a build link" })
+    .fill(`https://mddex.net/build#build=${await encodeBuildLink(build)}`);
+  await page.getByRole("button", { name: "Use build", exact: true }).click();
+  await expect(page.locator(".planner-stop .planner-chance")).toHaveText(
+    "≈0.05% unique",
+  );
+  await page
+    .getByRole("checkbox", { name: "Farm bosses", exact: true })
+    .check();
+  await expect(page.locator(".planner-stop")).toContainText(
+    "Farm boss: Soul Corrupted Witch",
+  );
+  await expect(page.locator(".planner-stop .planner-chance")).toHaveText(
+    "≈0.1% unique",
+  );
+  await page
+    .getByRole("checkbox", { name: "Farm bosses", exact: true })
+    .uncheck();
+  await expect(page.locator(".planner-stop .planner-chance")).toHaveText(
+    "≈0.05% unique",
+  );
+});

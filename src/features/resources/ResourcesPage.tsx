@@ -24,7 +24,8 @@ function ResourceCard({ resource }: { resource: Resource }) {
       ? ListChecks
       : resource.path === "/resources/soul-storm"
         ? CloudLightning
-        : resource.path === "/resources/soul-storm-routes"
+        : resource.path === "/resources/soul-storm-routes" ||
+            resource.path === "/resources/planner"
           ? RouteIcon
           : resource.path === "/resources/quests"
             ? GitBranch

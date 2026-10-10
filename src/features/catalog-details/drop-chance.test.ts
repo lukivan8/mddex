@@ -77,6 +77,7 @@ function gear(unique: boolean, changes: Record<string, unknown> = {}) {
 it("shows an arithmetic average of the known source odds", () => {
   const sources = dropSources(gear(false), []);
   expect(sources[0].dropChance?.text).toBe("≈0.92% average");
+  expect(sources[0].dropChance?.averageProbability).toBeCloseTo(0.0092075);
   expect(sources[0].dropChance?.sourceUrl).toContain("metabot.gg");
   expect(sources[1]).not.toHaveProperty("dropChance");
   expect(sources[2]).not.toHaveProperty("dropChance");
@@ -85,6 +86,11 @@ it("distinguishes base-pool chance from unique conversion without stacking threa
   expect(dropSources(gear(true), [])[0].dropChance?.text).toBe(
     "As Sorcerer Hat (≈1%)",
   );
+});
+it("exposes actual unique odds separately from displayed base-pool odds", () => {
+  expect(
+    dropSources(gear(true), [])[0].dropChance?.averageProbability,
+  ).toBeCloseTo(0.0007925);
 });
 it("keeps unique source chances for one shared explanation", () => {
   expect(dropSources(gear(true), [])[0].dropChance?.uniqueRolls).toEqual([
@@ -132,4 +138,82 @@ it("leaves rates absent when source probabilities or their basis are unavailable
     });
     expect(dropSources(item, [])[0]).not.toHaveProperty("dropChance");
   }
+});
+
+function artifact(changes: Record<string, unknown> = {}) {
+  return normalizeDetailItem({
+    slug: "artifact-banner",
+    category: "artifact",
+    type: "artifact",
+    variation: "Battle Banner",
+    image: null,
+    game_data: {
+      sources: [
+        {
+          type: "area",
+          name: "Singer's Meadow",
+          catalog_slug: "location-singers-meadow",
+        },
+      ],
+      drop_chances: {
+        schema_version: 1,
+        item_catalog_slug: "artifact-banner",
+        variant: "artifact",
+        sources: [
+          {
+            type: "area",
+            catalog_slug: "location-singers-meadow",
+            pool_share: { probability: 0.042 },
+            outcomes: outcomes.map(({ drop_source }) => ({
+              drop_source,
+              rarity: "any",
+              probability: 0.042,
+              denominator:
+                "One item selected from this area pool, conditional on this source using the area pool; not one kill or chest opening.",
+              conditions: { difficulty: null, threat_level: null },
+            })),
+          },
+        ],
+        ...changes,
+      },
+    },
+  });
+}
+it("shows published artifact pool shares without subtracting unique gear chances", () => {
+  const chance = dropSources(artifact(), [])[0].dropChance;
+  expect(chance?.text).toBe("≈4.2% pool share");
+  expect(chance?.averageProbability).toBeCloseTo(0.042);
+  expect(chance).not.toHaveProperty("uniqueRolls");
+});
+it("does not infer artifact odds from missing shares, different probabilities or per-kill values", () => {
+  for (const change of [
+    { pool_share: { probability: null } },
+    {
+      outcomes: [
+        {
+          drop_source: "regular_enemy",
+          rarity: "any",
+          probability: 0.042,
+          denominator: "Per kill",
+          conditions: {},
+        },
+      ],
+    },
+    { pool_share: { probability: 0.03 } },
+  ]) {
+    const item = artifact();
+    const data = (item.game_data as Record<string, unknown>).drop_chances as {
+      sources: Record<string, unknown>[];
+    };
+    Object.assign(data.sources[0], change);
+    expect(dropSources(item, [])[0]).not.toHaveProperty("dropChance");
+  }
+  for (const changes of [
+    { item_catalog_slug: "other" },
+    { source_conflicts: [{}] },
+    { schema_version: 2 },
+  ])
+    expect(dropSources(artifact(changes), [])[0]).not.toHaveProperty(
+      "dropChance",
+    );
 });

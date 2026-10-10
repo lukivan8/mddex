@@ -1,6 +1,6 @@
 {
   "name": "mddex",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Local-first Minecraft Dungeons 2 build maker and equipment catalog",
   "main": "index.js",
   "scripts": {

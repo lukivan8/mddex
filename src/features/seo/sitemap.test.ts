@@ -50,6 +50,7 @@ describe("catalogSitemap", () => {
       "<loc>https://mddex.net/resources/soul-storm-routes</loc>",
     );
     expect(xml).toContain("<loc>https://mddex.net/resources/quests</loc>");
-    expect(xml.match(/<url>/g)).toHaveLength(15);
+    expect(xml).toContain("<loc>https://mddex.net/resources/planner</loc>");
+    expect(xml.match(/<url>/g)).toHaveLength(16);
   });
 });

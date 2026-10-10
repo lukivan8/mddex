@@ -17,7 +17,7 @@ function probability(value: unknown): value is number {
     value <= 1
   );
 }
-function percent(value: number) {
+export function formatDropPercent(value: number) {
   const scaled = value * 100;
   return `${scaled > 0 && scaled < 0.0001 ? "<0.0001" : scaled.toLocaleString("en", { maximumFractionDigits: scaled < 0.01 ? 4 : 2 })}%`;
 }
@@ -40,7 +40,12 @@ export function sourceDropChance(item: CatalogItem, source: ItemSource) {
   );
   if (!entry) return undefined;
   const unique = data.variant === "unique";
-  if (!unique && data.variant !== "base_non_unique") return undefined;
+  const artifact = data.variant === "artifact" && item.category === "artifact";
+  if (!unique && !artifact && data.variant !== "base_non_unique")
+    return undefined;
+  const pool = record(entry.pool_share).probability;
+  if (artifact && (entry.type !== "area" || !probability(pool)))
+    return undefined;
   const outcomes = rows(entry.outcomes).filter((outcome) => {
     const conditions = record(outcome.conditions);
     const difficulties = conditions.difficulty;
@@ -48,22 +53,30 @@ export function sourceDropChance(item: CatalogItem, source: ItemSource) {
       ["regular_enemy", "wooden_chest", "fancy_chest", "miniboss"].includes(
         String(outcome.drop_source),
       ) &&
-      outcome.rarity === (unique ? "unique" : "any_non_unique") &&
+      outcome.rarity ===
+        (artifact ? "any" : unique ? "unique" : "any_non_unique") &&
       probability(outcome.probability) &&
       typeof outcome.denominator === "string" &&
-      outcome.denominator.startsWith("One gear/item drop") &&
-      Array.isArray(difficulties) &&
-      difficulties.includes("normal") &&
-      difficulties.includes("hard") &&
+      (artifact
+        ? outcome.denominator.startsWith(
+            "One item selected from this area pool,",
+          ) &&
+          outcome.probability === pool &&
+          difficulties == null
+        : outcome.denominator.startsWith("One gear/item drop") &&
+          Array.isArray(difficulties) &&
+          difficulties.includes("normal") &&
+          difficulties.includes("hard")) &&
       conditions.threat_level == null
     );
   });
   if (!outcomes.length) return undefined;
   const values = outcomes.map((outcome) => outcome.probability as number);
-  const pool = record(entry.pool_share).probability;
   const base = record(entry.base_item).name;
   const conversions = outcomes.map((outcome) => outcome.rarity_given_base);
-  let text = `≈${percent(values.reduce((sum, value) => sum + value, 0) / values.length)} average`;
+  const averageProbability =
+    values.reduce((sum, value) => sum + value, 0) / values.length;
+  let text = `≈${formatDropPercent(averageProbability)} ${artifact ? "pool share" : "average"}`;
   let baseItem: string | undefined;
   let uniqueRolls: string[] | undefined;
   if (
@@ -74,7 +87,7 @@ export function sourceDropChance(item: CatalogItem, source: ItemSource) {
     conversions.every(probability)
   ) {
     baseItem = base;
-    text = `As ${base} (≈${percent(pool)})`;
+    text = `As ${base} (≈${formatDropPercent(pool)})`;
     const labels: Record<string, string> = {
       regular_enemy: "regular enemies",
       wooden_chest: "wooden chests",
@@ -83,13 +96,16 @@ export function sourceDropChance(item: CatalogItem, source: ItemSource) {
     };
     uniqueRolls = outcomes.map(
       (outcome) =>
-        `${labels[String(outcome.drop_source)]}: ${percent(outcome.rarity_given_base as number)}`,
+        `${labels[String(outcome.drop_source)]}: ${formatDropPercent(outcome.rarity_given_base as number)}`,
     );
   }
   const url = entry.source_url;
   return {
     text,
-    ...(baseItem ? { baseItem, uniqueRolls } : {}),
+    averageProbability,
+    ...(baseItem
+      ? { baseItem, basePoolProbability: pool as number, uniqueRolls }
+      : {}),
     ...(typeof url === "string" && url.startsWith("https://metabot.gg/")
       ? { sourceUrl: url }
       : {}),

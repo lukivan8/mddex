@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.0 — 2026-10-10
+
+- Add an automatic farming planner for saved builds, shared build links and individual variants, with compact item toggles and selected effect icons.
+- Find overlapping location and quest stops, collapse previously covered items, and default collected one-time unlocks to disabled using the local tracker.
+- Add optional boss farming with recommended bosses and owner-selected Unique conversion estimates; show published artifact pool shares in catalog details and planner routes.
+- Preserve local builds, tracker records and shared snapshot formats. No dependencies or D1 migrations change.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (282 unit tests), `CI=true npm run test:e2e -- --workers=1` (149/149 browser tests), `npm run build`, and `git diff --check` pass. Production preview verifies the rendered planner, builder, catalog and complete Axe detail content, plus plain-text 404s for missing assets. The initial preview check expected “Collection” instead of the actual “Catalog” heading; correcting the check confirmed the rendered catalog. No dependencies or D1 migrations change.
+
 ## 2.2.0 — 2026-10-09
 
 - Add a catalog-backed quest resource with searchable prerequisites, a pan/zoom Metro graph, minimap, and a vertical layout on mobile.

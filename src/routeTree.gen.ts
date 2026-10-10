@@ -24,6 +24,7 @@ import { Route as ResourcesItemTrackerCardsRouteImport } from './routes/resource
 import { Route as ResourcesItemTrackerListRouteImport } from './routes/resources.item-tracker-list'
 import { Route as ResourcesItemTrackerRaritiesRouteImport } from './routes/resources.item-tracker-rarities'
 import { Route as ResourcesMeleeWeaponsRouteImport } from './routes/resources.melee-weapons'
+import { Route as ResourcesPlannerRouteImport } from './routes/resources.planner'
 import { Route as ResourcesQuestsRouteImport } from './routes/resources.quests'
 import { Route as ResourcesSoulStormRouteImport } from './routes/resources.soul-storm'
 import { Route as ResourcesSoulStormRoutesRouteImport } from './routes/resources.soul-storm-routes'
@@ -108,6 +109,11 @@ const ResourcesMeleeWeaponsRoute = ResourcesMeleeWeaponsRouteImport.update({
   path: '/resources/melee-weapons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesPlannerRoute = ResourcesPlannerRouteImport.update({
+  id: '/resources/planner',
+  path: '/resources/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResourcesQuestsRoute = ResourcesQuestsRouteImport.update({
   id: '/resources/quests',
   path: '/resources/quests',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/resources/item-tracker-list': typeof ResourcesItemTrackerListRoute
   '/resources/item-tracker-rarities': typeof ResourcesItemTrackerRaritiesRoute
   '/resources/melee-weapons': typeof ResourcesMeleeWeaponsRoute
+  '/resources/planner': typeof ResourcesPlannerRoute
   '/resources/quests': typeof ResourcesQuestsRoute
   '/resources/soul-storm': typeof ResourcesSoulStormRoute
   '/resources/soul-storm-routes': typeof ResourcesSoulStormRoutesRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/resources/item-tracker-list': typeof ResourcesItemTrackerListRoute
   '/resources/item-tracker-rarities': typeof ResourcesItemTrackerRaritiesRoute
   '/resources/melee-weapons': typeof ResourcesMeleeWeaponsRoute
+  '/resources/planner': typeof ResourcesPlannerRoute
   '/resources/quests': typeof ResourcesQuestsRoute
   '/resources/soul-storm': typeof ResourcesSoulStormRoute
   '/resources/soul-storm-routes': typeof ResourcesSoulStormRoutesRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/resources/item-tracker-list': typeof ResourcesItemTrackerListRoute
   '/resources/item-tracker-rarities': typeof ResourcesItemTrackerRaritiesRoute
   '/resources/melee-weapons': typeof ResourcesMeleeWeaponsRoute
+  '/resources/planner': typeof ResourcesPlannerRoute
   '/resources/quests': typeof ResourcesQuestsRoute
   '/resources/soul-storm': typeof ResourcesSoulStormRoute
   '/resources/soul-storm-routes': typeof ResourcesSoulStormRoutesRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/resources/item-tracker-list'
     | '/resources/item-tracker-rarities'
     | '/resources/melee-weapons'
+    | '/resources/planner'
     | '/resources/quests'
     | '/resources/soul-storm'
     | '/resources/soul-storm-routes'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/resources/item-tracker-list'
     | '/resources/item-tracker-rarities'
     | '/resources/melee-weapons'
+    | '/resources/planner'
     | '/resources/quests'
     | '/resources/soul-storm'
     | '/resources/soul-storm-routes'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/resources/item-tracker-list'
     | '/resources/item-tracker-rarities'
     | '/resources/melee-weapons'
+    | '/resources/planner'
     | '/resources/quests'
     | '/resources/soul-storm'
     | '/resources/soul-storm-routes'
@@ -281,6 +293,7 @@ export interface RootRouteChildren {
   ResourcesItemTrackerListRoute: typeof ResourcesItemTrackerListRoute
   ResourcesItemTrackerRaritiesRoute: typeof ResourcesItemTrackerRaritiesRoute
   ResourcesMeleeWeaponsRoute: typeof ResourcesMeleeWeaponsRoute
+  ResourcesPlannerRoute: typeof ResourcesPlannerRoute
   ResourcesQuestsRoute: typeof ResourcesQuestsRoute
   ResourcesSoulStormRoute: typeof ResourcesSoulStormRoute
   ResourcesSoulStormRoutesRoute: typeof ResourcesSoulStormRoutesRoute
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesMeleeWeaponsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources/planner': {
+      id: '/resources/planner'
+      path: '/resources/planner'
+      fullPath: '/resources/planner'
+      preLoaderRoute: typeof ResourcesPlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resources/quests': {
       id: '/resources/quests'
       path: '/resources/quests'
@@ -463,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesItemTrackerListRoute: ResourcesItemTrackerListRoute,
   ResourcesItemTrackerRaritiesRoute: ResourcesItemTrackerRaritiesRoute,
   ResourcesMeleeWeaponsRoute: ResourcesMeleeWeaponsRoute,
+  ResourcesPlannerRoute: ResourcesPlannerRoute,
   ResourcesQuestsRoute: ResourcesQuestsRoute,
   ResourcesSoulStormRoute: ResourcesSoulStormRoute,
   ResourcesSoulStormRoutesRoute: ResourcesSoulStormRoutesRoute,

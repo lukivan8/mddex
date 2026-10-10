@@ -19,7 +19,8 @@ export type Resource = {
         | "/resources/soul-storm"
         | "/resources/melee-weapons"
         | "/resources/soul-storm-routes"
-        | "/resources/quests";
+        | "/resources/quests"
+        | "/resources/planner";
     }
   | { url: string }
 );
@@ -115,7 +116,20 @@ export const questsResource = {
   },
 } as const satisfies Resource;
 
+export const plannerResource = {
+  path: "/resources/planner",
+  title: "Farming planner",
+  category: "Tools",
+  description:
+    "Choose a build, find overlapping farming locations, and compare every known way to get your items.",
+  credit: {
+    name: "MDDEX",
+    contribution: "planning farming stops from the published item catalog",
+  },
+} as const satisfies Resource;
+
 export const resources = [
+  plannerResource,
   questsResource,
   itemTrackerResource,
   soulStormResource,

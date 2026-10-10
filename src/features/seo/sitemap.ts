@@ -10,6 +10,7 @@ const mainPaths = [
   "/mobs",
   "/resources",
   "/resources/quests",
+  "/resources/planner",
   "/resources/item-tracker",
   "/resources/item-tracker-cards",
   "/resources/item-tracker-list",

@@ -26,7 +26,7 @@ export type TrackerFamily = {
   unique?: CatalogItem;
 };
 export const TRACKER_STORAGE_KEY = "mddex-item-tracker-v1";
-export const markKey = (item: CatalogItem, mark: TrackerMark) =>
+export const markKey = (item: Pick<CatalogItem, "slug">, mark: TrackerMark) =>
   `${item.slug}:${mark}`;
 export function trackerMarks(item: CatalogItem): TrackerMark[] {
   if (item.category === "talisman" || item.category === "enchantment")
