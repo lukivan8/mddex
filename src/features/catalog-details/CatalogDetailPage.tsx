@@ -31,7 +31,7 @@ import {
   itemPath,
   isChestTalisman,
   talismanAcquisitionNotes,
-  type CatalogItem,
+  type CatalogCard,
   type ItemSource,
   type Reference,
 } from "./catalog-detail.model";
@@ -66,7 +66,7 @@ function Artwork({
   item,
   priority = false,
 }: {
-  item: CatalogItem;
+  item: CatalogCard;
   priority?: boolean;
 }) {
   if (item.category === "mob" && !item.image)
@@ -92,7 +92,7 @@ function ApplicableEffects({
 }: {
   selectedEffects: string[];
   entries: Reference[];
-  catalog: CatalogItem[];
+  catalog: CatalogCard[];
   returnTo: string;
 }) {
   return (
@@ -150,7 +150,7 @@ function ReferenceCard({
   label,
   returnTo,
 }: {
-  item: CatalogItem;
+  item: CatalogCard;
   label: string;
   returnTo: string;
 }) {
@@ -174,7 +174,7 @@ function Sources({
   returnTo,
 }: {
   sources: ItemSource[];
-  catalog: CatalogItem[];
+  catalog: CatalogCard[];
   returnTo: string;
 }) {
   return (
@@ -236,7 +236,7 @@ function Sources({
 }
 export function CatalogDetailPage({
   item,
-  catalog,
+  catalog: relatedCatalog,
   sources,
   returnTo: initialReturnTo,
   power,
@@ -250,6 +250,9 @@ export function CatalogDetailPage({
   detailState?: "loading" | "failed";
   onRetry?: () => void;
 }) {
+  // The loader sends the current item once. Restore it for self-references in
+  // the rendering lookup without duplicating it in the hydration payload.
+  const catalog = [item, ...relatedCatalog];
   const returnTo = returnPathAtPower(initialReturnTo, 1);
   const selectedEffects =
     filtersSchema.parse(

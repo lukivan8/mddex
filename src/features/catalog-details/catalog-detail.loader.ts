@@ -14,6 +14,7 @@ import { isSecretTalisman } from "../catalog/catalog.helpers";
 import {
   dropSources,
   itemPath,
+  type CatalogCard,
   type CatalogItem,
 } from "./catalog-detail.model";
 const unusedDetailFields = new Set([
@@ -25,6 +26,8 @@ const unusedDetailFields = new Set([
   "spawn_conditions",
   "drop_conditions",
   "soul_enchantment_rules",
+  "quest_graph",
+  "drop_chance_context",
 ]);
 function pickFields(value: unknown, keys: string[]) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
@@ -189,6 +192,63 @@ export function normalizeDetailItem(item: PublishedItem): CatalogItem {
     } as CatalogItem["game_data"],
   };
 }
+
+export function projectDetailCard(item: CatalogItem): CatalogCard {
+  const data = item.game_data;
+  return {
+    slug: item.slug,
+    category: item.category,
+    type: item.type,
+    name: item.name,
+    image: item.image,
+    description: item.description,
+    game_data: {
+      slug: data.slug,
+      set: data.set,
+      slot: data.slot,
+      tiers:
+        data.tiers?.map(({ tier, text, talisman }) => ({
+          tier,
+          text,
+          talisman,
+        })) ?? data.tiers,
+      drops:
+        item.category === "mob"
+          ? data.drops.map(({ catalog_slug }) => ({ catalog_slug }))
+          : [],
+    },
+  };
+}
+
+type PreparedDetailCatalog = {
+  readonly catalog: readonly CatalogItem[];
+  readonly cards: readonly CatalogCard[];
+  readonly positions: ReadonlyMap<string, number>;
+};
+// Session catalogs are immutable snapshots: a new release (or refreshed server
+// snapshot) has a new array identity, including its release-scoped shard URLs.
+// Weak keys retain only snapshots still held by a session/in-flight request.
+const preparedCatalogs = new WeakMap<PublishedItem[], PreparedDetailCatalog>();
+export function prepareDetailCatalog(
+  published: PublishedItem[],
+): PreparedDetailCatalog {
+  const saved = preparedCatalogs.get(published);
+  if (saved) return saved;
+  const catalog = published.map(normalizeDetailItem);
+  const positions = new Map<string, number>();
+  catalog.forEach((item, position) => {
+    const path = itemPath(item);
+    // Preserve findIndex's first match if a publisher supplies duplicate paths.
+    if (!positions.has(path)) positions.set(path, position);
+  });
+  const prepared = {
+    catalog,
+    cards: catalog.map(projectDetailCard),
+    positions,
+  };
+  preparedCatalogs.set(published, prepared);
+  return prepared;
+}
 export async function loadDetailPage(category: string, slug: string) {
   const published = await loadSessionCatalog();
   const position = detailPosition(published, category, slug);
@@ -214,10 +274,8 @@ function detailPosition(
   slug: string,
 ) {
   const path = `/catalog/${category}/${slug}`;
-  const position = published.findIndex(
-    (entry) => itemPath(normalizeDetailItem(entry)) === path,
-  );
-  if (position < 0) throw notFound();
+  const position = prepareDetailCatalog(published).positions.get(path);
+  if (position === undefined) throw notFound();
   return position;
 }
 
@@ -264,8 +322,14 @@ function detailPageData(
   position: number,
   detail: PublishedItem,
 ) {
-  const catalog = published.map(normalizeDetailItem);
-  const item = normalizeDetailItem(detail);
+  const prepared = prepareDetailCatalog(published);
+  // Each request can overlay a different full shard without modifying the shared
+  // index projection, including while another request awaits its enrichment.
+  const catalog = prepared.catalog.slice();
+  const item =
+    detail === published[position]
+      ? prepared.catalog[position]
+      : normalizeDetailItem(detail);
   catalog[position] = item;
   const sources = dropSources(item, catalog);
   const setEquipment =
@@ -304,7 +368,6 @@ function detailPageData(
     ]) ?? []),
   ];
   const needed = new Set([
-    item.slug,
     ...setEquipment.map((entry) => entry.slug),
     ...links.flatMap((link) =>
       link && "catalog_slug" in link && typeof link.catalog_slug === "string"
@@ -325,34 +388,11 @@ function detailPageData(
         if (entry.catalog_slug) needed.add(entry.catalog_slug);
     }
   }
-  const enrichment = new Set([
-    "drop_chances",
-    "wikily",
-    "rollable_effects",
-    "enchantment_options",
-    "acquisition",
-    "quest_context",
-    "spawn_conditions",
-    "drop_conditions",
-    "soul_enchantment_rules",
-    "map_context",
-    "location_context",
-    "reference_context",
-    "gear_rules",
-    "wikily_cards",
-  ]);
   return {
     item,
-    catalog: catalog
-      .filter((entry) => needed.has(entry.slug))
-      .map((entry) => ({
-        ...entry,
-        game_data: Object.fromEntries(
-          Object.entries(entry.game_data).filter(
-            ([key]) => !enrichment.has(key),
-          ),
-        ) as CatalogItem["game_data"],
-      })),
+    catalog: prepared.cards.filter(
+      (entry) => entry.slug !== item.slug && needed.has(entry.slug),
+    ),
     sources,
   };
 }

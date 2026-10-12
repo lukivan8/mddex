@@ -3,6 +3,7 @@ import {
   isChestTalisman,
   talismanAcquisitionNotes,
   itemPath,
+  type CatalogCard,
   type CatalogItem,
   type ItemSource,
 } from "./catalog-detail.model";
@@ -62,7 +63,7 @@ function examples(values: string[]) {
 }
 export function itemSeo(
   item: CatalogItem,
-  catalog: readonly CatalogItem[],
+  catalog: readonly CatalogCard[],
   power = 1,
   acquisition?: readonly ItemSource[],
 ) {

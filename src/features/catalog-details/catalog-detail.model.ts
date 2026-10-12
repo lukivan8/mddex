@@ -149,6 +149,20 @@ export interface CatalogItem {
     melee: { combo: Attack[]; jump: Attack | null; combo_reset: number } | null;
   };
 }
+/** Related cards carry navigation/presentation data, not another full dossier. */
+export type CatalogCard = Pick<
+  CatalogItem,
+  "slug" | "category" | "type" | "name" | "image" | "description"
+> & {
+  game_data: Pick<
+    CatalogItem["game_data"],
+    "slug" | "set" | "slot" | "tiers"
+  > & {
+    // Preserve reverse-drop SEO fallback without serializing drop descriptions.
+    drops: Pick<Reference, "catalog_slug">[];
+  };
+};
+
 const categories: Record<string, string> = {
   melee_weapon: "melee-weapons",
   ranged_weapon: "ranged-weapons",
@@ -159,12 +173,16 @@ const categories: Record<string, string> = {
   enchantment: "enchantments",
   artifact: "artifacts",
 };
-export function itemPath(item: CatalogItem): string {
+export function itemPath(
+  item: Pick<CatalogItem, "slug" | "category"> & {
+    game_data: Pick<CatalogItem["game_data"], "slug">;
+  },
+): string {
   return `/catalog/${categories[item.category] ?? item.category}/${item.game_data.slug ?? item.slug}`;
 }
 export function dropSources(
   item: CatalogItem,
-  catalog: readonly CatalogItem[],
+  catalog: readonly CatalogCard[],
 ): ItemSource[] {
   const listed = item.game_data.sources.filter(
     (source) => source.type === "area" || source.type === "mob",

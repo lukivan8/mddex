@@ -141,3 +141,63 @@ it("promotes stored details to memory without discovery or shard requests", asyn
   expect(await loadSessionCatalogDetail(sharded)).toEqual(cached);
   expect(fetcher).not.toHaveBeenCalled();
 });
+
+it("refreshes server snapshot identity and pins concurrent detail requests to their release", async () => {
+  vi.resetModules();
+  let clock = 1_000;
+  vi.spyOn(Date, "now").mockImplementation(() => clock);
+  let version = "v1";
+  const requests: string[] = [];
+  vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const url = String(input);
+    requests.push(url);
+    if (url.endsWith("latest.json"))
+      return new Response(
+        JSON.stringify({
+          catalogVersion: version,
+          manifest: `releases/${version}/manifest.json`,
+          catalogIndex: `releases/${version}/catalog-index.json`,
+        }),
+      );
+    const release = url.includes("/v1/") ? "v1" : "v2";
+    const published = {
+      ...item,
+      detail_path: "details/hammer.json",
+      variation: `Hammer ${release}`,
+      game_data: { slug: `hammer-${release}` },
+    };
+    return new Response(
+      JSON.stringify(
+        url.endsWith("catalog-index.json") ? [published] : published,
+      ),
+    );
+  });
+  const { loadSessionCatalog, loadSessionCatalogDetail } =
+    await import("./catalog.session");
+  const { prepareDetailCatalog, loadDetailPage } =
+    await import("../catalog-details/catalog-detail.loader");
+  const [first, concurrent] = await Promise.all([
+    loadSessionCatalog(),
+    loadSessionCatalog(),
+  ]);
+  expect(concurrent).toBe(first);
+  const prepared = prepareDetailCatalog(first);
+  expect((await loadDetailPage("melee-weapons", "hammer-v1")).item.name).toBe(
+    "Hammer v1",
+  );
+  version = "v2";
+  clock += 60_001;
+  const next = await loadSessionCatalog();
+  expect(next).not.toBe(first);
+  expect(prepareDetailCatalog(next)).not.toBe(prepared);
+  expect((await loadDetailPage("melee-weapons", "hammer-v2")).item.name).toBe(
+    "Hammer v2",
+  );
+  expect((await loadSessionCatalogDetail(first[0])).variation).toBe(
+    "Hammer v1",
+  );
+  expect(requests.filter((url) => url.endsWith("latest.json"))).toHaveLength(2);
+  expect(
+    requests.filter((url) => url.endsWith("details/hammer.json")),
+  ).toHaveLength(2);
+});

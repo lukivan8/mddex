@@ -9,6 +9,7 @@ import {
 } from "../catalog/catalog.helpers";
 import {
   itemPath,
+  type CatalogCard,
   type CatalogItem,
   type Reference,
 } from "./catalog-detail.model";
@@ -47,7 +48,7 @@ export function RelatedEntries({
   label,
 }: {
   entries: Reference[];
-  catalog: CatalogItem[];
+  catalog: CatalogCard[];
   returnTo: string;
   label: string;
 }) {
@@ -120,7 +121,7 @@ function LocationLoot({
   returnTo,
 }: {
   entries: Reference[];
-  catalog: CatalogItem[];
+  catalog: CatalogCard[];
   returnTo: string;
 }) {
   const bySlug = new Map(catalog.map((item) => [item.slug, item]));
@@ -162,7 +163,7 @@ export function CategorySections({
   returnTo,
 }: {
   item: CatalogItem;
-  catalog: CatalogItem[];
+  catalog: CatalogCard[];
   returnTo: string;
 }) {
   const d = item.game_data;

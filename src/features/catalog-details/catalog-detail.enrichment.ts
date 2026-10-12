@@ -144,7 +144,10 @@ export function acquisitionSources(item: CatalogItem): ItemSource[] {
     ];
   });
 }
-export function locationMetadata(item: CatalogItem, catalog: CatalogItem[]) {
+export function locationMetadata(
+  item: CatalogItem,
+  catalog: readonly Pick<CatalogItem, "slug" | "category">[],
+) {
   const data = item.game_data as RecordData;
   const native = record(data.wikily);
   const context = record(data.location_context);

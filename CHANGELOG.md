@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.3.1 — 2026-10-12
+
+- Reuse prepared catalog-detail data and canonical-path lookups for each immutable catalog snapshot, keeping concurrent requests and refreshed releases separate.
+- Send the current dossier once and limit related cards to their rendered names, artwork, links, descriptions, effect tiers and armor set/slot metadata. Keep reverse mob-drop references for SEO and remove unused quest/drop-calculation payloads from details.
+- Preserve full raw catalog data for builder eligibility and quest resources. No dependencies, D1 migrations, catalog exports or Worker configuration change.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (306 unit tests in 50 files), `npm run build`, and `git diff --check` pass. The complete Chromium suite passes 149/149 tests with one worker against the final source in an isolated production-Worker harness with local D1, catalog fixtures and external network blocked; no test assertions changed. Fourteen representative detail pages retain identical rendered text, links, artwork and SEO, and hydrated power changes, related navigation and quests pass. The normal production preview verifies Build, Catalog, artifact/location/melee details, quests and plain-text missing-asset 404s.
+
+Three alternating local workerd profile pairs, with all relevant shards primed and zero fetches during warm measurements, reduce Howling Woods sampled active CPU from a median 12.51 to 8.30 ms/request and HTML from 427,157 to 179,095 bytes compared with the initial prepared-catalog patch. Its loader payload falls from 351,734 to 74,476 bytes. Warm artifact/melee samples also improve. Local samples are not billed edge CPU: the cold artifact remains about 68 ms because release/index/source-artwork data still needs parsing, so this release does not claim to eliminate cold-request CPU failures.
+
 ## 2.3.0 — 2026-10-10
 
 - Add an automatic farming planner for saved builds, shared build links and individual variants, with compact item toggles and selected effect icons.
