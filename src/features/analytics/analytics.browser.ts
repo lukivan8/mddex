@@ -6,6 +6,8 @@ import {
 } from "./analytics.db";
 import { createAnalyticsQueue } from "./analytics.queue";
 
+import { readVisitorHistory } from "./analytics.visitor";
+
 const visitorKey = "mddex.analytics.visitor.v1";
 const sessionKey = "mddex.analytics.session.v1";
 const uuid =
@@ -67,11 +69,13 @@ function identity() {
   let visitorId = fallbackVisitor;
   let session = fallbackSession;
   let seen = false;
+  let persistent = false;
   try {
     const storedVisitor = localStorage.getItem(visitorKey);
     seen = !!storedVisitor && uuid.test(storedVisitor);
     visitorId = (seen ? storedVisitor! : undefined) || visitorId || randomId();
     localStorage.setItem(visitorKey, visitorId);
+    persistent = true;
     const storedSession = localStorage.getItem(sessionKey);
     if (storedSession) {
       const candidate = JSON.parse(storedSession) as Partial<Session> | null;
@@ -91,6 +95,9 @@ function identity() {
   }
   visitorId ||= randomId();
   const now = Date.now();
+  const history = persistent
+    ? readVisitorHistory(localStorage, visitorId, seen, now)
+    : undefined;
   const started = !session || now - session.lastActive >= inactivity;
   if (started) session = { id: randomId(), lastActive: now, returning: seen };
   session!.lastActive = now;
@@ -105,6 +112,12 @@ function identity() {
     visitorId,
     sessionId: session!.id,
     returning: session!.returning,
+    visitorHistory: history
+      ? {
+          firstSeenAt: history.firstSeenAt,
+          firstSeenKnown: history.firstSeenKnown,
+        }
+      : undefined,
     started,
   };
 }
@@ -123,6 +136,7 @@ function send(
     visitorId: data.visitorId,
     sessionId: data.sessionId,
     returning: data.returning,
+    visitorHistory: data.visitorHistory,
     path,
     label,
   });

@@ -3,6 +3,8 @@
   <div class="text-small text-muted" data-period></div>
   <svg class="dau-plot" role="img"></svg>
   <div class="text-small text-muted" data-note></div>
+  <div class="dau-legend"><span>━ Total DAU</span><span class="dau-new">■ New</span><span class="dau-returning">■ Returning</span><span class="dau-unknown">■ Unknown</span></div>
+  <details><summary>Daily counts and classification</summary><table><thead><tr><th>Almaty day</th><th>Total DAU</th><th>New</th><th>Returning</th><th>Unknown</th></tr></thead><tbody data-days></tbody></table></details>
 </section>
 <style>
   #mddex-dau-report .dau-plot {display:block;width:100%;height:340px;margin:12px 0}
@@ -11,17 +13,31 @@
   #mddex-dau-report .dau-line {fill:none;stroke:var(--viz-series-1);stroke-width:2.5}
   #mddex-dau-report .dau-dot {fill:var(--viz-series-1)}
   #mddex-dau-report .dau-partial {fill:var(--background);stroke:var(--viz-series-1);stroke-width:2.5}
+  #mddex-dau-report .dau-legend {display:flex;gap:16px;flex-wrap:wrap}
+  #mddex-dau-report .dau-new {color:var(--viz-series-2,#62cfa2)}
+  #mddex-dau-report .dau-returning {color:var(--viz-series-3,#8faef7)}
+  #mddex-dau-report .dau-unknown {color:var(--muted,#9ca3af)}
+  #mddex-dau-report td, #mddex-dau-report th {padding:6px;text-align:right}
 </style>
 <script>
 (() => {
   const report = __DAU_DATA__;
+  report.days = report.days.map(d => ({...d, new:d.new ?? 0, returning:d.returning ?? 0, unknown:d.unknown ?? d.dau}));
+  const breakdown = d => `${d.new} new, ${d.returning} returning, ${d.unknown} unknown`;
   const root = document.getElementById('mddex-dau-report');
   const svg = root.querySelector('.dau-plot');
   const dayNumber = date => Date.parse(date+'T00:00:00Z')/86400000;
   const label = date => new Date(date+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
   root.querySelector('[data-period]').textContent = `${label(report.release)}–${label(report.today)}, ${report.today.slice(0,4)} · Almaty (UTC+5)`;
-  root.querySelector('[data-note]').textContent = `○ Partial day · Sampled browser IDs · Gaps = unavailable · Updated ${report.updated}`;
-  svg.setAttribute('aria-label', 'Observed active browsers by Almaty calendar day. '+report.days.map(d=>`${d.date}: ${d.dau}`).join('; ')+'. Release day and today are partial. Sampling may undercount.');
+  root.querySelector('[data-note]').textContent = `○ Partial day · Sampled browser IDs · Gaps = unavailable · Updated ${report.updated}. New + returning + unknown = DAU. Historical/blocked-storage classification is unknown; first classified day: ${report.cohortStart ?? 'not observed yet'}.`;
+  for (const d of report.days) {
+    const row = document.createElement('tr');
+    for (const value of [d.date,d.dau,d.new,d.returning,d.unknown]) {
+      const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell);
+    }
+    root.querySelector('[data-days]').appendChild(row);
+  }
+  svg.setAttribute('aria-label', 'Observed active browsers by Almaty calendar day. '+report.days.map(d=>`${d.date}: ${d.dau} total, ${breakdown(d)}`).join('; ')+'. Release day and today are partial. Sampling may undercount.');
   const ns = 'http://www.w3.org/2000/svg';
   function draw() {
     const w=root.getBoundingClientRect().width,h=340;
@@ -51,6 +67,14 @@
       const command=previous!==null && dayNumber(d.date)===previous+1?'L':'M';
       previous=dayNumber(d.date);return `${command}${x(d.date)},${y(d.dau)}`;
     }).join(' ');
+    const barWidth=Math.max(2,Math.min(22,(right-left-20)/Math.max(1,last-first+1)*0.65));
+    report.days.forEach(d=>{
+      let base=0;
+      for (const [key,color] of [['new','var(--viz-series-2,#62cfa2)'],['returning','var(--viz-series-3,#8faef7)'],['unknown','var(--muted,#9ca3af)']]) {
+        el('rect',{x:x(d.date)-barWidth/2,y:y(base+d[key]),width:barWidth,height:y(base)-y(base+d[key]),fill:color,opacity:0.75,'data-cohort':key,'data-date':d.date,'data-count':d[key]});
+        base+=d[key];
+      }
+    });
     el('path',{d:path,class:'dau-line'});
     const maxTicks=w<470?3:Math.max(3,Math.floor((right-left)/75));
     const ticks=new Set(Array.from({length:Math.min(maxTicks,last-first+1)},(_,i)=>Math.round(first+i*(last-first)/Math.max(1,Math.min(maxTicks,last-first+1)-1))));
@@ -62,7 +86,7 @@
     const valueLabels=[];
     report.days.forEach((d,i)=>{
       const partial=d.date===report.release || d.date===report.today;
-      const g=el('g',{'data-tooltip':`${label(d.date)}: ${d.dau} observed active browsers${partial?' (partial day)':''}; max sample interval ${d.sample}`});
+      const g=el('g',{'data-tooltip':`${label(d.date)}: ${d.dau} observed active browsers; ${breakdown(d)}${partial?' (partial day)':''}; max sample interval ${d.sample}`});
       const dot=document.createElementNS(ns,'circle');
       for(const [key,value]of Object.entries({cx:x(d.date),cy:y(d.dau),r:4,class:partial?'dau-partial':'dau-dot'}))dot.setAttribute(key,value);
       g.appendChild(dot);

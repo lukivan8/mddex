@@ -82,3 +82,24 @@ describe("analytics outbox", () => {
     },
   );
 });
+
+it.each(["persistent", "memory"])(
+  "preserves new first-seen metadata and old outbox rows through %s retries",
+  async (kind) => {
+    const store =
+      kind === "persistent"
+        ? createAnalyticsStore(new IDBFactory())
+        : createMemoryAnalyticsStore();
+    const now = Date.now();
+    const legacy = event(now - 2);
+    const fresh = {
+      ...event(now - 1),
+      visitorHistory: { firstSeenAt: legacy.occurredAt, firstSeenKnown: true },
+    };
+    await store.add(legacy);
+    await store.add(fresh);
+    expect(await store.claim(Date.now())).toEqual([legacy, fresh]);
+    await store.settle([legacy.id, fresh.id], false);
+    expect(await store.claim(Date.now())).toEqual([legacy, fresh]);
+  },
+);

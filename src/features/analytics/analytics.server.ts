@@ -4,6 +4,8 @@ import {
   analyticsSchema,
 } from "./analytics.schema";
 
+import { dailyCohort } from "./analytics.visitor";
+
 export async function collectAnalytics(
   request: Request,
   dataset: AnalyticsEngineDataset,
@@ -56,6 +58,10 @@ export async function collectAnalytics(
       for (const [index, entry] of events.entries()) {
         const { event, visitorId, sessionId, returning, path, label } = entry;
         const queued = batch.success ? batch.data.events[index] : undefined;
+        const capturedAt = queued
+          ? Math.min(queued.occurredAt, receivedAt)
+          : receivedAt;
+        const history = queued?.visitorHistory;
         dataset.writeDataPoint({
           indexes: [visitorId],
           blobs: [
@@ -64,11 +70,12 @@ export async function collectAnalytics(
             sessionId,
             path,
             returning ? "returning" : "new",
-            queued ? "v3" : "v2",
+            history ? "v4" : queued ? "v3" : "v2",
             label ?? "",
             ...(queued ? [queued.id] : []),
+            ...(history ? [dailyCohort(history, capturedAt)] : []),
           ],
-          doubles: queued ? [1, Math.min(queued.occurredAt, receivedAt)] : [1],
+          doubles: queued ? [1, capturedAt] : [1],
         });
       }
     } catch {

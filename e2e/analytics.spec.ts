@@ -8,6 +8,7 @@ test("analytics follows catalog navigation and build actions, counts repeat visi
     visitorId: string;
     sessionId: string;
     returning: boolean;
+    visitorHistory?: { firstSeenAt: number; firstSeenKnown: boolean };
     path: string;
   }[] = [];
   await page.route("**/api/analytics", async (route) => {
@@ -44,6 +45,8 @@ test("analytics follows catalog navigation and build actions, counts repeat visi
     })
     .toBe(1);
   expect(events[0].returning).toBe(false);
+  expect(events[0].visitorHistory?.firstSeenKnown).toBe(true);
+  const history = events[0].visitorHistory;
   const visitor = events[0].visitorId;
   const session = events[0].sessionId;
   await page.getByRole("searchbox").fill("Battle Hammer");
@@ -98,31 +101,46 @@ test("analytics follows catalog navigation and build actions, counts repeat visi
     })
     .toBe(2);
   expect(events.at(-1)?.returning).toBe(true);
+  expect(
+    events.every(
+      (e) => JSON.stringify(e.visitorHistory) === JSON.stringify(history),
+    ),
+  ).toBe(true);
   expect(events.at(-1)?.visitorId).toBe(visitor);
   expect(events.at(-1)?.sessionId).not.toBe(session);
 });
 
-test("privacy opt-out prevents analytics and does not break the page", async ({
-  page,
-}) => {
-  let requests = 0;
-  await page.addInitScript(() =>
-    Object.defineProperty(navigator, "globalPrivacyControl", { value: true }),
-  );
-  page.on("request", (request) => {
-    if (request.url().endsWith("/api/analytics")) requests++;
+for (const signal of ["globalPrivacyControl", "doNotTrack"] as const)
+  test(`${signal} opt-out prevents analytics and does not break the page`, async ({
+    page,
+  }) => {
+    let requests = 0;
+    await page.addInitScript(
+      (signal) =>
+        Object.defineProperty(navigator, signal, {
+          value: signal === "doNotTrack" ? "1" : true,
+        }),
+      signal,
+    );
+    page.on("request", (request) => {
+      if (request.url().endsWith("/api/analytics")) requests++;
+    });
+    await page.goto("/build");
+    await expect(
+      page.getByRole("link", { name: "Build", exact: true }),
+    ).toBeVisible();
+    expect(requests).toBe(0);
+    expect(
+      await page.evaluate(() =>
+        localStorage.getItem("mddex.analytics.visitor.v1"),
+      ),
+    ).toBeNull();
+    expect(
+      await page.evaluate(() =>
+        localStorage.getItem("mddex.analytics.first-seen.v1"),
+      ),
+    ).toBeNull();
   });
-  await page.goto("/build");
-  await expect(
-    page.getByRole("link", { name: "Build", exact: true }),
-  ).toBeVisible();
-  expect(requests).toBe(0);
-  expect(
-    await page.evaluate(() =>
-      localStorage.getItem("mddex.analytics.visitor.v1"),
-    ),
-  ).toBeNull();
-});
 
 test("catalog and mob discovery report safe page paths and filter labels", async ({
   page,
@@ -261,3 +279,72 @@ async function flush(page: Page) {
     })
     .toBe(0);
 }
+
+for (const scenario of ["legacy", "blocked"] as const)
+  test(`${scenario} visitor history remains unknown without inventing a first visit`, async ({
+    page,
+  }) => {
+    const events: {
+      visitorId: string;
+      visitorHistory?: { firstSeenAt: number; firstSeenKnown: boolean };
+    }[] = [];
+    await page.addInitScript((scenario) => {
+      if (scenario === "legacy")
+        localStorage.setItem(
+          "mddex.analytics.visitor.v1",
+          "b4fa8b18-964d-4337-8cc7-30d3a69cd292",
+        );
+      else
+        Object.defineProperty(window, "localStorage", {
+          get() {
+            throw new Error("blocked");
+          },
+        });
+    }, scenario);
+    await page.route("**/api/analytics", async (route) => {
+      events.push(...route.request().postDataJSON().events);
+      await route.fulfill({ status: 204 });
+    });
+    await page.goto("/mobs");
+    await expect.poll(() => queuedCount(page)).toBeGreaterThanOrEqual(2);
+    await flush(page);
+    expect(events.length).toBeGreaterThanOrEqual(2);
+    if (scenario === "legacy") {
+      expect(
+        events.every(
+          (e) =>
+            e.visitorId === "b4fa8b18-964d-4337-8cc7-30d3a69cd292" &&
+            e.visitorHistory?.firstSeenKnown === false,
+        ),
+      ).toBe(true);
+    } else
+      expect(events.every((e) => e.visitorHistory === undefined)).toBe(true);
+  });
+
+test("tabs share the existing browser UUID and first-seen history", async ({
+  context,
+  page,
+}) => {
+  const events: { visitorId: string; visitorHistory: unknown }[] = [];
+  await context.route("**/api/analytics", async (route) => {
+    events.push(...route.request().postDataJSON().events);
+    await route.fulfill({ status: 204 });
+  });
+  await page.goto("/mobs");
+  await expect.poll(() => queuedCount(page)).toBeGreaterThanOrEqual(2);
+  await flush(page);
+  const initial = events[0];
+  const tab = await context.newPage();
+  await tab.goto("/mobs");
+  await expect.poll(() => queuedCount(tab)).toBeGreaterThanOrEqual(1);
+  await flush(tab);
+  expect(events.length).toBeGreaterThan(2);
+  expect(
+    events.every(
+      (e) =>
+        e.visitorId === initial.visitorId &&
+        JSON.stringify(e.visitorHistory) ===
+          JSON.stringify(initial.visitorHistory),
+    ),
+  ).toBe(true);
+});

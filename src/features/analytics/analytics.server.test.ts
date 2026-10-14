@@ -155,3 +155,61 @@ describe("batched analytics ingestion", () => {
     ).toBe(503);
   });
 });
+
+describe("daily cohorts at ingestion", () => {
+  const firstSeenAt = Date.parse("2026-10-14T18:00:00Z");
+  it.each([
+    [true, firstSeenAt + 1000, "new"],
+    [true, Date.parse("2026-10-14T19:00:00Z"), "returning"],
+    [false, firstSeenAt + 1000, "unknown"],
+    [false, Date.parse("2026-10-14T19:00:00Z"), "returning"],
+    [true, firstSeenAt - 1, "unknown"],
+  ])(
+    "uses captured Almaty day and reliable history (%s, %s)",
+    async (firstSeenKnown, occurredAt, cohort) => {
+      vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-16T00:00:00Z"));
+      try {
+        const dataset = { writeDataPoint: vi.fn() };
+        const event = {
+          ...payload,
+          returning: true,
+          id: crypto.randomUUID(),
+          occurredAt,
+          visitorHistory: { firstSeenAt, firstSeenKnown },
+        };
+        expect(
+          (await collectAnalytics(request({ events: [event] }), dataset))
+            .status,
+        ).toBe(204);
+        const point = dataset.writeDataPoint.mock.calls[0][0];
+        expect(point.blobs[4]).toBe("returning"); // legacy session label remains independent
+        expect(point.blobs[5]).toBe("v4");
+        expect(point.blobs[8]).toBe(cohort);
+        expect(point.doubles).toEqual([1, occurredAt]);
+      } finally {
+        vi.restoreAllMocks();
+      }
+    },
+  );
+  it("rejects arbitrary history fields and preserves opt-out", async () => {
+    const dataset = { writeDataPoint: vi.fn() };
+    const event = {
+      ...payload,
+      id: crypto.randomUUID(),
+      occurredAt: Date.now(),
+      visitorHistory: { firstSeenAt, firstSeenKnown: true, email: "private" },
+    };
+    expect(
+      (await collectAnalytics(request({ events: [event] }), dataset)).status,
+    ).toBe(400);
+    expect(
+      (
+        await collectAnalytics(
+          request({ events: [event] }, { DNT: "1" }),
+          dataset,
+        )
+      ).status,
+    ).toBe(204);
+    expect(dataset.writeDataPoint).not.toHaveBeenCalled();
+  });
+});

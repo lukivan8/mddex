@@ -70,6 +70,13 @@ export const ANALYTICS_RETENTION = 7 * 24 * 60 * 60 * 1000;
 export const queuedAnalyticsSchema = analyticsSchema.extend({
   id: z.uuid(),
   occurredAt: z.number().int().positive().max(8.64e15),
+  visitorHistory: z
+    .object({
+      firstSeenAt: z.number().int().positive().max(8.64e15),
+      firstSeenKnown: z.boolean(),
+    })
+    .strict()
+    .optional(),
 });
 export type QueuedAnalyticsEvent = z.infer<typeof queuedAnalyticsSchema>;
 export const analyticsBatchSchema = z

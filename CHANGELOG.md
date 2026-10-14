@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.4.0 — 2026-10-14
+
+- Split daily active browsers into mutually exclusive new, returning and unknown cohorts while preserving total unique-browser DAU and Asia/Almaty day boundaries.
+- Keep newly established browser IDs new throughout their first tracked day, including repeat sessions and tabs. Preserve existing IDs; classify their initial baseline day and historical activity as unknown instead of inventing first-seen history.
+- Add stacked cohort counts, total line, tooltips and an accessible table to the existing DAU report. Preserve DNT/GPC, blocked-storage fallback, offline capture times, legacy events and report history. No additional requests/events, dependencies, bindings or D1 migrations.
+- Cohorts do not correlate R2 missing-object errors to visitors; that would require separate failure telemetry.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (319 unit tests in 52 files), `CI=true npm run test:e2e -- --workers=1` (155/155 Chromium tests), `npm run build`, and `git diff --check` pass. Production preview verifies Build, Catalog, complete Axe detail content, quests and plain-text missing-asset 404s; local v4 ingestion returns 204. The live read-only DAU query succeeds and preserves historical totals as unknown. The initial release unit run caught equal-timestamp ordering in the new outbox fixture; distinct fixture timestamps resolve that test assumption, its isolated rerun passes 8/8, and the complete checks pass. Initial scoped browser startup was blocked by sandbox networking; the permitted local-server rerun passes. No production migration is required.
+
 ## 2.3.1 — 2026-10-12
 
 - Reuse prepared catalog-detail data and canonical-path lookups for each immutable catalog snapshot, keeping concurrent requests and refreshed releases separate.

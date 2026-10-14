@@ -30,6 +30,9 @@ function batch(records: StoredEvent[], now: number) {
       visitorId: record.visitorId,
       sessionId: record.sessionId,
       returning: record.returning,
+      ...(record.visitorHistory
+        ? { visitorHistory: record.visitorHistory }
+        : {}),
       path: record.path,
       ...(record.label ? { label: record.label } : {}),
     });
