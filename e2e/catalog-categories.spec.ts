@@ -216,7 +216,7 @@ for (const [category, name, heading, value] of cases)
       page.getByRole("heading", { name: heading, exact: true }),
     ).toBeVisible();
     await expect(page.locator(".detail-dossier")).toContainText(value);
-    await expect(page.locator(".detail-guide")).toContainText(name);
+    await expect(page.locator(".detail-guide")).toHaveCount(0);
     await expect(page).toHaveTitle(new RegExp(`${name}.*Minecraft Dungeons 2`));
     if (category === "gear_effect") {
       await expect(
@@ -286,7 +286,7 @@ for (const mobile of [false, true])
     await expect(
       page.getByRole("table", { name: "Mob attacks", exact: true }),
     ).toContainText("Potion throw");
-    await expect(page.locator(".detail-guide")).toContainText("Witch Brew");
+    await expect(page.locator(".detail-dossier")).toContainText("Witch Brew");
     await page.getByRole("link", { name: "Back to mobs", exact: true }).click();
     await expect(
       page.getByRole("searchbox", { name: "Search mobs", exact: true }),

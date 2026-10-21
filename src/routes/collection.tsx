@@ -5,9 +5,6 @@ import {
   CATALOG_DESCRIPTION,
 } from "../features/seo/metadata";
 import { CollectionPage } from "../features/collection/CollectionPage";
-import { loadSessionCatalog } from "../features/catalog/catalog.session";
-import { catalogIndex } from "../features/seo/catalog-index";
-import { CATALOG_REFERENCE_CATEGORIES } from "../features/catalog/catalog.helpers";
 import {
   filtersSchema,
   type CollectionFilters,
@@ -16,13 +13,6 @@ export const Route = createFileRoute("/collection")({
   staleTime: Infinity,
   preloadStaleTime: Infinity,
   validateSearch: (search) => filtersSchema.parse(search),
-  loader: async () => {
-    const catalog = await loadSessionCatalog();
-    return {
-      directory: catalogIndex(catalog),
-      referenceDirectory: catalogIndex(catalog, CATALOG_REFERENCE_CATEGORIES),
-    };
-  },
   head: () =>
     pageMetadata({
       title: CATALOG_TITLE,
@@ -32,7 +22,6 @@ export const Route = createFileRoute("/collection")({
   component: CollectionRoute,
 });
 function CollectionRoute() {
-  const { directory, referenceDirectory } = Route.useLoaderData();
   const filters = Route.useSearch();
   const navigate = Route.useNavigate();
   function onChange(patch: CollectionFilters) {
@@ -59,12 +48,5 @@ function CollectionRoute() {
       resetScroll: false,
     });
   }
-  return (
-    <CollectionPage
-      filters={filters}
-      onChange={onChange}
-      directory={directory}
-      referenceDirectory={referenceDirectory}
-    />
-  );
+  return <CollectionPage filters={filters} onChange={onChange} />;
 }

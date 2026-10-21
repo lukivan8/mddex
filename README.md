@@ -4,7 +4,7 @@ A local-first Minecraft Dungeons 2 build maker and equipment catalog built with 
 
 New engineers and agents: start with [CONTRIBUTING.md](CONTRIBUTING.md), [the continuation handoff](docs/handoff.md), and [the architecture](docs/architecture.md). Claude loads `CLAUDE.md`; shared agent rules and repository skills live in `AGENTS.md` and `.agents/skills`. Run `npm run doctor` to check the local workspace. See [release instructions](docs/release.md) before pushing production.
 
-## Fresh Mac setup · version 2.4.0
+## Fresh Mac setup · version 2.4.1
 
 Install Apple's command line tools (`xcode-select --install`) and Node.js 22.22.3. If you use nvm, the checked-in `.nvmrc` selects the tested version. Authenticate GitHub with an account that can access the private repository, then:
 
@@ -20,7 +20,7 @@ npm run dev
 
 `setup` applies all checked-in D1 migrations to the local Cloudflare database. Run it again after pulling new migrations; it is safe to repeat. Local development uses simulated Cloudflare bindings and requires no Cloudflare login or production credentials. The default public catalog works without an environment file. Optional overrides are documented in `.env.example`.
 
-To resume this exact snapshot, use `git checkout -b work-from-v2-4-0 v2.4.0` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
+To resume this exact snapshot, use `git checkout -b work-from-v2-4-1 v2.4.1` after cloning. To continue the latest work, stay on `main` and pull updates. Dependencies, migrations, source, and generated brand assets are checked in; `npm ci` restores dependencies from the lockfile. Build output, local databases, credentials, and browser storage are intentionally excluded. Local loadouts stay in the original browser and do not transfer through Git.
 
 Email verification needs your own Resend key in ignored `.dev.vars`; see [community setup](docs/community-builds.md). Production deployment and analytics reporting require your authorized Cloudflare account. Never commit `.env.local`, `.dev.vars`, or API tokens.
 
@@ -104,13 +104,13 @@ Cloudflare Web Analytics measures traffic and Core Web Vitals. Workers Analytics
 
 ## Search and social previews
 
-Build and Catalog have server-rendered titles, descriptions, canonical URLs, Open Graph and Twitter metadata, plus a visible Build introduction above the workspace and a usage guide below it. The Build title and H1 target “Minecraft Dungeons 2 Build Maker.” WebSite and WebApplication JSON-LD describe the free tool without invented ratings. Shared query links use `noindex, follow` and canonicalize to `/build`; API responses use `X-Robots-Tag: noindex, nofollow`. Catalog filter URLs canonicalize to `/collection`. `/` permanently redirects to `/build`.
+Build and Catalog have server-rendered titles, descriptions, canonical URLs, Open Graph and Twitter metadata. The Build title and H1 target “Minecraft Dungeons 2 Build Maker.” WebSite and WebApplication JSON-LD describe the free tool without invented ratings. Shared query links use `noindex, follow` and canonicalize to `/build`; API responses use `X-Robots-Tag: noindex, nofollow`. Catalog filter URLs canonicalize to `/collection`. `/` permanently redirects to `/build`.
 
 `public/robots.txt` points to `https://mddex.net/sitemap.xml`. The Worker generates that sitemap from the current published catalog, including equipment, mob, location, status, cape, and pet detail pages alongside the main pages. The 1200×630 social preview, favicon, and app icons use the existing MDDEX branding. Regenerate the favicon, app icons, and small WebP UI assets with `npm run assets:generate` (requires Playwright Chromium). To regenerate only the logo and cost-icon WebP variants, run `node scripts/generate-ui-assets.mjs`; this preserves the source PNGs and adds transparent padding to keep icon proportions intact. The social preview is a checked-in image at `public/og-image.png` and is preserved by these scripts. The manifest describes a normal browser app; it does not promise offline installation. Metadata lives in `src/features/seo/metadata.ts`; update the production origin there and in `public/robots.txt` if the domain changes.
 
-Catalog titles use the full “[item] in Minecraft Dungeons 2” target heading, with disambiguation for mobs and status effects. Detail pages include breadcrumb JSON-LD and a contextual link to the build maker. Status pages retain published gear, mob, and immunity relationships; cosmetic pages retain matching unlock information. Footer acquisition guides use the same resolved drop sources as the item dossier.
+Catalog titles use the full “[item] in Minecraft Dungeons 2” target heading, with disambiguation for mobs and status effects. Detail pages include breadcrumb JSON-LD. Status pages retain published gear, mob, and immunity relationships; cosmetic pages retain matching unlock information. Acquisition sources remain in the item dossier.
 
-The server-rendered equipment, reference, and location directories expose canonical detail links even before the interactive grids load. Keep their links and the Build page's initial HTML renderable in the production Worker; a successful HTTP status alone does not mean the page content rendered.
+Visible SEO guides, generated Q&A, and duplicate link directories have been removed. Metadata, structured data, robots.txt, and the sitemap remain in place. Detail pages retain server-rendered stats, effects, sources, and related links.
 
 Run `python3 scripts/seo-audit.py http://localhost:3200 --report /tmp/mddex-seo-local.json` against the production preview, or use `https://mddex.net` to audit production. It checks every sitemap URL for server-rendered titles, target headings, canonical/indexing metadata, schemas, duplicate titles, and incoming HTML links. This audits crawlability and relevance signals; it does not prove rankings.
 

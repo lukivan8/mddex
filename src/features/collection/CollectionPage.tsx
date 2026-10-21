@@ -3,7 +3,6 @@ import { AppFooter } from "../../components/AppFooter";
 import { trackEvent } from "../analytics/analytics.browser";
 import { analyticsLabels } from "../analytics/analytics.schema";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { Button } from "@heroui/react";
 import { SearchX, TriangleAlert } from "lucide-react";
 import { AppHeader } from "../../components/AppHeader";
@@ -25,19 +24,13 @@ import { CategoryFilters } from "./components/CategoryFilters";
 import { CollectionToolbar } from "./components/CollectionToolbar";
 import { CollectionSkeleton } from "./components/CollectionSkeleton";
 import { ItemList } from "./components/ItemList";
-import { CatalogDirectory } from "../seo/CatalogDirectory";
-import type { CatalogIndexGroup } from "../seo/catalog-index";
 let browserCatalog: CatalogItem[] | undefined;
 export function CollectionPage({
   filters,
   onChange,
-  directory,
-  referenceDirectory,
 }: {
   filters: CollectionFilters;
   onChange: (patch: CollectionFilters) => void;
-  directory: CatalogIndexGroup[];
-  referenceDirectory: CatalogIndexGroup[];
 }) {
   const [catalog, setCatalog] = useState<CatalogItem[] | undefined>(
     () => browserCatalog,
@@ -99,27 +92,6 @@ export function CollectionPage({
             <CollectionSkeleton />
           )}
         </div>
-        <section
-          className="page-about"
-          aria-label="About the equipment catalog"
-        >
-          <h2>Minecraft Dungeons 2 equipment catalog</h2>
-          <p>
-            Explore weapons, armor, artifacts, talismans, enchantments, and gear
-            effects. Search by name and filter by equipment type. Open an item
-            to review its stats, effects, and listed drop locations, then plan
-            your loadout in the{" "}
-            <Link to="/build">Minecraft Dungeons 2 build maker</Link>.
-          </p>
-        </section>
-        <CatalogDirectory groups={directory} />
-        {referenceDirectory.length > 0 && (
-          <CatalogDirectory
-            groups={referenceDirectory}
-            title="More game references"
-            description="Look up status effects, capes, and pets in Minecraft Dungeons 2."
-          />
-        )}
       </main>
       <AppFooter />
     </>

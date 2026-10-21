@@ -35,7 +35,6 @@ import {
   type ItemSource,
   type Reference,
 } from "./catalog-detail.model";
-import { itemSeo } from "./catalog-detail.seo";
 import type { loadDetailPage } from "./catalog-detail.loader";
 import "./catalog-detail.css";
 import { CategorySections } from "./CategorySections";
@@ -258,7 +257,6 @@ export function CatalogDetailPage({
     filtersSchema.parse(
       defaultParseSearch(new URL(returnTo, "https://mddex.net").search),
     ).effects ?? [];
-  const seo = itemSeo(item, catalog, power, sources);
   const data = item.game_data;
   const effects = applicableEffects(item);
   const uniqueRolls = [
@@ -350,7 +348,6 @@ export function CatalogDetailPage({
               : ""}
           </span>
           <h1>{item.name}</h1>
-          <p className="detail-introduction">{seo.introduction}</p>
         </div>
         {detailState === "failed" && (
           <p role="status" className="detail-load-status">
@@ -739,35 +736,6 @@ export function CatalogDetailPage({
             )}
           </div>
         </div>
-        <section className="detail-guide" aria-labelledby="about-item">
-          <h2 id="about-item">{seo.heading}</h2>
-          <p>
-            {item.category === "mob" || item.category === "location" ? (
-              <>
-                Use the listed encounters and drops to plan your equipment
-                search.{" "}
-              </>
-            ) : (
-              <>
-                Review {item.name}’s details before choosing equipment for your
-                loadout.{" "}
-              </>
-            )}
-            <Link to="/build">Open the Minecraft Dungeons 2 build maker</Link>{" "}
-            to plan weapons, armor, artifacts, talismans, and modifiers
-            together.
-          </p>
-          <div>
-            {seo.sections.map((section) => (
-              <section key={section.heading}>
-                <h3>{section.heading}</h3>
-                <p>
-                  <Numbers text={section.text} />
-                </p>
-              </section>
-            ))}
-          </div>
-        </section>
       </main>
       <AppFooter />
     </>

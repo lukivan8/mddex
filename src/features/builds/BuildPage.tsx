@@ -147,11 +147,6 @@ export function BuildPage() {
       <main id="main" className="shell build-page">
         <header className="build-introduction">
           <h1>Minecraft Dungeons 2 build maker</h1>
-          <p>
-            Create a loadout with weapons, armor, artifacts, and talismans.
-            Choose enchantments and gear effects, review the summary, and share
-            your build. Free to use, with no account required.
-          </p>
         </header>
         {returningToCommunity && (
           <div className="community-builder-return">
@@ -187,73 +182,10 @@ export function BuildPage() {
         ) : (
           <BuildLoadingLayout build={loadingBuild} />
         )}
-        <BuildGuide />
       </main>
       <Toast.Provider placement="bottom end" />
       <AppFooter />
     </>
-  );
-}
-function BuildGuide() {
-  return (
-    <section
-      className="page-about build-guide"
-      aria-labelledby="build-guide-title"
-    >
-      <h2 id="build-guide-title">How to make a Minecraft Dungeons 2 build</h2>
-      <p>
-        MDDEX is a build planner for Minecraft Dungeons II. Start with an empty
-        loadout or open a shared build, then choose equipment for all 12 slots:
-        a melee weapon, a ranged weapon, four armor pieces, three artifacts, and
-        three talismans.
-      </p>
-      <ol>
-        <li>
-          <strong>Choose your equipment.</strong> Select a slot to see
-          compatible items in the catalog. Search by name or filter by type,
-          then select an item to equip it. Open the{" "}
-          <Link to="/collection">equipment catalog</Link> to inspect item stats,
-          effects, related equipment, and listed drops.
-        </li>
-        <li>
-          <strong>Add enchantments and gear effects.</strong> Select a modifier
-          slot to choose its effect and tier. Unique effects stay attached to
-          their equipment. Review compatibility warnings when changing items.
-        </li>
-        <li>
-          <strong>Review your loadout.</strong> Set item power and switch to
-          Summary to review your equipment and effects together. Compare boss
-          fights and grinding setups with the variant tabs. Add a variant to
-          copy your current equipment, then give it a descriptive name.
-        </li>
-        <li>
-          <strong>Save and share.</strong> Builds save in this browser. Use
-          Share build to create a link that a friend can open and save as a
-          separate copy, including all of its variants.
-        </li>
-      </ol>
-      <h3>Where can I find the equipment for my build?</h3>
-      <p>
-        Equipment pages list the available drop sources and link to related
-        locations. Browse <Link to="/mobs">mobs, bosses, and locations</Link> to
-        check known encounters and explicit item drops. A mob appearing in a
-        location does not by itself mean that it drops every item there.
-      </p>
-      <h3>Do I need an account to use the build maker?</h3>
-      <p>
-        No. Planning, local saving, and sharing build links work without an
-        account. Local loadouts belong to this browser; use a share link to
-        transfer a build to another device. Clearing browser data can remove
-        locally saved loadouts.
-      </p>
-      <h3>Can I customize someone else’s build?</h3>
-      <p>
-        Yes. Open their share link and save your own copy before changing its
-        equipment. You can also browse{" "}
-        <Link to="/community">community builds</Link> for loadouts and creator
-        notes.
-      </p>
-    </section>
   );
 }
 const pendingCatalog = new Map<string, CatalogItem>();

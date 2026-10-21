@@ -1767,54 +1767,6 @@ h1 {
   font-weight: 400;
   margin: 0 0 8px;
 }
-.build-introduction p {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.8;
-  margin: 0;
-}
-.page-about {
-  border-top: 1px solid var(--border);
-  margin-top: 40px;
-  padding-top: 24px;
-  max-width: 760px;
-}
-.page-about h1,
-.page-about h2 {
-  font-size: 16px;
-  font-weight: 400;
-  margin: 0 0 12px;
-}
-.page-about p {
-  font-size: 12px;
-  line-height: 1.8;
-  color: var(--muted);
-  margin: 8px 0;
-}
-.page-about a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.build-guide h3 {
-  font-size: 14px;
-  font-weight: 400;
-  margin: 24px 0 8px;
-}
-.build-guide ol {
-  padding-left: 20px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.8;
-}
-.build-guide li {
-  padding-left: 6px;
-  margin: 12px 0;
-}
-.build-guide strong {
-  color: var(--foreground);
-  font-weight: 500;
-}
 .footer-brand {
   display: flex;
   align-items: center;

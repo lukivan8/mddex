@@ -190,6 +190,16 @@ export function CategorySections({
           />
         </Section>
       )}
+      {d.cosmeticUnlock && (
+        <Section title="Unlock">
+          <p>{d.cosmeticUnlock}</p>
+        </Section>
+      )}
+      {d.status?.alignment && (
+        <Section title="Status details">
+          <Stats values={[["Alignment", humanize(d.status.alignment)]]} />
+        </Section>
+      )}
       {d.artifact && (
         <Section title="Artifact stats">
           <Stats

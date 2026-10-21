@@ -6,18 +6,14 @@ import { Button } from "@heroui/react";
 import { FilterToolbar } from "../collection/components/FilterToolbar";
 import { Crown, Leaf, PawPrint, Skull } from "lucide-react";
 import type { MobFilters, mobsCatalog } from "./mobs.model";
-import { CatalogDirectory } from "../seo/CatalogDirectory";
-import type { CatalogIndexGroup } from "../seo/catalog-index";
 export function MobsPage({
   items,
   locations,
-  locationDirectory,
   filters,
   onChange,
 }: {
   items: ReturnType<typeof mobsCatalog>["items"];
   locations: ReturnType<typeof mobsCatalog>["locations"];
-  locationDirectory: CatalogIndexGroup[];
   filters: MobFilters;
   onChange: (patch: MobFilters) => void;
 }) {
@@ -146,19 +142,6 @@ export function MobsPage({
         {!visible.length && (
           <p className="page-message">No mobs match your filters.</p>
         )}
-        <section className="page-about">
-          <h2>Minecraft Dungeons 2 mobs</h2>
-          <p>
-            Browse Minecraft Dungeons 2 (MCD2) mob entries for published health,
-            attacks, encounters, and explicit item drops. Each mob links to its
-            known locations and related catalog entries.
-          </p>
-        </section>
-        <CatalogDirectory
-          groups={locationDirectory}
-          title="All locations"
-          description="Browse every published location and its known loot and mobs."
-        />
       </main>
       <AppFooter />
     </>

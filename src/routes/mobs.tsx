@@ -6,7 +6,6 @@ import {
   type MobFilters,
 } from "../features/catalog-details/mobs.model";
 import { pageMetadata } from "../features/seo/metadata";
-import { catalogIndex } from "../features/seo/catalog-index";
 export const Route = createFileRoute("/mobs")({
   staleTime: Infinity,
   preloadStaleTime: Infinity,
@@ -27,10 +26,7 @@ export const Route = createFileRoute("/mobs")({
   }),
   loader: async () => {
     const catalog = await loadSessionCatalog();
-    return {
-      ...mobsCatalog(catalog),
-      locationDirectory: catalogIndex(catalog, ["location"]),
-    };
+    return mobsCatalog(catalog);
   },
   head: () =>
     pageMetadata({

@@ -206,7 +206,6 @@ for (const mobile of [false, true])
     await expect(
       page.getByRole("table", { name: "Attack values", exact: true }),
     ).toBeVisible();
-    await expect(page.locator(".detail-guide")).toContainText("16 → 16 → 24");
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       "https://mddex.net/catalog/melee-weapons/the-prospectors-pick",
@@ -231,7 +230,7 @@ for (const mobile of [false, true])
       ),
     ).toBeTruthy();
   });
-test("ranged weapons link to their own stats and generated SEO", async ({
+test("ranged weapons link to their own stats and metadata", async ({
   page,
 }) => {
   await page.goto("/collection?category=ranged_weapon");
@@ -245,10 +244,6 @@ test("ranged weapons link to their own stats and generated SEO", async ({
     "18 → 54 (fully charged)",
   );
   await expect(page.locator(".detail-stats")).not.toContainText("Range");
-  await expect(page.locator(".detail-guide")).toContainText(
-    "Fully charged damage: 54",
-  );
-  await expect(page.locator(".detail-guide")).not.toContainText("range value");
   await expect(page).toHaveTitle(/Bow.*Minecraft Dungeons 2/);
 });
 test("Shortbow and its unique variant use the corrected two-times charge", async ({
@@ -288,12 +283,6 @@ test("published melee hit counts render alongside powered per-hit damage", async
   await expect(
     page.getByRole("table", { name: "Attack values" }),
   ).toContainText("14 × 2");
-  await expect(page.locator(".detail-guide")).toContainText(
-    "14 × 2 → 14 × 2 → 22 × 2",
-  );
-  await expect(page.locator(".detail-guide")).toContainText(
-    "Full combo damage is 100",
-  );
 });
 test("Power stays on item details and comparison, not the catalog list", async ({
   page,
@@ -317,7 +306,6 @@ test("Power stays on item details and comparison, not the catalog list", async (
   await expect(page.locator(".detail-stats")).toContainText("23 → 23 → 35");
   await expect(page.locator(".detail-combo-total")).toContainText("81");
   await expect(page.locator(".detail-stats")).toContainText("41");
-  await expect(page.locator(".detail-guide")).toContainText("23 → 23 → 35");
   await expect(page.getByRole("link", { name: "Compare weapon" })).toHaveCount(
     0,
   );
@@ -412,7 +400,8 @@ test("published weapon detail is rendered for direct arrivals and rejects extern
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain("The Prospector&#x27;s Pick");
-  expect(html).toContain("detail-guide");
+  expect(html).toContain("detail-dossier");
+  expect(html).not.toContain("detail-guide");
   expect(html).toContain("application/ld+json");
   await page.goto(
     "/catalog/melee-weapons/the-prospectors-pick?returnTo=https://example.com/collection",

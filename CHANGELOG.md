@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.4.1 — 2026-10-21
+
+- Remove visible builder guides/FAQ, generated catalog introductions and Q&A, About sections, and duplicate catalog link directories.
+- Preserve titles, descriptions, canonical URLs, social previews, structured data, robots.txt, and the sitemap. Keep published item stats, effects, sources, relationships, cosmetic unlock instructions, and status alignment.
+- Remove unused directory components, loader payloads, and styles. Local saves, sharing formats, dependencies, bindings, and D1 migrations do not change.
+
+### Release validation
+
+`npm run doctor`, `npm run check` (317 unit tests in 51 files), `CI=true npm run test:e2e -- --workers=1` (155/155 Chromium tests), `npm run build`, and `git diff --check` pass. Production preview verifies Build, Catalog, complete melee detail content, quests, and plain-text missing-asset 404s. No production migration is required.
+
 ## 2.4.0 — 2026-10-14
 
 - Split daily active browsers into mutually exclusive new, returning and unknown cohorts while preserving total unique-browser DAU and Asia/Almaty day boundaries.

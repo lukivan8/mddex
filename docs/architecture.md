@@ -55,7 +55,7 @@ The application uses React 19, TypeScript, TanStack Start and Router, TanStack D
 | `src/features/sharing` | Anonymous identity, compressed snapshot links, D1 link creation and resolution |
 | `src/features/community` | Public posts, gallery, structured descriptions, email authorization and display-name ownership |
 | `src/features/resources` | Tracker, weapon reference data, and Soul Storm guides and route tools |
-| `src/features/seo` | Canonical metadata, directory links and sitemap generation |
+| `src/features/seo` | Canonical metadata and sitemap generation |
 | `src/features/analytics` | Browser event identity and queue, ingestion and reporting contract |
 
 The build service enforces the same eligibility rules used by the picker. UI filtering is therefore not the only defense against incompatible equipment. Keeping rules outside components also makes local saves, shared imports, and community snapshots follow the same interpretation.
@@ -121,9 +121,9 @@ The browser reads the pointer's manifest path to establish the authoritative rel
 
 ### Direct page arrivals and server rendering
 
-A direct `/build` arrival renders the introduction, metadata, and workspace shell. Browser collections and the interactive catalog initialize after hydration; a private local build is not part of server HTML.
+A direct `/build` arrival renders the heading, metadata, and workspace shell. Browser collections and the interactive catalog initialize after hydration; a private local build is not part of server HTML.
 
-A direct `/collection` arrival runs the route loader against the published index and returns a compact directory of canonical links. The interactive grid loads its catalog in the browser. This preserves crawlable links without serializing the entire game catalog into the route payload. `/mobs` provides the corresponding reference directory behavior.
+A direct `/collection` arrival renders the catalog shell and metadata; its interactive grid loads the pinned catalog in the browser. `/mobs` server-renders its mob list from the published index. Neither page adds a duplicate link directory or an About section.
 
 A direct `/catalog/<category>/<slug>` arrival takes a different path:
 

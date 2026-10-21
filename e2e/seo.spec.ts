@@ -15,16 +15,7 @@ test("build metadata and useful content are present without JavaScript", async (
     }),
   ).toBeVisible();
   await expect(page.locator("h1")).toHaveCount(1);
-  await expect(
-    page.getByRole("heading", {
-      name: "How to make a Minecraft Dungeons 2 build",
-    }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", {
-      name: "Do I need an account to use the build maker?",
-    }),
-  ).toBeVisible();
+  await expect(page.locator(".build-guide, .page-about")).toHaveCount(0);
   await expect(page.locator('meta[name="description"]')).toHaveCount(1);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
@@ -112,20 +103,13 @@ test("crawl files, branded images, manifest, and root redirect are served", asyn
   expect(api.headers()["x-robots-tag"]).toBe("noindex, nofollow");
 });
 
-test("equipment directory exposes canonical item links without JavaScript", async ({
-  request,
-}) => {
-  const response = await request.get("/collection");
-  expect(response.status()).toBe(200);
-  const html = await response.text();
-  expect(html).toContain('aria-label="All equipment pages"');
-  expect(html).toContain('href="/catalog/melee-weapons/the-prospectors-pick"');
-  expect(html).toContain('href="/catalog/armor/beekeeper-suit"');
-  expect(html).toContain('aria-label="More game references pages"');
-  expect(html).toContain('href="/catalog/status/strengthened"');
+test("catalog omits SEO filler and link directories", async ({ page }) => {
+  await page.goto("/collection");
+  await expect(page.getByRole("article").first()).toBeVisible();
+  await expect(page.locator(".page-about, .catalog-directory")).toHaveCount(0);
 });
 
-test("catalog target phrase and item facts are server-rendered with a route back to the maker", async ({
+test("catalog metadata and item facts remain server-rendered without generated filler", async ({
   browser,
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
@@ -135,20 +119,13 @@ test("catalog target phrase and item facts are server-rendered with a route back
     "Alchemist Loafers in Minecraft Dungeons 2 | MDDEX",
   );
   await expect(page.locator("h1")).toHaveText("Alchemist Loafers");
-  await expect(page.locator("#about-item")).toHaveText(
-    "Alchemist Loafers in Minecraft Dungeons 2",
+  await expect(page.locator(".detail-guide, .detail-introduction")).toHaveCount(
+    0,
   );
-  await expect(page.locator(".detail-introduction")).toContainText(
-    "unique armor item",
-  );
-  await expect(page.locator(".detail-guide")).toContainText(
+  await expect(page.locator(".detail-dossier")).toContainText(
     "Increases Soul capacity by 50%",
   );
-  await expect(page.locator(".detail-guide a")).toHaveAttribute(
-    "href",
-    "/build",
-  );
-  await expect(page.locator(".detail-guide")).toContainText(
+  await expect(page.locator(".detail-dossier")).toContainText(
     "Singer's Meadow Dungeons",
   );
   const schemas = await page
@@ -173,7 +150,7 @@ test("status pages expose their published mechanics and gear relationships witho
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("/catalog/status/artificing");
-  await expect(page.locator(".detail-guide")).toContainText(
+  await expect(page.locator(".detail-dossier")).toContainText(
     "Artifact damage and soul gathering are increased",
   );
   await expect(
@@ -185,12 +162,8 @@ test("status pages expose their published mechanics and gear relationships witho
   await context.close();
 });
 
-test("mob index exposes canonical location links without JavaScript", async ({
-  request,
-}) => {
-  const response = await request.get("/mobs");
-  expect(response.status()).toBe(200);
-  const html = await response.text();
-  expect(html).toContain('aria-label="All locations pages"');
-  expect(html).toContain('href="/catalog/locations/honeycomb-fields"');
+test("mob index omits SEO filler and link directories", async ({ page }) => {
+  await page.goto("/mobs");
+  await expect(page.getByRole("article").first()).toBeVisible();
+  await expect(page.locator(".page-about, .catalog-directory")).toHaveCount(0);
 });
