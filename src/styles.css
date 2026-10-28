@@ -2094,3 +2094,14 @@ h1 {
     .category-grid::-webkit-scrollbar-thumb:hover { background: var(--accent); }
   }
 }
+
+/* Local loadout backups inside the saved-loadouts dialog. */
+.loadout-backup {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.loadout-backup p { font-size: 13px; line-height: 1.5; margin: 0 0 10px; }
+.loadout-backup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.loadout-backup-review { margin-top: 12px; }
+.loadout-backup [role="status"], .loadout-backup [role="alert"] { margin-top: 10px; }

@@ -1,3 +1,4 @@
+import { mergeLoadouts } from "./build.backup";
 import { BuildPowerInputs } from "./components/BuildPowerInputs";
 import { trackEvent } from "../analytics/analytics.browser";
 import type { AnalyticsEvent } from "../analytics/analytics.schema";
@@ -898,6 +899,7 @@ function BuildWorkspace({
           setAnnouncement("Loadout duplicated.");
         }}
         onNew={newLoadout}
+        onImport={(backup) => mergeLoadouts(db, backup)}
       />
       {mobile && (
         <Modal.Backdrop isOpen={pickerOpen} onOpenChange={setPickerOpen}>

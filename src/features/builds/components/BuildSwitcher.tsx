@@ -1,3 +1,5 @@
+import { BuildBackupTools } from "./BuildBackupTools";
+import type { LoadoutBackup, ImportResult } from "../build.backup";
 import { useState } from "react";
 import { Button, Modal } from "@heroui/react";
 import { Plus, Check, Copy, Trash2 } from "lucide-react";
@@ -12,6 +14,7 @@ export function BuildSwitcher({
   onNew,
   onDuplicate,
   onDelete,
+  onImport,
 }: {
   open: boolean;
   onClose: () => void;
@@ -21,6 +24,7 @@ export function BuildSwitcher({
   onNew: () => void;
   onDuplicate: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onImport: (backup: LoadoutBackup) => Promise<ImportResult>;
 }) {
   const [deleting, setDeleting] = useState<Build>();
   const [busy, setBusy] = useState(false);
@@ -46,6 +50,14 @@ export function BuildSwitcher({
           </Modal.Header>
           <Modal.Body>
             {error && <p role="alert">{error}</p>}
+            {!deleting && (
+              <BuildBackupTools
+                builds={builds}
+                disabled={busy}
+                onImport={onImport}
+                onBusyChange={setBusy}
+              />
+            )}
             {deleting ? (
               <p>
                 Delete “{deleting.name.trim() || "Untitled loadout"}”? This
