@@ -8,6 +8,10 @@
       "pattern": "mddex.net",
       "custom_domain": true,
     },
+    {
+      "pattern": "legacy.mddex.net",
+      "custom_domain": true,
+    },
   ],
   "main": "src/server.ts",
   "compatibility_date": "2026-09-27",
